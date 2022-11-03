@@ -17,7 +17,9 @@ namespace neuopc
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+
+            DAClient client = new DAClient();
+            Application.Run(new MainForm(client));
         }
     }
 }

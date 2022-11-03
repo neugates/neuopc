@@ -14,7 +14,15 @@ namespace neuopc
 {
     public partial class MainForm : Form
     {
+        private DAClient client = null;
+
+        public MainForm(DAClient client): this()
+        {
+            this.client = client;
+        }
+
         public OPCServer server;
+
         public MainForm()
         {
             InitializeComponent();
@@ -86,7 +94,8 @@ namespace neuopc
                     //Console.WriteLine("item类型：{0}", ItemValues.GetValue(i).GetType().FullName);
                 }
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
                 System.Diagnostics.Debug.WriteLine($"data changed handle error：{ex.Message}");
             }
         }
@@ -127,18 +136,11 @@ namespace neuopc
         {
             DAServerComboBox.Text = String.Empty;
             DAServerComboBox.Items.Clear();
-            var server = new OPCServer();
-            try
+            var list = client.GetServers(DAHostTextBox.Text);
+            DAServerComboBox.Items.AddRange(list.ToArray());
+            if(0 < DAServerComboBox.Items.Count)
             {
-                object servers = server.GetOPCServers(DAHostTextBox.Text);
-                foreach (string s in (Array)servers)
-                {
-                    DAServerComboBox.Items.Add(s);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"get opc servers failed：{ex.Message}");
+                DAServerComboBox.SelectedIndex = 0;
             }
         }
     }
