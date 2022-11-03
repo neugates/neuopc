@@ -25,6 +25,31 @@ namespace neuopc
         {
         }
 
+        public void Setup()
+        {
+            int count = 3;
+            do
+            {
+                bool flag = true;
+                try
+                {
+                    var testServer = new OPCServer();
+                }
+                catch (Exception ex)
+                {
+                    flag = false;
+                }
+
+                if(flag)
+                {
+                    break;
+                }
+
+                // TODO: regist com component
+                count--;
+            } while (0 < count);
+        }
+
         public (bool ok, string msg) Conenct(string host, string name)
         {
             try
@@ -53,6 +78,13 @@ namespace neuopc
         public void DisConnect()
         {
             server?.Disconnect();
+        }
+
+        public List<string> GetHosts()
+        {
+            var list = new List<string>();
+            list.AddRange(Opc.Interop.EnumComputers());
+            return list;
         }
 
         public List<string> GetServers(string host)

@@ -19,6 +19,7 @@ namespace neuopc
             Application.SetCompatibleTextRenderingDefault(false);
 
             DAClient client = new DAClient();
+            client.Setup();
             Application.Run(new MainForm(client));
         }
     }
