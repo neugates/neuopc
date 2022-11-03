@@ -10,10 +10,11 @@ using System.Windows.Forms;
 using OPCAutomation;
 using Opc;
 
-namespace opcshift
+namespace neuopc
 {
     public partial class MainForm : Form
     {
+        public OPCServer server;
         public MainForm()
         {
             InitializeComponent();
@@ -21,7 +22,7 @@ namespace opcshift
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var server = new OPCServer();
+            //var server = new OPCServer();
             try
             {
                 server.Connect(DAServerComboBox.Text, DAHostTextBox.Text);
@@ -118,6 +119,8 @@ namespace opcshift
         {
             DAHostTextBox.Text = "192.168.241.133";
             UAPortTextBox.Text = "48401";
+
+            server = new OPCServer();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)

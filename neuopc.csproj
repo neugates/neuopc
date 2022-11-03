@@ -6,6 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
+    <RootNamespace>neuopc</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
