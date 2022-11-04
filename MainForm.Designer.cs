@@ -44,8 +44,8 @@ namespace neuopc
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.DAHostComboBox = new System.Windows.Forms.ComboBox();
             this.DAServerComboBox = new System.Windows.Forms.ComboBox();
-            this.DAHostTextBox = new System.Windows.Forms.TextBox();
             this.RunButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -59,9 +59,10 @@ namespace neuopc
             // 
             // ReadButton
             // 
-            this.ReadButton.Location = new System.Drawing.Point(829, 39);
+            this.ReadButton.Location = new System.Drawing.Point(706, 30);
+            this.ReadButton.Margin = new System.Windows.Forms.Padding(2);
             this.ReadButton.Name = "ReadButton";
-            this.ReadButton.Size = new System.Drawing.Size(143, 44);
+            this.ReadButton.Size = new System.Drawing.Size(112, 34);
             this.ReadButton.TabIndex = 0;
             this.ReadButton.Text = "Read";
             this.ReadButton.UseVisualStyleBackColor = true;
@@ -69,9 +70,10 @@ namespace neuopc
             // 
             // UAPortTextBox
             // 
-            this.UAPortTextBox.Location = new System.Drawing.Point(141, 93);
+            this.UAPortTextBox.Location = new System.Drawing.Point(108, 72);
+            this.UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.UAPortTextBox.Name = "UAPortTextBox";
-            this.UAPortTextBox.Size = new System.Drawing.Size(231, 38);
+            this.UAPortTextBox.Size = new System.Drawing.Size(240, 30);
             this.UAPortTextBox.TabIndex = 2;
             // 
             // menuStrip1
@@ -82,8 +84,8 @@ namespace neuopc
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
-            this.menuStrip1.Size = new System.Drawing.Size(1117, 44);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(878, 32);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -93,19 +95,19 @@ namespace neuopc
             this.logToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(73, 38);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(56, 28);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // logToolStripMenuItem
             // 
             this.logToolStripMenuItem.Name = "logToolStripMenuItem";
-            this.logToolStripMenuItem.Size = new System.Drawing.Size(189, 44);
+            this.logToolStripMenuItem.Size = new System.Drawing.Size(142, 34);
             this.logToolStripMenuItem.Text = "Log";
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(189, 44);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(142, 34);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // helpToolStripMenuItem
@@ -114,19 +116,19 @@ namespace neuopc
             this.aboutToolStripMenuItem,
             this.documentToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(88, 38);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(67, 28);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(267, 44);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(200, 34);
             this.aboutToolStripMenuItem.Text = "About";
             // 
             // documentToolStripMenuItem
             // 
             this.documentToolStripMenuItem.Name = "documentToolStripMenuItem";
-            this.documentToolStripMenuItem.Size = new System.Drawing.Size(267, 44);
+            this.documentToolStripMenuItem.Size = new System.Drawing.Size(200, 34);
             this.documentToolStripMenuItem.Text = "Document";
             // 
             // statusStrip1
@@ -135,69 +137,68 @@ namespace neuopc
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripProgressBar1,
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 662);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 510);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 22, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1117, 41);
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 17, 0);
+            this.statusStrip1.Size = new System.Drawing.Size(878, 34);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // toolStripProgressBar1
             // 
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            this.toolStripProgressBar1.Size = new System.Drawing.Size(127, 29);
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 26);
             // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(284, 31);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(213, 27);
             this.toolStripStatusLabel1.Text = "DA running,UA running";
             // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.DAHostComboBox);
             this.groupBox1.Controls.Add(this.DAServerComboBox);
-            this.groupBox1.Controls.Add(this.DAHostTextBox);
             this.groupBox1.Controls.Add(this.RunButton);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.ReadButton);
             this.groupBox1.Controls.Add(this.UAPortTextBox);
-            this.groupBox1.Location = new System.Drawing.Point(17, 49);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.groupBox1.Location = new System.Drawing.Point(13, 38);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
-            this.groupBox1.Size = new System.Drawing.Size(1084, 156);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
+            this.groupBox1.Size = new System.Drawing.Size(852, 121);
             this.groupBox1.TabIndex = 5;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Setting";
             // 
+            // DAHostComboBox
+            // 
+            this.DAHostComboBox.FormattingEnabled = true;
+            this.DAHostComboBox.Location = new System.Drawing.Point(108, 32);
+            this.DAHostComboBox.Name = "DAHostComboBox";
+            this.DAHostComboBox.Size = new System.Drawing.Size(240, 32);
+            this.DAHostComboBox.TabIndex = 12;
+            this.DAHostComboBox.DropDown += new System.EventHandler(this.DAHostComboBox_DropDown);
+            // 
             // DAServerComboBox
             // 
             this.DAServerComboBox.FormattingEnabled = true;
-            this.DAServerComboBox.Location = new System.Drawing.Point(517, 41);
-            this.DAServerComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.DAServerComboBox.Location = new System.Drawing.Point(461, 32);
             this.DAServerComboBox.Name = "DAServerComboBox";
-            this.DAServerComboBox.Size = new System.Drawing.Size(304, 39);
+            this.DAServerComboBox.Size = new System.Drawing.Size(240, 32);
             this.DAServerComboBox.TabIndex = 11;
             this.DAServerComboBox.DropDown += new System.EventHandler(this.DAServerComboBox_DropDown);
             // 
-            // DAHostTextBox
-            // 
-            this.DAHostTextBox.Location = new System.Drawing.Point(141, 41);
-            this.DAHostTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.DAHostTextBox.Name = "DAHostTextBox";
-            this.DAHostTextBox.Size = new System.Drawing.Size(231, 38);
-            this.DAHostTextBox.TabIndex = 10;
-            // 
             // RunButton
             // 
-            this.RunButton.Location = new System.Drawing.Point(829, 93);
-            this.RunButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.RunButton.Location = new System.Drawing.Point(706, 70);
             this.RunButton.Name = "RunButton";
-            this.RunButton.Size = new System.Drawing.Size(143, 44);
+            this.RunButton.Size = new System.Drawing.Size(112, 34);
             this.RunButton.TabIndex = 9;
             this.RunButton.Text = "Run";
             this.RunButton.UseVisualStyleBackColor = true;
@@ -205,30 +206,30 @@ namespace neuopc
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(19, 98);
-            this.label3.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label3.Location = new System.Drawing.Point(15, 76);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(110, 31);
+            this.label3.Size = new System.Drawing.Size(81, 24);
             this.label3.TabIndex = 8;
             this.label3.Text = "UA Port:";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(382, 45);
-            this.label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label2.Location = new System.Drawing.Point(355, 35);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(135, 31);
+            this.label2.Size = new System.Drawing.Size(99, 24);
             this.label2.TabIndex = 6;
             this.label2.Text = "DA Server:";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 45);
-            this.label1.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label1.Location = new System.Drawing.Point(15, 35);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(116, 31);
+            this.label1.Size = new System.Drawing.Size(86, 24);
             this.label1.TabIndex = 3;
             this.label1.Text = "DA Host:";
             // 
@@ -238,10 +239,9 @@ namespace neuopc
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(17, 214);
-            this.listView1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.listView1.Location = new System.Drawing.Point(13, 166);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(1085, 444);
+            this.listView1.Size = new System.Drawing.Size(853, 341);
             this.listView1.TabIndex = 6;
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
@@ -253,15 +253,16 @@ namespace neuopc
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1117, 703);
+            this.ClientSize = new System.Drawing.Size(878, 544);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.Text = "neuopc";
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -297,8 +298,8 @@ namespace neuopc
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.Button RunButton;
-        private System.Windows.Forms.TextBox DAHostTextBox;
         private System.Windows.Forms.ComboBox DAServerComboBox;
+        private System.Windows.Forms.ComboBox DAHostComboBox;
     }
 }
 

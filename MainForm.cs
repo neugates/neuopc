@@ -30,52 +30,55 @@ namespace neuopc
         private void button1_Click(object sender, EventArgs e)
         {
             //var server = new OPCServer();
-            try
-            {
-                server.Connect(DAServerComboBox.Text, DAHostTextBox.Text);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"connect to opc server:{DAHostTextBox.Text} failed：{ex.Message}");
-            }
+            //try
+            //{
+            //    server.Connect(DAServerComboBox.Text, DAHostComboBox.Text);
+            //}
+            //catch (Exception ex)
+            //{
+            //    System.Diagnostics.Debug.WriteLine($"connect to opc server:{DAHostComboBox.Text} failed：{ex.Message}");
+            //}
 
-            if (server.ServerState == (int)OPCServerState.OPCRunning)
-            {
-                System.Diagnostics.Debug.WriteLine("connected：{0}", server.ServerName);
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("状态：{0}", server.ServerState.ToString());
-            }
+            //if (server.ServerState == (int)OPCServerState.OPCRunning)
+            //{
+            //    System.Diagnostics.Debug.WriteLine("connected：{0}", server.ServerName);
+            //}
+            //else
+            //{
+            //    System.Diagnostics.Debug.WriteLine("状态：{0}", server.ServerState.ToString());
+            //}
 
-            // Browser
-            var brower = server.CreateBrowser();
-            brower.ShowBranches();
-            brower.ShowLeafs(true);
+            //// Browser
+            //var brower = server.CreateBrowser();
+            //brower.ShowBranches();
+            //brower.ShowLeafs(true);
 
-            var groups = server.OPCGroups;
-            groups.DefaultGroupIsActive = true;
-            groups.DefaultGroupDeadband = 0;
-            groups.DefaultGroupUpdateRate = 200;
-            var group = groups.Add("all_data");
+            //var groups = server.OPCGroups;
+            //groups.DefaultGroupIsActive = true;
+            //groups.DefaultGroupDeadband = 0;
+            //groups.DefaultGroupUpdateRate = 200;
+            //var group = groups.Add("all_data");
 
-            group.IsActive = true;
-            group.IsSubscribed = true;
-            group.UpdateRate = 200;
-            group.AsyncReadComplete += Group_AsyncReadComplete;
+            //group.IsActive = true;
+            //group.IsSubscribed = true;
+            //group.UpdateRate = 200;
+            //group.AsyncReadComplete += Group_AsyncReadComplete;
 
-            int i = 0;
-            foreach (var item in brower)
-            {
-                System.Diagnostics.Debug.WriteLine($"node：{item}");
-                group.OPCItems.AddItem(item.ToString(), i++);
-            }
+            //int i = 0;
+            //foreach (var item in brower)
+            //{
+            //    System.Diagnostics.Debug.WriteLine($"node：{item}");
+            //    group.OPCItems.AddItem(item.ToString(), i++);
+            //}
 
-            group.DataChange += new DIOPCGroupEvent_DataChangeEventHandler(GroupDataChange);
-            group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
-            group.AsyncReadComplete += new DIOPCGroupEvent_AsyncReadCompleteEventHandler(GroupAsyncReadComplete);
-            group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
+            //group.DataChange += new DIOPCGroupEvent_DataChangeEventHandler(GroupDataChange);
+            //group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
+            //group.AsyncReadComplete += new DIOPCGroupEvent_AsyncReadCompleteEventHandler(GroupAsyncReadComplete);
+            //group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
 
+            client.Conenct(DAHostComboBox.Text, DAServerComboBox.Text);
+            client.BuildGroup();
+            client.Read();
 
         }
 
@@ -125,21 +128,31 @@ namespace neuopc
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            DAHostTextBox.Text = "192.168.241.133";
             UAPortTextBox.Text = "48401";
-
             server = new OPCServer();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
         {
-            DAServerComboBox.Text = String.Empty;
+            DAServerComboBox.Text = string.Empty;
             DAServerComboBox.Items.Clear();
-            var list = client.GetServers(DAHostTextBox.Text);
+            var list = client.GetServers(DAHostComboBox.Text);
             DAServerComboBox.Items.AddRange(list.ToArray());
             if(0 < DAServerComboBox.Items.Count)
             {
                 DAServerComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void DAHostComboBox_DropDown(object sender, EventArgs e)
+        {
+            DAHostComboBox.Text = string.Empty;
+            DAHostComboBox.Items.Clear();
+            var list = client.GetHosts();
+            DAHostComboBox.Items.AddRange(list.ToArray());
+            if(0 < DAHostComboBox.Items.Count)
+            {
+                DAHostComboBox.SelectedIndex = 0;
             }
         }
     }
