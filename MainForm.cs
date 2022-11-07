@@ -15,7 +15,7 @@ namespace neuopc
     {
         private DAClient client = null;
 
-        public MainForm(DAClient client): this()
+        public MainForm(DAClient client) : this()
         {
             this.client = client;
         }
@@ -27,103 +27,54 @@ namespace neuopc
             InitializeComponent();
         }
 
+        public void UpdateListView(List<Item> list)
+        {
+            foreach (var i in list)
+            {
+                Action<Item> action = (data) =>
+                {
+                    int index = data.ClientHandle;
+                    var items = MainListView.Items;
+                    var item = items[index];
+                    var subItemValue = item.SubItems[2];
+                    var subItemRights = item.SubItems[3];
+                    var subItemQualitie = item.SubItems[4];
+                    var subItemError = item.SubItems[5];
+                    var subItemTs = item.SubItems[6];
+
+                    subItemValue.Text = Convert.ToString(data.Value);
+                    subItemRights.Text = data.Rights.ToString();
+                    subItemQualitie.Text = data.Quality.ToString();
+                    subItemTs.Text = data.Timestamp;
+                    subItemError.Text = data.Error.ToString();
+                };
+
+                Invoke(action, i);
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            //var server = new OPCServer();
-            //try
-            //{
-            //    server.Connect(DAServerComboBox.Text, DAHostComboBox.Text);
-            //}
-            //catch (Exception ex)
-            //{
-            //    System.Diagnostics.Debug.WriteLine($"connect to opc server:{DAHostComboBox.Text} failed：{ex.Message}");
-            //}
+            client.Connect(DAHostComboBox.Text, DAServerComboBox.Text);
+            var list = client.BuildGroup();
+            MainListView.BeginUpdate();
+            MainListView.Items.Clear();
+            for (int i = 0; i < list.Count; i++)
+            {
+                ListViewItem lvi = new ListViewItem();
+                lvi.Text = list[i].ClientHandle.ToString();
+                lvi.SubItems.Add(list[i].Name.ToString());
+                lvi.SubItems.Add(Convert.ToString(list[i].Value));
+                lvi.SubItems.Add("");
+                lvi.SubItems.Add("");
+                lvi.SubItems.Add("");
+                lvi.SubItems.Add("");
+                MainListView.Items.Add(lvi);
+            }
+            MainListView.EndUpdate();
 
-            //if (server.ServerState == (int)OPCServerState.OPCRunning)
-            //{
-            //    System.Diagnostics.Debug.WriteLine("connected：{0}", server.ServerName);
-            //}
-            //else
-            //{
-            //    System.Diagnostics.Debug.WriteLine("状态：{0}", server.ServerState.ToString());
-            //}
-
-            //// Browser
-            //var brower = server.CreateBrowser();
-            //brower.ShowBranches();
-            //brower.ShowLeafs(true);
-
-            //var groups = server.OPCGroups;
-            //groups.DefaultGroupIsActive = true;
-            //groups.DefaultGroupDeadband = 0;
-            //groups.DefaultGroupUpdateRate = 200;
-            //var group = groups.Add("all_data");
-
-            //group.IsActive = true;
-            //group.IsSubscribed = true;
-            //group.UpdateRate = 200;
-            //group.AsyncReadComplete += Group_AsyncReadComplete;
-
-            //int i = 0;
-            //foreach (var item in brower)
-            //{
-            //    System.Diagnostics.Debug.WriteLine($"node：{item}");
-            //    group.OPCItems.AddItem(item.ToString(), i++);
-            //}
-
-            //group.DataChange += new DIOPCGroupEvent_DataChangeEventHandler(GroupDataChange);
-            //group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
-            //group.AsyncReadComplete += new DIOPCGroupEvent_AsyncReadCompleteEventHandler(GroupAsyncReadComplete);
-            //group.AsyncWriteComplete += new DIOPCGroupEvent_AsyncWriteCompleteEventHandler(GroupAsyncWriteComplete);
-
-            client.Conenct(DAHostComboBox.Text, DAServerComboBox.Text);
-            client.BuildGroup();
+            client.update += UpdateListView;
             client.Read();
-
-        }
-
-        void GroupDataChange(int TransactionID, int NumItems, ref Array ClientHandles, ref Array ItemValues, ref Array Qualities, ref Array TimeStamps)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("====================DataChanged");
-                for (int i = 1; i <= NumItems; i++)
-                {
-                    System.Diagnostics.Debug.WriteLine($"item {ClientHandles.GetValue(i)?.ToString()} value：{ItemValues.GetValue(i)?.ToString()}");
-                    //Console.WriteLine("item句柄：{0}", ClientHandles.GetValue(i).ToString());
-                    //Console.WriteLine("item质量：{0}", Qualities.GetValue(i).ToString());
-                    //Console.WriteLine("item时间戳：{0}", TimeStamps.GetValue(i).ToString());
-                    //Console.WriteLine("item类型：{0}", ItemValues.GetValue(i).GetType().FullName);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"data changed handle error：{ex.Message}");
-            }
-        }
-
-        void GroupAsyncWriteComplete(int TransactionID, int NumItems, ref Array ClientHandles, ref Array Errors)
-        {
-            System.Diagnostics.Debug.WriteLine("====================AsyncWriteComplete");
-            /*for (int i = 1; i <= NumItems; i++)
-            {
-                Console.WriteLine("Tran：{0}   ClientHandles：{1}   Error：{2}", TransactionID.ToString(), ClientHandles.GetValue(i).ToString(), Errors.GetValue(i).ToString());
-            }*/
-        }
-
-        void GroupAsyncReadComplete(int TransactionID, int NumItems, ref System.Array ClientHandles, ref System.Array ItemValues, ref System.Array Qualities, ref System.Array TimeStamps, ref System.Array Errors)
-        {
-            System.Diagnostics.Debug.WriteLine("====================GroupAsyncReadComplete");
-            for (int i = 1; i <= NumItems; i++)
-            {
-                //Console.WriteLine("Tran：{0}   ClientHandles：{1}   Error：{2}", TransactionID.ToString(), ClientHandles.GetValue(i).ToString(), Errors.GetValue(i).ToString());
-                //System.Diagnostics.Debug.WriteLine("Vaule：{0}", Convert.ToString(ItemValues.GetValue(i)));
-            }
-        }
-
-        private void Group_AsyncReadComplete(int TransactionID, int NumItems, ref Array ClientHandles, ref Array ItemValues, ref Array Qualities, ref Array TimeStamps, ref Array Errors)
-        {
-            throw new NotImplementedException();
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -138,7 +89,7 @@ namespace neuopc
             DAServerComboBox.Items.Clear();
             var list = client.GetServers(DAHostComboBox.Text);
             DAServerComboBox.Items.AddRange(list.ToArray());
-            if(0 < DAServerComboBox.Items.Count)
+            if (0 < DAServerComboBox.Items.Count)
             {
                 DAServerComboBox.SelectedIndex = 0;
             }
@@ -150,7 +101,7 @@ namespace neuopc
             DAHostComboBox.Items.Clear();
             var list = client.GetHosts();
             DAHostComboBox.Items.AddRange(list.ToArray());
-            if(0 < DAHostComboBox.Items.Count)
+            if (0 < DAHostComboBox.Items.Count)
             {
                 DAHostComboBox.SelectedIndex = 0;
             }

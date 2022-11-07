@@ -50,7 +50,14 @@ namespace neuopc
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.MainListView = new System.Windows.Forms.ListView();
+            this.handle = new System.Windows.Forms.ColumnHeader();
+            this.name = new System.Windows.Forms.ColumnHeader();
+            this.value = new System.Windows.Forms.ColumnHeader();
+            this.rights = new System.Windows.Forms.ColumnHeader();
+            this.quality = new System.Windows.Forms.ColumnHeader();
+            this.error = new System.Windows.Forms.ColumnHeader();
+            this.timestamp = new System.Windows.Forms.ColumnHeader();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -233,17 +240,60 @@ namespace neuopc
             this.label1.TabIndex = 3;
             this.label1.Text = "DA Host:";
             // 
-            // listView1
+            // MainListView
             // 
-            this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.MainListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(13, 166);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(853, 341);
-            this.listView1.TabIndex = 6;
-            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.MainListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.handle,
+            this.name,
+            this.value,
+            this.rights,
+            this.quality,
+            this.error,
+            this.timestamp});
+            this.MainListView.HideSelection = false;
+            this.MainListView.Location = new System.Drawing.Point(13, 166);
+            this.MainListView.Name = "MainListView";
+            this.MainListView.Size = new System.Drawing.Size(853, 341);
+            this.MainListView.TabIndex = 6;
+            this.MainListView.UseCompatibleStateImageBehavior = false;
+            this.MainListView.View = System.Windows.Forms.View.Details;
+            // 
+            // handle
+            // 
+            this.handle.Text = "handle";
+            this.handle.Width = 80;
+            // 
+            // name
+            // 
+            this.name.Text = "name";
+            this.name.Width = 200;
+            // 
+            // value
+            // 
+            this.value.Text = "value";
+            this.value.Width = 200;
+            // 
+            // rights
+            // 
+            this.rights.Text = "rights";
+            this.rights.Width = 80;
+            // 
+            // quality
+            // 
+            this.quality.Text = "quality";
+            this.quality.Width = 100;
+            // 
+            // error
+            // 
+            this.error.Text = "error";
+            // 
+            // timestamp
+            // 
+            this.timestamp.Text = "timestamp";
+            this.timestamp.Width = 180;
             // 
             // notifyIcon1
             // 
@@ -256,7 +306,7 @@ namespace neuopc
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(878, 544);
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(this.MainListView);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
@@ -293,13 +343,20 @@ namespace neuopc
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView MainListView;
         private System.Windows.Forms.ToolStripMenuItem logToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.Button RunButton;
         private System.Windows.Forms.ComboBox DAServerComboBox;
         private System.Windows.Forms.ComboBox DAHostComboBox;
+        private System.Windows.Forms.ColumnHeader handle;
+        private System.Windows.Forms.ColumnHeader name;
+        private System.Windows.Forms.ColumnHeader quality;
+        private System.Windows.Forms.ColumnHeader value;
+        private System.Windows.Forms.ColumnHeader rights;
+        private System.Windows.Forms.ColumnHeader error;
+        private System.Windows.Forms.ColumnHeader timestamp;
     }
 }
 
