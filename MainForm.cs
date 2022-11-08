@@ -106,5 +106,10 @@ namespace neuopc
                 DAHostComboBox.SelectedIndex = 0;
             }
         }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            client.Stop();
+        }
     }
 }

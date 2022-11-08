@@ -173,6 +173,7 @@ namespace neuopc
             group.IsActive = true;
             //group.IsSubscribed = true;
             //group.UpdateRate = 200;
+            //group.DataChange += GroupDataChange;
 
             nodes = new List<Node>();
             int index = 0;
@@ -208,6 +209,13 @@ namespace neuopc
 
         private void ReadThread()
         {
+            groups.DefaultGroupDeadband = 0;
+            groups.DefaultGroupUpdateRate = 200;
+
+            group.IsSubscribed = true;
+            group.UpdateRate = 200;
+            group.DataChange += GroupDataChange;
+
             while (running)
             {
                 int t1 = nodes.Count / MAX_READ;
@@ -215,84 +223,76 @@ namespace neuopc
                 int times = t1 + t2;
                 for (int i = 0; i < times; i++)
                 {
-                    var tmp_node = from node in nodes.Skip(i * MAX_READ)
-                                   select node;
+                    var tmpNode = from node in nodes.Skip(i * MAX_READ).Take(MAX_READ)
+                                  select node;
+                    var nodeList = tmpNode.ToList();
 
-                    var tmp = from node in tmp_node
+                    var tmp = from node in tmpNode
                               select node.Item.ServerHandle;
                     List<int> l = tmp.ToList();
                     l.Insert(0, 0);
                     Array hs = l.ToArray();
-
                     var items = new List<Item>();
 
                     try
                     {
-                        short source = (short)(i * MAX_READ);
-                        group.SyncRead(source, l.Count, ref hs, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
+                        short source = 1;
+                        group.SyncRead(source, tmpNode.Count(), ref hs, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
                         Array qs = (Array)qualities;
                         Array ts = (Array)timestamps;
-                        foreach (var n in tmp_node)
+
+                        for (int j = 0; j < nodeList.Count; j++)
                         {
+                            var n = nodeList[j];
                             var item = new Item
                             {
                                 Name = n.Name,
                                 ClientHandle = n.Item.ClientHandle,
-                                Value = values.GetValue(i + 1),
+                                Value = values.GetValue(j + 1),
                                 Rights = n.Item.AccessRights,
-                                Quality = Convert.ToInt32(qs.GetValue(i + 1)),
-                                Error = Convert.ToInt32(errors.GetValue(i + 1)),
-                                Timestamp = Convert.ToString(ts.GetValue(i + 1)),
+                                Quality = Convert.ToInt32(qs.GetValue(j + 1)),
+                                Error = Convert.ToInt32(errors.GetValue(j + 1)),
+                                Timestamp = Convert.ToString(ts.GetValue(j + 1)),
                             };
                             items.Add(item);
                         }
                     }
                     catch (Exception ex)
                     {
-                        Connect(host_name, server_name);
+                        //Connect(host_name, server_name);
                     }
 
                     update?.Invoke(items);
 
                 }
-
-                //var temp = from node in nodes
-                //           select node.Item.ServerHandle;
-                //List<int> list = temp.ToList();
-                //list.Insert(0, 0);
-                //Array handles = list.ToArray();
-                //var items = new List<Item>();
-
-                //try
-                //{
-                //    short source = 1;
-                //    group.SyncRead(source, nodes.Count, ref handles, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
-                //    Array qs = (Array)qualities;
-                //    Array ts = (Array)timestamps;
-                //    for (int i = 0; i < nodes.Count; i++)
-                //    {
-                //        var node = nodes[i];
-                //        var item = new Item
-                //        {
-                //            Name = node.Name,
-                //            ClientHandle = node.Item.ClientHandle,
-                //            Value = values.GetValue(i + 1),
-                //            Rights = node.Item.AccessRights,
-                //            Quality = Convert.ToInt32(qs.GetValue(i + 1)),
-                //            Error = Convert.ToInt32(errors.GetValue(i + 1)),
-                //            Timestamp = Convert.ToString(ts.GetValue(i + 1)),
-                //        };
-                //        items.Add(item);
-                //    }
-                //}
-                //catch (Exception ex)
-                //{
-                //    Connect(host_name, server_name);
-                //}
-
-                Thread.Sleep(100);
-                //update?.Invoke(items);
+                Thread.Sleep(5000);
             }
+        }
+
+        private void GroupDataChange(int TransactionID, int NumItems, ref Array ClientHandles, ref Array ItemValues, ref Array Qualities, ref Array TimeStamps)
+        {
+            var items = new List<Item>();
+            for (int i = 1; i <= NumItems; i++)
+            {
+                int clientHandle = Convert.ToInt32(ClientHandles.GetValue(i));
+                var node = from n in nodes
+                           where n.Item.ClientHandle == clientHandle
+                           select n;
+
+                var item = new Item
+                {
+                    Name = node.First().Name,
+                    ClientHandle = clientHandle,
+                    Value = ItemValues.GetValue(i),
+                    Rights = node.First().Item.AccessRights,
+                    Quality = Convert.ToInt32(Qualities.GetValue(i)),
+                    Timestamp = Convert.ToString(TimeStamps.GetValue(i)),
+                };
+
+                items.Add(item);
+            }
+
+            update?.Invoke(items);
         }
 
         public void Read()
@@ -314,6 +314,7 @@ namespace neuopc
         {
             running = false;
             thread.Join();
+            DisConnect();
         }
     }
 }

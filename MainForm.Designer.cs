@@ -284,16 +284,17 @@ namespace neuopc
             // quality
             // 
             this.quality.Text = "quality";
-            this.quality.Width = 100;
+            this.quality.Width = 80;
             // 
             // error
             // 
             this.error.Text = "error";
+            this.error.Width = 80;
             // 
             // timestamp
             // 
             this.timestamp.Text = "timestamp";
-            this.timestamp.Width = 180;
+            this.timestamp.Width = 200;
             // 
             // notifyIcon1
             // 
@@ -315,6 +316,7 @@ namespace neuopc
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.Text = "neuopc";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
