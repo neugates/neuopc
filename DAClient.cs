@@ -42,9 +42,9 @@ namespace neuopc
         private List<Node> nodes;
         private Thread thread;
         private bool running;
-        private string host_name;
-        private string server_name;
-        public ValueUpdate update;
+        private string hostName;
+        private string serverName;
+        public ValueUpdate Update;
 
         private readonly int MAX_READ = 50;
 
@@ -79,8 +79,8 @@ namespace neuopc
 
         public (bool ok, string msg) Connect(string host, string name)
         {
-            host_name = host;
-            server_name = name;
+            hostName = host;
+            serverName = name;
 
             if (IsConnected())
             {
@@ -185,6 +185,8 @@ namespace neuopc
                 };
 
                 node.Item = group.OPCItems.AddItem(node.Name, index);
+
+                System.Diagnostics.Debug.WriteLine($"------>{node.Item.Parent.Name}");
                 nodes.Add(node);
                 index++;
             }
@@ -262,7 +264,7 @@ namespace neuopc
                         //Connect(host_name, server_name);
                     }
 
-                    update?.Invoke(items);
+                    Update?.Invoke(items);
 
                 }
                 Thread.Sleep(5000);
@@ -292,7 +294,7 @@ namespace neuopc
                 items.Add(item);
             }
 
-            update?.Invoke(items);
+            Update?.Invoke(items);
         }
 
         public void Read()
@@ -313,7 +315,7 @@ namespace neuopc
         public void Stop()
         {
             running = false;
-            thread.Join();
+            thread?.Join();
             DisConnect();
         }
     }

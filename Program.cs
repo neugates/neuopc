@@ -18,9 +18,10 @@ namespace neuopc
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            DAClient client = new DAClient();
+            var client = new DAClient();
             client.Setup();
-            Application.Run(new MainForm(client));
+            var server = new UAServer();
+            Application.Run(new MainForm(client, server));
         }
     }
 }

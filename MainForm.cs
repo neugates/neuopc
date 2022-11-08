@@ -13,14 +13,14 @@ namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private DAClient client = null;
+        private DAClient client;
+        private UAServer server;
 
-        public MainForm(DAClient client) : this()
+        public MainForm(DAClient client, UAServer server) : this()
         {
             this.client = client;
+            this.server = server;
         }
-
-        public OPCServer server;
 
         public MainForm()
         {
@@ -53,7 +53,8 @@ namespace neuopc
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        private void ReadButton_Click(object sender, EventArgs e)
         {
             client.Connect(DAHostComboBox.Text, DAServerComboBox.Text);
             var list = client.BuildGroup();
@@ -73,14 +74,15 @@ namespace neuopc
             }
             MainListView.EndUpdate();
 
-            client.update += UpdateListView;
+            client.Update += UpdateListView;
             client.Read();
         }
+
+
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             UAPortTextBox.Text = "48401";
-            server = new OPCServer();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
@@ -110,6 +112,14 @@ namespace neuopc
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             client.Stop();
+            server.Stop();
+            NotifyIcon.Dispose();
+        }
+
+        private void RunButton_Click(object sender, EventArgs e)
+        {
+            server.Start(UAPortTextBox.Text);
+            client.Update += server.UpdateNodes;
         }
     }
 }

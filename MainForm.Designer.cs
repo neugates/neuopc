@@ -58,7 +58,7 @@ namespace neuopc
             this.quality = new System.Windows.Forms.ColumnHeader();
             this.error = new System.Windows.Forms.ColumnHeader();
             this.timestamp = new System.Windows.Forms.ColumnHeader();
-            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -73,7 +73,7 @@ namespace neuopc
             this.ReadButton.TabIndex = 0;
             this.ReadButton.Text = "Read";
             this.ReadButton.UseVisualStyleBackColor = true;
-            this.ReadButton.Click += new System.EventHandler(this.button1_Click);
+            this.ReadButton.Click += new System.EventHandler(this.ReadButton_Click);
             // 
             // UAPortTextBox
             // 
@@ -209,6 +209,7 @@ namespace neuopc
             this.RunButton.TabIndex = 9;
             this.RunButton.Text = "Run";
             this.RunButton.UseVisualStyleBackColor = true;
+            this.RunButton.Click += new System.EventHandler(this.RunButton_Click);
             // 
             // label3
             // 
@@ -296,11 +297,11 @@ namespace neuopc
             this.timestamp.Text = "timestamp";
             this.timestamp.Width = 200;
             // 
-            // notifyIcon1
+            // NotifyIcon
             // 
-            this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "notifyIcon1";
-            this.notifyIcon1.Visible = true;
+            this.NotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIcon.Icon")));
+            this.NotifyIcon.Text = "neuopc";
+            this.NotifyIcon.Visible = true;
             // 
             // MainForm
             // 
@@ -348,7 +349,7 @@ namespace neuopc
         private System.Windows.Forms.ListView MainListView;
         private System.Windows.Forms.ToolStripMenuItem logToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.NotifyIcon notifyIcon1;
+        private System.Windows.Forms.NotifyIcon NotifyIcon;
         private System.Windows.Forms.Button RunButton;
         private System.Windows.Forms.ComboBox DAServerComboBox;
         private System.Windows.Forms.ComboBox DAHostComboBox;
