@@ -15,6 +15,7 @@ namespace neuopc
     {
         private DAClient client;
         private UAServer server;
+        private List<Item> items;
 
         public MainForm(DAClient client, UAServer server) : this()
         {
@@ -36,17 +37,15 @@ namespace neuopc
                     int index = data.ClientHandle;
                     var items = MainListView.Items;
                     var item = items[index];
-                    var subItemValue = item.SubItems[2];
-                    var subItemRights = item.SubItems[3];
-                    var subItemQualitie = item.SubItems[4];
-                    var subItemError = item.SubItems[5];
-                    var subItemTs = item.SubItems[6];
+                    var subItemValue = item.SubItems[4];
+                    var subItemQuality = item.SubItems[5];
+                    var subItemError = item.SubItems[6];
+                    var subItemTs = item.SubItems[7];
 
                     subItemValue.Text = Convert.ToString(data.Value);
-                    subItemRights.Text = data.Rights.ToString();
-                    subItemQualitie.Text = data.Quality.ToString();
-                    subItemTs.Text = data.Timestamp;
+                    subItemQuality.Text = data.Quality.ToString();
                     subItemError.Text = data.Error.ToString();
+                    subItemTs.Text = Convert.ToString(data.Timestamp);
                 };
 
                 Invoke(action, i);
@@ -57,19 +56,20 @@ namespace neuopc
         private void ReadButton_Click(object sender, EventArgs e)
         {
             client.Connect(DAHostComboBox.Text, DAServerComboBox.Text);
-            var list = client.BuildGroup();
+            items = client.BuildGroup();
             MainListView.BeginUpdate();
             MainListView.Items.Clear();
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < items.Count; i++)
             {
                 ListViewItem lvi = new ListViewItem();
-                lvi.Text = list[i].ClientHandle.ToString();
-                lvi.SubItems.Add(list[i].Name.ToString());
-                lvi.SubItems.Add(Convert.ToString(list[i].Value));
-                lvi.SubItems.Add("");
-                lvi.SubItems.Add("");
-                lvi.SubItems.Add("");
-                lvi.SubItems.Add("");
+                lvi.Text = items[i].ClientHandle.ToString(); // handle
+                lvi.SubItems.Add(items[i].Name.ToString()); // name
+                lvi.SubItems.Add(items[i].Type.ToString()); // type
+                lvi.SubItems.Add(items[i].Rights.ToString()); // rights
+                lvi.SubItems.Add(""); // value
+                lvi.SubItems.Add(""); // quality
+                lvi.SubItems.Add(""); // error
+                lvi.SubItems.Add(""); // timestamp
                 MainListView.Items.Add(lvi);
             }
             MainListView.EndUpdate();
@@ -118,7 +118,7 @@ namespace neuopc
 
         private void RunButton_Click(object sender, EventArgs e)
         {
-            server.Start(UAPortTextBox.Text);
+            server.Start(UAPortTextBox.Text, items);
             client.Update += server.UpdateNodes;
         }
     }

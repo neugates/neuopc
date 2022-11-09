@@ -53,8 +53,9 @@ namespace neuopc
             this.MainListView = new System.Windows.Forms.ListView();
             this.handle = new System.Windows.Forms.ColumnHeader();
             this.name = new System.Windows.Forms.ColumnHeader();
-            this.value = new System.Windows.Forms.ColumnHeader();
+            this.type = new System.Windows.Forms.ColumnHeader();
             this.rights = new System.Windows.Forms.ColumnHeader();
+            this.value = new System.Windows.Forms.ColumnHeader();
             this.quality = new System.Windows.Forms.ColumnHeader();
             this.error = new System.Windows.Forms.ColumnHeader();
             this.timestamp = new System.Windows.Forms.ColumnHeader();
@@ -92,7 +93,7 @@ namespace neuopc
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(878, 32);
+            this.menuStrip1.Size = new System.Drawing.Size(1228, 32);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -144,10 +145,10 @@ namespace neuopc
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripProgressBar1,
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 510);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 710);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 17, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(878, 34);
+            this.statusStrip1.Size = new System.Drawing.Size(1228, 34);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -178,7 +179,7 @@ namespace neuopc
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(852, 121);
+            this.groupBox1.Size = new System.Drawing.Size(1202, 121);
             this.groupBox1.TabIndex = 5;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Setting";
@@ -249,52 +250,58 @@ namespace neuopc
             this.MainListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.handle,
             this.name,
-            this.value,
+            this.type,
             this.rights,
+            this.value,
             this.quality,
             this.error,
             this.timestamp});
             this.MainListView.HideSelection = false;
             this.MainListView.Location = new System.Drawing.Point(13, 166);
             this.MainListView.Name = "MainListView";
-            this.MainListView.Size = new System.Drawing.Size(853, 341);
+            this.MainListView.Size = new System.Drawing.Size(1203, 541);
             this.MainListView.TabIndex = 6;
             this.MainListView.UseCompatibleStateImageBehavior = false;
             this.MainListView.View = System.Windows.Forms.View.Details;
             // 
             // handle
             // 
-            this.handle.Text = "handle";
+            this.handle.Text = "Index";
             this.handle.Width = 80;
             // 
             // name
             // 
-            this.name.Text = "name";
-            this.name.Width = 200;
+            this.name.Text = "Name";
+            this.name.Width = 250;
             // 
-            // value
+            // type
             // 
-            this.value.Text = "value";
-            this.value.Width = 200;
+            this.type.Text = "Type";
+            this.type.Width = 100;
             // 
             // rights
             // 
-            this.rights.Text = "rights";
-            this.rights.Width = 80;
+            this.rights.Text = "Rights";
+            this.rights.Width = 100;
+            // 
+            // value
+            // 
+            this.value.Text = "Value";
+            this.value.Width = 250;
             // 
             // quality
             // 
-            this.quality.Text = "quality";
+            this.quality.Text = "Quality";
             this.quality.Width = 80;
             // 
             // error
             // 
-            this.error.Text = "error";
+            this.error.Text = "Error";
             this.error.Width = 80;
             // 
             // timestamp
             // 
-            this.timestamp.Text = "timestamp";
+            this.timestamp.Text = "Timestamp";
             this.timestamp.Width = 200;
             // 
             // NotifyIcon
@@ -307,7 +314,7 @@ namespace neuopc
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(878, 544);
+            this.ClientSize = new System.Drawing.Size(1228, 744);
             this.Controls.Add(this.MainListView);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStrip1);
@@ -360,6 +367,7 @@ namespace neuopc
         private System.Windows.Forms.ColumnHeader rights;
         private System.Windows.Forms.ColumnHeader error;
         private System.Windows.Forms.ColumnHeader timestamp;
+        private System.Windows.Forms.ColumnHeader type;
     }
 }
 

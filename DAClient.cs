@@ -16,19 +16,61 @@ namespace neuopc
     {
         public string Name { get; set; }
         public int ID { get; set; }
+        public DAType Type { get; set; }
         public OPCItem Item { get; set; }
+    }
+
+    public enum DAType
+    {
+        Int8 = 16, // UA_TYPES_SBYTE/VT_I1
+        Int16 = 2, // UA_TYPES_INT16/VT_I2
+        Int32B = 22, // UA_TYPES_INT32/VT_INT 
+        Int32 = 3, // UA_TYPES_INT32/VT_I4
+        Int64 = 20, // UA_TYPES_INT64/VT_I8
+        Float = 4, // UA_TYPES_FLOAT/VT_R4
+        Double = 5, // UA_TYPES_DOUBLE/VT_R8
+        UInt8 = 17, // UA_TYPES_BYTE/VT_UI1
+        UInt16 = 18, // UA_TYPES_UINT16/VT_UI2
+        UInt32B = 23, // UA_TYPES_UINT32/VT_UINT
+        UInt32 = 19, // UA_TYPES_UINT32/VT_UI4
+        UInt64 = 21, // UA_TYPES_UINT64/VT_UI8
+        Date = 7, // UA_TYPES_DATETIME/VT_DATE
+        String = 8, // UA_TYPES_STRING/VT_BSTR
+        Bool = 11, // UA_TYPES_BOOLEAN/VT_BOOL
+        Money = 6, // Money
+
+        //ArrayString = 8200, // Array of string
+        //ArrayInt32 = 8210, // Array of int32
+        //ArrayInt64 = 8212, // Array of int64
+        //ArrayInt16= 8194, // Array of int16
+        //ArrayUInt64 = 8213, // Array of uint64
+        //ArrayFloat = 8196, // Array of float
+        //ArrayDouble= 8197, // Array of double
+    }
+
+    public enum DARights
+    {
+        Read = 1,
+        Write = 2,
+        RW = 3,
+    }
+
+    public enum DAQuality
+    {
+        Good = 192,
+        Bad = 0,
     }
 
     public class Item
     {
         public string Name { get; set; }
-        public int Type { get; set; }
-        public int Rights { get; set; } // 1-read only, 2-write only, 3-read & write
+        public DAType Type { get; set; }
+        public DARights Rights { get; set; }
         public int ClientHandle { get; set; }
         public int ServerHandle { get; set; }
         public dynamic Value { get; set; }
-        public int Quality { get; set; }
-        public string Timestamp { get; set; }
+        public DAQuality Quality { get; set; }
+        public DateTime Timestamp { get; set; }
         public int Error { get; set; }
         public string Status { get; set; }
     }
@@ -45,7 +87,6 @@ namespace neuopc
         private string hostName;
         private string serverName;
         public ValueUpdate Update;
-
         private readonly int MAX_READ = 50;
 
         public DAClient()
@@ -121,7 +162,6 @@ namespace neuopc
             var list = new List<string>();
             IPHostEntry ipHost = Dns.GetHostEntry("127.0.0.1");
             list.Add(ipHost.HostName);
-
             // TODO: enum all host
             return list;
         }
@@ -163,17 +203,10 @@ namespace neuopc
 
             brower.ShowBranches();
             brower.ShowLeafs(true);
-
             groups = server.OPCGroups;
             groups.DefaultGroupIsActive = true;
-            //groups.DefaultGroupDeadband = 0;
-            //groups.DefaultGroupUpdateRate = 200;
-
             group = groups.Add("all");
             group.IsActive = true;
-            //group.IsSubscribed = true;
-            //group.UpdateRate = 200;
-            //group.DataChange += GroupDataChange;
 
             nodes = new List<Node>();
             int index = 0;
@@ -184,11 +217,17 @@ namespace neuopc
                     Name = item.ToString(),
                 };
 
-                node.Item = group.OPCItems.AddItem(node.Name, index);
-
-                System.Diagnostics.Debug.WriteLine($"------>{node.Item.Parent.Name}");
-                nodes.Add(node);
-                index++;
+                try
+                {
+                    node.Item = group.OPCItems.AddItem(node.Name, index);
+                    node.Type = (DAType)node.Item.CanonicalDataType;
+                    nodes.Add(node);
+                    index++;
+                }
+                catch
+                {
+                    // TODO: log
+                }
             }
 
             var temp = from node in nodes
@@ -196,13 +235,12 @@ namespace neuopc
                        select new Item
                        {
                            Name = name,
-                           Type = node.Item.CanonicalDataType,
-                           Rights = node.Item.AccessRights,
+                           Type = (DAType)node.Item.CanonicalDataType,
+                           Rights = (DARights)node.Item.AccessRights,
                            ClientHandle = node.Item.ClientHandle,
                            ServerHandle = node.Item.ServerHandle,
-                           Value = string.Empty,
                            Quality = 0,
-                           Timestamp = string.Empty,
+                           Timestamp = DateTime.Now,
                            Status = string.Empty,
                        };
             List<Item> list = temp.ToList();
@@ -250,11 +288,12 @@ namespace neuopc
                             {
                                 Name = n.Name,
                                 ClientHandle = n.Item.ClientHandle,
+                                Type = n.Type,
                                 Value = values.GetValue(j + 1),
-                                Rights = n.Item.AccessRights,
-                                Quality = Convert.ToInt32(qs.GetValue(j + 1)),
+                                Rights = (DARights)n.Item.AccessRights,
+                                Quality = (DAQuality)Convert.ToInt32(qs.GetValue(j + 1)),
                                 Error = Convert.ToInt32(errors.GetValue(j + 1)),
-                                Timestamp = Convert.ToString(ts.GetValue(j + 1)),
+                                Timestamp = Convert.ToDateTime(ts.GetValue(j + 1)).ToLocalTime(),
                             };
                             items.Add(item);
                         }
@@ -267,6 +306,7 @@ namespace neuopc
                     Update?.Invoke(items);
 
                 }
+
                 Thread.Sleep(5000);
             }
         }
@@ -285,10 +325,11 @@ namespace neuopc
                 {
                     Name = node.First().Name,
                     ClientHandle = clientHandle,
+                    Type = node.First().Type,
                     Value = ItemValues.GetValue(i),
-                    Rights = node.First().Item.AccessRights,
-                    Quality = Convert.ToInt32(Qualities.GetValue(i)),
-                    Timestamp = Convert.ToString(TimeStamps.GetValue(i)),
+                    Rights = (DARights)node.First().Item.AccessRights,
+                    Quality = (DAQuality)Convert.ToInt32(Qualities.GetValue(i)),
+                    Timestamp = Convert.ToDateTime(TimeStamps.GetValue(i)).ToLocalTime(),
                 };
 
                 items.Add(item);
