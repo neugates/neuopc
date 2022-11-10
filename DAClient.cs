@@ -154,7 +154,13 @@ namespace neuopc
 
         public void DisConnect()
         {
-            server?.Disconnect();
+            try
+            {
+                server?.Disconnect();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public List<string> GetHosts()
@@ -171,8 +177,8 @@ namespace neuopc
             var list = new List<string>();
             try
             {
-                var serverTemp = new OPCServer();
-                object servers = serverTemp.GetOPCServers(host);
+                var opcServer = new OPCServer();
+                object servers = opcServer.GetOPCServers(host);
                 foreach (string s in (Array)servers)
                 {
                     list.Add(s);
@@ -190,23 +196,27 @@ namespace neuopc
             try
             {
                 brower = server?.CreateBrowser();
+                brower?.ShowBranches();
+                brower?.ShowLeafs(true);
             }
             catch (Exception)
             {
                 // TODO:Log
-            }
-
-            if (null == brower)
-            {
+                brower = null;
                 return new List<Item>();
             }
 
-            brower.ShowBranches();
-            brower.ShowLeafs(true);
-            groups = server.OPCGroups;
-            groups.DefaultGroupIsActive = true;
-            group = groups.Add("all");
-            group.IsActive = true;
+            try
+            {
+                groups = server.OPCGroups;
+                groups.DefaultGroupIsActive = true;
+                group = groups.Add("all");
+                group.IsActive = true;
+            }
+            catch (Exception)
+            {
+                return new List<Item>();
+            }
 
             nodes = new List<Node>();
             int index = 0;
@@ -311,25 +321,30 @@ namespace neuopc
             }
         }
 
-        private void GroupDataChange(int TransactionID, int NumItems, ref Array ClientHandles, ref Array ItemValues, ref Array Qualities, ref Array TimeStamps)
+        private void GroupDataChange(int transactionID, int numItems, ref Array clientHandles, ref Array itemValues, ref Array qualities, ref Array timeStamps)
         {
             var items = new List<Item>();
-            for (int i = 1; i <= NumItems; i++)
+            for (int i = 1; i <= numItems; i++)
             {
-                int clientHandle = Convert.ToInt32(ClientHandles.GetValue(i));
-                var node = from n in nodes
-                           where n.Item.ClientHandle == clientHandle
-                           select n;
+                int clientHandle = Convert.ToInt32(clientHandles.GetValue(i));
+                var changedNodes = from node in nodes
+                                   where node.Item.ClientHandle == clientHandle
+                                   select node;
+                var changedNode = changedNodes?.First();
+                if (null == changedNode)
+                {
+                    continue;
+                }
 
                 var item = new Item
                 {
-                    Name = node.First().Name,
+                    Name = changedNode.Name,
                     ClientHandle = clientHandle,
-                    Type = node.First().Type,
-                    Value = ItemValues.GetValue(i),
-                    Rights = (DARights)node.First().Item.AccessRights,
-                    Quality = (DAQuality)Convert.ToInt32(Qualities.GetValue(i)),
-                    Timestamp = Convert.ToDateTime(TimeStamps.GetValue(i)).ToLocalTime(),
+                    Type = changedNode.Type,
+                    Value = itemValues.GetValue(i),
+                    Rights = (DARights)changedNode.Item.AccessRights,
+                    Quality = (DAQuality)Convert.ToInt32(qualities.GetValue(i)),
+                    Timestamp = Convert.ToDateTime(timeStamps.GetValue(i)).ToLocalTime(),
                 };
 
                 items.Add(item);
@@ -357,7 +372,7 @@ namespace neuopc
                 var writeNodes = from node in nodes
                                  where node.Name == item.Name
                                  select node;
-                var writeNode = writeNodes?.ToList()?.First();
+                var writeNode = writeNodes?.First();
                 if (null != writeNode)
                 {
                     writeNode.Item.Write(item.Value);
