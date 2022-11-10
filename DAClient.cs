@@ -103,7 +103,7 @@ namespace neuopc
                 {
                     var testServer = new OPCServer();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     flag = false;
                 }
@@ -178,7 +178,7 @@ namespace neuopc
                     list.Add(s);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
 
@@ -191,7 +191,7 @@ namespace neuopc
             {
                 brower = server?.CreateBrowser();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO:Log
             }
@@ -298,7 +298,7 @@ namespace neuopc
                             items.Add(item);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         //Connect(host_name, server_name);
                     }
@@ -349,7 +349,28 @@ namespace neuopc
             thread.Start();
         }
 
-        public void Write() { }
+        public bool Write(Item item)
+        {
+            // TODO: log 
+            try
+            {
+                var writeNodes = from node in nodes
+                                 where node.Name == item.Name
+                                 select node;
+                var writeNode = writeNodes?.ToList()?.First();
+                if (null != writeNode)
+                {
+                    writeNode.Item.Write(item.Value);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                // TODO: log
+                return false;
+            }
+        }
 
         public void Start() { }
 

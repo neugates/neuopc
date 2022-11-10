@@ -11,16 +11,20 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace neuopc
 {
+    public delegate bool ValueWrite(Item item);
+
     public class NodeManager : CustomNodeManager2
     {
         private IList<IReference> _references;
         private List<Item> items;
         private List<BaseDataVariableState> variables;
+        private ValueWrite write;
 
-        public NodeManager(IServerInternal server, ApplicationConfiguration configuration, List<Item> items)
+        public NodeManager(IServerInternal server, ApplicationConfiguration configuration, List<Item> items, ValueWrite write)
             : base(server, configuration, "http://opcfoundation.org/Quickstarts/ReferenceApplications")
         {
             this.items = items;
+            this.write = write;
             variables = new List<BaseDataVariableState>();
         }
 
@@ -39,7 +43,7 @@ namespace neuopc
                     }
                 }
             }
-            catch
+            catch (Exception)
             {
             }
         }
@@ -199,7 +203,9 @@ namespace neuopc
         private ServiceResult OnWriteDataValue(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding,
             ref object value, ref StatusCode statusCode, ref DateTime timestamp)
         {
-            BaseDataVariableState variable = node as BaseDataVariableState;
+            var variable = node as BaseDataVariableState;
+            var item = new Item();
+
             try
             {
                 TypeInfo typeInfo = TypeInfo.IsInstanceOfDataType(
@@ -213,12 +219,61 @@ namespace neuopc
                 {
                     return StatusCodes.BadTypeMismatch;
                 }
-                if (typeInfo.BuiltInType == BuiltInType.Double)
+
+                item.Name = variable.SymbolicName;
+                item.Value = value;
+                switch (typeInfo.BuiltInType)
                 {
-                    double number = Convert.ToDouble(value);
-                    value = TypeInfo.Cast(number, typeInfo.BuiltInType);
+                    case BuiltInType.SByte:
+                        item.Type = DAType.Int8;
+                        break;
+                    case BuiltInType.Int16:
+                        item.Type = DAType.Int16;
+                        break;
+                    case BuiltInType.Int32:
+                        item.Type = DAType.Int32;
+                        break;
+                    case BuiltInType.Int64:
+                        item.Type = DAType.Int64;
+                        break;
+                    case BuiltInType.Float:
+                        item.Type = DAType.Float;
+                        break;
+                    case BuiltInType.Double:
+                        item.Type = DAType.Double;
+                        break;
+                    case BuiltInType.Byte:
+                        item.Type = DAType.UInt8;
+                        break;
+                    case BuiltInType.UInt16:
+                        item.Type = DAType.UInt16;
+                        break;
+                    case BuiltInType.UInt32:
+                        item.Type = DAType.UInt32;
+                        break;
+                    case BuiltInType.UInt64:
+                        item.Type = DAType.UInt64;
+                        break;
+                    case BuiltInType.DateTime:
+                        item.Type = DAType.Date;
+                        break;
+                    case BuiltInType.String:
+                        item.Type = DAType.String;
+                        break;
+                    case BuiltInType.Boolean:
+                        item.Type = DAType.Bool;
+                        break;
+                    default:
+                        break;
                 }
-                return ServiceResult.Good;
+
+                var result = write?.Invoke(item);
+                if (result is true)
+                {
+                    return ServiceResult.Good;
+                }
+
+                return StatusCodes.BadNotWritable;
             }
             catch (Exception)
             {
@@ -231,10 +286,12 @@ namespace neuopc
     {
         private List<Item> items;
         private NodeManager nodeManager;
+        private ValueWrite write;
 
-        public Server(List<Item> items)
+        public Server(List<Item> items, ValueWrite write)
         {
             this.items = items;
+            this.write = write;
         }
 
         public void SetItems(List<Item> list)
@@ -246,7 +303,7 @@ namespace neuopc
         {
             Utils.Trace("Creating the Node Managers.");
             var nodeManagers = new List<INodeManager>();
-            nodeManager = new NodeManager(server, configuration, items);
+            nodeManager = new NodeManager(server, configuration, items, write);
             nodeManagers.Add(nodeManager);
             return new MasterNodeManager(server, configuration, null, nodeManagers.ToArray());
         }
@@ -257,6 +314,7 @@ namespace neuopc
         private ApplicationInstance application;
         private List<Item> items;
         private Server server;
+        public ValueWrite Write;
 
         public void Start(string port, List<Item> items)
         {
@@ -310,14 +368,14 @@ namespace neuopc
                 bool certOk = application.CheckApplicationInstanceCertificate(false, 0).Result;
                 if (!certOk)
                 {
-                    //Console.WriteLine("证书验证失败!");
+                    // TODO: log
                 }
 
                 var dis = new DiscoveryServerBase();
-                server = new Server(items);
+                server = new Server(items, Write);
                 application.Start(server).Wait();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -329,7 +387,7 @@ namespace neuopc
 
         public void Stop()
         {
-            application?.Stop();
+            //application?.Stop();
         }
     }
 }

@@ -118,6 +118,7 @@ namespace neuopc
 
         private void RunButton_Click(object sender, EventArgs e)
         {
+            server.Write += client.Write;
             server.Start(UAPortTextBox.Text, items);
             client.Update += server.UpdateNodes;
         }
