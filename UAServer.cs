@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Security.Cryptography.X509Certificates;
+using Serilog;
 
 namespace neuopc
 {
@@ -43,8 +44,9 @@ namespace neuopc
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                Log.Warning($"set variable exception, error:{exception.Message}");
             }
         }
 
@@ -176,21 +178,43 @@ namespace neuopc
                     variable.Value = (ulong)(item.Value ?? 0);
                     break;
                 case DAType.Date:
-                    variable.DataType = DataTypeIds.DateTime;
-                    variable.Value = (uint)(item.Value ?? 0);
-                    break;
+                    {
+                        variable.DataType = DataTypeIds.DateTime;
+                        try
+                        {
+                            variable.Value = (DateTime)(item.Value ?? DateTime.Now);
+                        }
+                        catch
+                        {
+                            variable.StatusCode = StatusCodes.BadNotReadable;
+                        }
+
+                        break;
+                    }
                 case DAType.String:
                     variable.DataType = DataTypeIds.String;
                     variable.Value = item.Value as string;
                     break;
                 case DAType.Bool:
-                    variable.DataType = DataTypeIds.Boolean;
-                    variable.Value = (bool)(item.Value ?? false);
-                    break;
+                    {
+                        variable.DataType = DataTypeIds.Boolean;
+                        try
+                        {
+                            variable.Value = (bool)(item.Value ?? false);
+                        }
+                        catch
+                        {
+                            variable.StatusCode = StatusCodes.BadNotReadable;
+                        }
+
+                        break;
+                    }
                 default:
-                    variable.DataType = DataTypeIds.String;
-                    variable.Value = "no supported data";
-                    break;
+                    {
+                        variable.DataType = DataTypeIds.BaseDataType;
+                        variable.StatusCode = StatusCodes.BadNotSupported;
+                        break;
+                    }
             }
         }
 

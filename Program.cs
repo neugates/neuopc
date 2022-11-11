@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Serilog;
 
 namespace neuopc
 {
@@ -18,10 +19,17 @@ namespace neuopc
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Console()
+                .WriteTo.File("neuopc.log", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
             var client = new DAClient();
             client.Setup();
             var server = new UAServer();
             Application.Run(new MainForm(client, server));
+            Log.CloseAndFlush();
         }
     }
 }

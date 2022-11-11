@@ -4,9 +4,9 @@ using System.Text;
 using System.Collections;
 using OPCAutomation;
 using System.Net;
-//using System.Timers;
 using System.Linq;
 using System.Threading;
+using Serilog;
 
 namespace neuopc
 {
@@ -15,7 +15,6 @@ namespace neuopc
     public class Node
     {
         public string Name { get; set; }
-        public int ID { get; set; }
         public DAType Type { get; set; }
         public OPCItem Item { get; set; }
     }
@@ -38,14 +37,6 @@ namespace neuopc
         String = 8, // UA_TYPES_STRING/VT_BSTR
         Bool = 11, // UA_TYPES_BOOLEAN/VT_BOOL
         Money = 6, // Money
-
-        //ArrayString = 8200, // Array of string
-        //ArrayInt32 = 8210, // Array of int32
-        //ArrayInt64 = 8212, // Array of int64
-        //ArrayInt16= 8194, // Array of int16
-        //ArrayUInt64 = 8213, // Array of uint64
-        //ArrayFloat = 8196, // Array of float
-        //ArrayDouble= 8197, // Array of double
     }
 
     public enum DARights
@@ -87,7 +78,7 @@ namespace neuopc
         private string hostName;
         private string serverName;
         public ValueUpdate Update;
-        private readonly int MAX_READ = 50;
+        private readonly int MaxRead= 50;
 
         public DAClient()
         {
@@ -139,6 +130,7 @@ namespace neuopc
                 return (false, ex.Message);
             }
 
+            Log.Information($"server {host}/{name} connected");
             return (true, "success");
         }
 
@@ -184,8 +176,9 @@ namespace neuopc
                     list.Add(s);
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                Log.Warning($"get opc servers failed, error:{exception.Message}");
             }
 
             return list;
@@ -199,9 +192,9 @@ namespace neuopc
                 brower?.ShowBranches();
                 brower?.ShowLeafs(true);
             }
-            catch (Exception)
+            catch (Exception error)
             {
-                // TODO:Log
+                Log.Error($"create browser failed, msg:{error.Message}");
                 brower = null;
                 return new List<Item>();
             }
@@ -213,8 +206,9 @@ namespace neuopc
                 group = groups.Add("all");
                 group.IsActive = true;
             }
-            catch (Exception)
+            catch (Exception error)
             {
+                Log.Error($"add group failed, msg:{error.Message}");
                 return new List<Item>();
             }
 
@@ -234,26 +228,27 @@ namespace neuopc
                     nodes.Add(node);
                     index++;
                 }
-                catch
+                catch (Exception exception)
                 {
-                    // TODO: log
+                    Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
                 }
+
+                Log.Information($"add item secceed, name:{item}, type:{node.Type}");
             }
 
-            var temp = from node in nodes
-                       let name = node.Name
-                       select new Item
-                       {
-                           Name = name,
-                           Type = (DAType)node.Item.CanonicalDataType,
-                           Rights = (DARights)node.Item.AccessRights,
-                           ClientHandle = node.Item.ClientHandle,
-                           ServerHandle = node.Item.ServerHandle,
-                           Quality = 0,
-                           Timestamp = DateTime.Now,
-                           Status = string.Empty,
-                       };
-            List<Item> list = temp.ToList();
+            var list = (from node in nodes
+                        let name = node.Name
+                        select new Item
+                        {
+                            Name = name,
+                            Type = (DAType)node.Item.CanonicalDataType,
+                            Rights = (DARights)node.Item.AccessRights,
+                            ClientHandle = node.Item.ClientHandle,
+                            ServerHandle = node.Item.ServerHandle,
+                            Quality = 0,
+                            Timestamp = DateTime.Now,
+                            Status = string.Empty,
+                        }).ToList();
             return list;
         }
 
@@ -268,12 +263,13 @@ namespace neuopc
 
             while (running)
             {
-                int t1 = nodes.Count / MAX_READ;
-                int t2 = (nodes.Count % MAX_READ) == 0 ? 0 : 1;
+                int count = null == nodes ? 0 : nodes.Count;
+                int t1 = count / MaxRead;
+                int t2 = (count % MaxRead) == 0 ? 0 : 1;
                 int times = t1 + t2;
                 for (int i = 0; i < times; i++)
                 {
-                    var tmpNode = from node in nodes.Skip(i * MAX_READ).Take(MAX_READ)
+                    var tmpNode = from node in nodes.Skip(i * MaxRead).Take(MaxRead)
                                   select node;
                     var nodeList = tmpNode.ToList();
 
@@ -326,23 +322,20 @@ namespace neuopc
             var items = new List<Item>();
             for (int i = 1; i <= numItems; i++)
             {
-                int clientHandle = Convert.ToInt32(clientHandles.GetValue(i));
-                var changedNodes = from node in nodes
-                                   where node.Item.ClientHandle == clientHandle
-                                   select node;
-                var changedNode = changedNodes?.First();
-                if (null == changedNode)
+                int handle = Convert.ToInt32(clientHandles.GetValue(i));
+                var node = nodes.FirstOrDefault(node => node.Item.ClientHandle == handle);
+                if (null == node)
                 {
                     continue;
                 }
 
                 var item = new Item
                 {
-                    Name = changedNode.Name,
-                    ClientHandle = clientHandle,
-                    Type = changedNode.Type,
+                    Name = node.Name,
+                    ClientHandle = handle,
+                    Type = node.Type,
                     Value = itemValues.GetValue(i),
-                    Rights = (DARights)changedNode.Item.AccessRights,
+                    Rights = (DARights)node.Item.AccessRights,
                     Quality = (DAQuality)Convert.ToInt32(qualities.GetValue(i)),
                     Timestamp = Convert.ToDateTime(timeStamps.GetValue(i)).ToLocalTime(),
                 };
@@ -366,23 +359,25 @@ namespace neuopc
 
         public bool Write(Item item)
         {
-            // TODO: log 
-            try
+            var writeNode = nodes?.FirstOrDefault(node => node.Name == item.Name);
+            if (null != writeNode)
             {
-                var writeNodes = from node in nodes
-                                 where node.Name == item.Name
-                                 select node;
-                var writeNode = writeNodes?.First();
-                if (null != writeNode)
+                try
                 {
                     writeNode.Item.Write(item.Value);
                 }
+                catch (Exception exception)
+                {
+                    Log.Error($"write node failed, name:{writeNode.Name}, value:{item.Value}, error:{exception.Message}");
+                    return false;
+                }
 
+                Log.Information($"write node succeed, name:{writeNode.Name}, value:{item.Value}");
                 return true;
             }
-            catch (Exception)
+            else
             {
-                // TODO: log
+                Log.Error($"write node failed, name:{writeNode.Name}, value:{item.Value}");
                 return false;
             }
         }
