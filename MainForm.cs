@@ -13,11 +13,11 @@ namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private DAClient client;
+        private DaClient client;
         private UAServer server;
         private List<Item> items;
 
-        public MainForm(DAClient client, UAServer server) : this()
+        public MainForm(DaClient client, UAServer server) : this()
         {
             this.client = client;
             this.server = server;
@@ -89,7 +89,7 @@ namespace neuopc
         {
             DAServerComboBox.Text = string.Empty;
             DAServerComboBox.Items.Clear();
-            var list = client.GetServers(DAHostComboBox.Text);
+            var list = DaClient.GetServers(DAHostComboBox.Text);
             DAServerComboBox.Items.AddRange(list.ToArray());
             if (0 < DAServerComboBox.Items.Count)
             {
@@ -101,7 +101,7 @@ namespace neuopc
         {
             DAHostComboBox.Text = string.Empty;
             DAHostComboBox.Items.Clear();
-            var list = client.GetHosts();
+            var list = DaClient.GetHosts();
             DAHostComboBox.Items.AddRange(list.ToArray());
             if (0 < DAHostComboBox.Items.Count)
             {
@@ -111,7 +111,7 @@ namespace neuopc
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            client.Stop();
+            client.Close();
             server.Stop();
             NotifyIcon.Dispose();
         }

@@ -129,55 +129,55 @@ namespace neuopc
             variable.Timestamp = item.Timestamp;
             switch (item.Type)
             {
-                case DAType.Int8:
+                case DaType.Int8:
                     variable.DataType = DataTypeIds.SByte;
                     variable.Value = (sbyte)(item.Value ?? 0);
                     break;
-                case DAType.Int16:
+                case DaType.Int16:
                     variable.DataType = DataTypeIds.Int16;
                     variable.Value = (short)(item.Value ?? 0);
                     break;
-                case DAType.Int32:
+                case DaType.Int32:
                     variable.DataType = DataTypeIds.Int32;
                     variable.Value = (int)(item.Value ?? 0);
                     break;
-                case DAType.Int32B:
+                case DaType.Int32B:
                     variable.DataType = DataTypeIds.Int32;
                     variable.Value = (int)(item.Value ?? 0);
                     break;
-                case DAType.Int64:
+                case DaType.Int64:
                     variable.DataType = DataTypeIds.Int64;
                     variable.Value = (long)(item.Value ?? 0);
                     break;
-                case DAType.Float:
+                case DaType.Float:
                     variable.DataType = DataTypeIds.Float;
                     variable.Value = (float)(item.Value ?? 0);
                     break;
-                case DAType.Double:
+                case DaType.Double:
                     variable.DataType = DataTypeIds.Double;
                     variable.Value = (double)(item.Value ?? 0);
                     break;
-                case DAType.UInt8:
+                case DaType.UInt8:
                     variable.DataType = DataTypeIds.Byte;
                     variable.Value = (byte)(item.Value ?? 0);
                     break;
-                case DAType.UInt16:
+                case DaType.UInt16:
                     variable.DataType = DataTypeIds.UInt16;
                     variable.Value = (ushort)(item.Value ?? 0);
                     break;
-                case DAType.UInt32:
+                case DaType.UInt32:
                     variable.DataType = DataTypeIds.UInt32;
                     variable.Value = (uint)(item.Value ?? 0);
                     break;
-                case DAType.UInt32B:
+                case DaType.UInt32B:
                     variable.DataType = DataTypeIds.UInt32;
                     variable.Value = (uint)(item.Value ?? 0);
                     break;
-                case DAType.UInt64:
+                case DaType.UInt64:
                     variable.DataType = DataTypeIds.UInt64;
                     variable.Value = (ulong)(item.Value ?? 0);
                     break;
-                case DAType.Date:
+                case DaType.Date:
                     {
                         variable.DataType = DataTypeIds.DateTime;
                         try
@@ -191,11 +191,11 @@ namespace neuopc
 
                         break;
                     }
-                case DAType.String:
+                case DaType.String:
                     variable.DataType = DataTypeIds.String;
                     variable.Value = item.Value as string;
                     break;
-                case DAType.Bool:
+                case DaType.Bool:
                     {
                         variable.DataType = DataTypeIds.Boolean;
                         try
@@ -249,43 +249,43 @@ namespace neuopc
                 switch (typeInfo.BuiltInType)
                 {
                     case BuiltInType.SByte:
-                        item.Type = DAType.Int8;
+                        item.Type = DaType.Int8;
                         break;
                     case BuiltInType.Int16:
-                        item.Type = DAType.Int16;
+                        item.Type = DaType.Int16;
                         break;
                     case BuiltInType.Int32:
-                        item.Type = DAType.Int32;
+                        item.Type = DaType.Int32;
                         break;
                     case BuiltInType.Int64:
-                        item.Type = DAType.Int64;
+                        item.Type = DaType.Int64;
                         break;
                     case BuiltInType.Float:
-                        item.Type = DAType.Float;
+                        item.Type = DaType.Float;
                         break;
                     case BuiltInType.Double:
-                        item.Type = DAType.Double;
+                        item.Type = DaType.Double;
                         break;
                     case BuiltInType.Byte:
-                        item.Type = DAType.UInt8;
+                        item.Type = DaType.UInt8;
                         break;
                     case BuiltInType.UInt16:
-                        item.Type = DAType.UInt16;
+                        item.Type = DaType.UInt16;
                         break;
                     case BuiltInType.UInt32:
-                        item.Type = DAType.UInt32;
+                        item.Type = DaType.UInt32;
                         break;
                     case BuiltInType.UInt64:
-                        item.Type = DAType.UInt64;
+                        item.Type = DaType.UInt64;
                         break;
                     case BuiltInType.DateTime:
-                        item.Type = DAType.Date;
+                        item.Type = DaType.Date;
                         break;
                     case BuiltInType.String:
-                        item.Type = DAType.String;
+                        item.Type = DaType.String;
                         break;
                     case BuiltInType.Boolean:
-                        item.Type = DAType.Bool;
+                        item.Type = DaType.Bool;
                         break;
                     default:
                         break;

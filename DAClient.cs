@@ -10,16 +10,17 @@ using Serilog;
 
 namespace neuopc
 {
+    public delegate void ItemsReset(List<Item> items);
     public delegate void ValueUpdate(List<Item> items);
 
     public class Node
     {
         public string Name { get; set; }
-        public DAType Type { get; set; }
+        public DaType Type { get; set; }
         public OPCItem Item { get; set; }
     }
 
-    public enum DAType
+    public enum DaType
     {
         Int8 = 16, // UA_TYPES_SBYTE/VT_I1
         Int16 = 2, // UA_TYPES_INT16/VT_I2
@@ -39,14 +40,14 @@ namespace neuopc
         Money = 6, // Money
     }
 
-    public enum DARights
+    public enum DaRights
     {
         Read = 1,
         Write = 2,
-        RW = 3,
+        Rw = 3,
     }
 
-    public enum DAQuality
+    public enum DaQuality
     {
         Good = 192,
         Bad = 0,
@@ -55,19 +56,18 @@ namespace neuopc
     public class Item
     {
         public string Name { get; set; }
-        public DAType Type { get; set; }
-        public DARights Rights { get; set; }
+        public DaType Type { get; set; }
+        public DaRights Rights { get; set; }
         public int ClientHandle { get; set; }
-        public int ServerHandle { get; set; }
         public dynamic Value { get; set; }
-        public DAQuality Quality { get; set; }
+        public DaQuality Quality { get; set; }
         public DateTime Timestamp { get; set; }
         public int Error { get; set; }
-        public string Status { get; set; }
     }
 
-    public class DAClient
+    public class DaClient
     {
+        private const int MaxRead = 50;
         private OPCServer server;
         private OPCBrowser brower;
         private OPCGroups groups;
@@ -77,104 +77,32 @@ namespace neuopc
         private bool running;
         private string hostName;
         private string serverName;
+
         public ValueUpdate Update;
-        private readonly int MaxRead= 50;
+        public ItemsReset Reset;
 
-        public DAClient()
+        public DaClient()
         {
+            nodes = new List<Node>();
         }
 
-        public void Setup()
-        {
-            int count = 3;
-            do
-            {
-                bool flag = true;
-                try
-                {
-                    var testServer = new OPCServer();
-                }
-                catch (Exception)
-                {
-                    flag = false;
-                }
-
-                if (flag)
-                {
-                    break;
-                }
-
-                // TODO: regist com component
-                count--;
-            } while (0 < count);
-        }
-
-        public (bool ok, string msg) Connect(string host, string name)
-        {
-            hostName = host;
-            serverName = name;
-
-            if (IsConnected())
-            {
-                DisConnect();
-            }
-
-            try
-            {
-                server = new OPCServer();
-                server.Connect(name, host);
-            }
-            catch (Exception ex)
-            {
-                server = null;
-                return (false, ex.Message);
-            }
-
-            Log.Information($"server {host}/{name} connected");
-            return (true, "success");
-        }
-
-        public bool IsConnected()
-        {
-            if (null == server)
-            {
-                return false;
-            }
-
-            return 0 == server.ServerState;
-        }
-
-        public void DisConnect()
-        {
-            try
-            {
-                server?.Disconnect();
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        public List<string> GetHosts()
+        public static List<string> GetHosts()
         {
             var list = new List<string>();
-            IPHostEntry ipHost = Dns.GetHostEntry("127.0.0.1");
+            var ipHost = Dns.GetHostEntry("127.0.0.1");
             list.Add(ipHost.HostName);
             // TODO: enum all host
             return list;
         }
 
-        public List<string> GetServers(string host)
+        public static List<string> GetServers(string host)
         {
             var list = new List<string>();
             try
             {
                 var opcServer = new OPCServer();
                 object servers = opcServer.GetOPCServers(host);
-                foreach (string s in (Array)servers)
-                {
-                    list.Add(s);
-                }
+                list.AddRange(((Array)servers).Cast<string>());
             }
             catch (Exception exception)
             {
@@ -224,7 +152,7 @@ namespace neuopc
                 try
                 {
                     node.Item = group.OPCItems.AddItem(node.Name, index);
-                    node.Type = (DAType)node.Item.CanonicalDataType;
+                    node.Type = (DaType)node.Item.CanonicalDataType;
                     nodes.Add(node);
                     index++;
                 }
@@ -241,15 +169,249 @@ namespace neuopc
                         select new Item
                         {
                             Name = name,
-                            Type = (DAType)node.Item.CanonicalDataType,
-                            Rights = (DARights)node.Item.AccessRights,
+                            Type = (DaType)node.Item.CanonicalDataType,
+                            Rights = (DaRights)node.Item.AccessRights,
                             ClientHandle = node.Item.ClientHandle,
-                            ServerHandle = node.Item.ServerHandle,
                             Quality = 0,
                             Timestamp = DateTime.Now,
-                            Status = string.Empty,
                         }).ToList();
             return list;
+        }
+
+
+        public bool Connect(string host, string name)
+        {
+            hostName = host;
+            serverName = name;
+
+            if (Connected())
+            {
+                Disconnect();
+            }
+
+            try
+            {
+                server = new OPCServer();
+                server.Connect(name, host);
+            }
+            catch (Exception exception)
+            {
+                server = null;
+                Log.Error($"connect to {host}/{name} failed, error:{exception.Message}");
+                return false;
+            }
+
+            Log.Information($"Server {host}/{name} connected");
+            return true;
+        }
+
+        private bool SetServer()
+        {
+            if (Connected())
+            {
+                Disconnect();
+            }
+
+            try
+            {
+                server = new OPCServer();
+                server.Connect(serverName, hostName);
+            }
+            catch (Exception exception)
+            {
+                server = null;
+                Log.Error($"connect to {hostName}/{serverName} failed, error:{exception.Message}");
+                return false;
+            }
+
+            Log.Information($"Server {hostName}/{serverName} connected");
+            return true;
+        }
+
+        private bool SetBrower()
+        {
+            if (null == server) { return false; }
+
+            try
+            {
+                brower = server.CreateBrowser();
+                if (null == brower)
+                {
+                    return false;
+                }
+
+                brower.ShowBranches();
+                brower.ShowLeafs(true);
+            }
+            catch (Exception error)
+            {
+                brower = null;
+                Log.Error($"create browser failed, msg:{error.Message}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool SetGroup()
+        {
+            if (null == server) { return false; }
+
+            try
+            {
+                groups = server.OPCGroups;
+                groups.DefaultGroupIsActive = true;
+                group = groups.Add("all");
+                group.IsActive = true;
+            }
+            catch (Exception error)
+            {
+                groups = null;
+                group = null;
+                Log.Error($"add group failed, msg:{error.Message}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool SetNodes()
+        {
+            if (null == server) { return false; }
+            if (null == groups) { return false; }
+            if (null == group) { return false; }
+            if (null == brower) { return false; }
+
+            nodes.Clear();
+            int index = 0;
+            foreach (var item in brower)
+            {
+                var node = new Node()
+                {
+                    Name = item.ToString(),
+                };
+
+                try
+                {
+                    node.Item = group.OPCItems.AddItem(node.Name, index);
+                    node.Type = (DaType)node.Item.CanonicalDataType;
+                    nodes.Add(node);
+                    index++;
+                }
+                catch (Exception exception)
+                {
+                    Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
+                }
+
+                Log.Information($"add item secceed, name:{item}, type:{node.Type}");
+            }
+
+            return true;
+        }
+
+        private void SetItems()
+        {
+            var list = (from node in nodes
+                        let name = node.Name
+                        select new Item
+                        {
+                            Name = name,
+                            Type = (DaType)node.Item.CanonicalDataType,
+                            Rights = (DaRights)node.Item.AccessRights,
+                            ClientHandle = node.Item.ClientHandle,
+                            Quality = 0,
+                            Timestamp = DateTime.Now,
+                        }).ToList();
+
+            Reset?.Invoke(list);
+        }
+
+        private bool SetChange()
+        {
+            if (null == groups) { return false; }
+            if (null == group) { return false; }
+
+            groups.DefaultGroupDeadband = 0;
+            groups.DefaultGroupUpdateRate = 200;
+
+            group.IsSubscribed = true;
+            group.UpdateRate = 200;
+            group.DataChange += GroupDataChange;
+
+            return true;
+        }
+
+        private bool Connected()
+        {
+            if (null == server) { return false; }
+            return 0 == server.ServerState;
+        }
+
+        private bool ReadFunc()
+        {
+            int count = null == nodes ? 0 : nodes.Count;
+            int t1 = count / MaxRead;
+            int t2 = (count % MaxRead) == 0 ? 0 : 1;
+            int times = t1 + t2;
+            for (int i = 0; i < times; i++)
+            {
+                var tmpNode = from node in nodes.Skip(i * MaxRead).Take(MaxRead) select node;
+                var nodeList = tmpNode.ToList();
+
+                var tmp = from node in tmpNode
+                          select node.Item.ServerHandle;
+
+                List<int> l = tmp.ToList();
+                l.Insert(0, 0);
+                Array hs = l.ToArray();
+                var items = new List<Item>();
+
+                try
+                {
+                    short source = 1;
+                    group.SyncRead(source, tmpNode.Count(), ref hs, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
+                    Array qs = (Array)qualities;
+                    Array ts = (Array)timestamps;
+
+                    for (int j = 0; j < nodeList.Count; j++)
+                    {
+                        var n = nodeList[j];
+                        var item = new Item
+                        {
+                            Name = n.Name,
+                            ClientHandle = n.Item.ClientHandle,
+                            Type = n.Type,
+                            Value = values.GetValue(j + 1),
+                            Rights = (DaRights)n.Item.AccessRights,
+                            Quality = (DaQuality)Convert.ToInt32(qs.GetValue(j + 1)),
+                            Error = Convert.ToInt32(errors.GetValue(j + 1)),
+                            Timestamp = Convert.ToDateTime(ts.GetValue(j + 1)).ToLocalTime(),
+                        };
+                        items.Add(item);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Log.Error($"sync read group error: {exception.Message}");
+                    return false;
+                }
+
+                Update?.Invoke(items);
+            }
+
+            return true;
+        }
+
+        private void Disconnect()
+        {
+            try
+            {
+                server?.Disconnect();
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"disconnect error:{exception.Message}");
+            }
         }
 
         private void ReadThread()
@@ -296,8 +458,8 @@ namespace neuopc
                                 ClientHandle = n.Item.ClientHandle,
                                 Type = n.Type,
                                 Value = values.GetValue(j + 1),
-                                Rights = (DARights)n.Item.AccessRights,
-                                Quality = (DAQuality)Convert.ToInt32(qs.GetValue(j + 1)),
+                                Rights = (DaRights)n.Item.AccessRights,
+                                Quality = (DaQuality)Convert.ToInt32(qs.GetValue(j + 1)),
                                 Error = Convert.ToInt32(errors.GetValue(j + 1)),
                                 Timestamp = Convert.ToDateTime(ts.GetValue(j + 1)).ToLocalTime(),
                             };
@@ -317,12 +479,12 @@ namespace neuopc
             }
         }
 
-        private void GroupDataChange(int transactionID, int numItems, ref Array clientHandles, ref Array itemValues, ref Array qualities, ref Array timeStamps)
+        private void GroupDataChange(int transactionId, int numItems, ref Array clientHandles, ref Array itemValues, ref Array qualities, ref Array timeStamps)
         {
             var items = new List<Item>();
-            for (int i = 1; i <= numItems; i++)
+            for (var i = 1; i <= numItems; i++)
             {
-                int handle = Convert.ToInt32(clientHandles.GetValue(i));
+                var handle = Convert.ToInt32(clientHandles.GetValue(i));
                 var node = nodes.FirstOrDefault(node => node.Item.ClientHandle == handle);
                 if (null == node)
                 {
@@ -335,8 +497,8 @@ namespace neuopc
                     ClientHandle = handle,
                     Type = node.Type,
                     Value = itemValues.GetValue(i),
-                    Rights = (DARights)node.Item.AccessRights,
-                    Quality = (DAQuality)Convert.ToInt32(qualities.GetValue(i)),
+                    Rights = (DaRights)node.Item.AccessRights,
+                    Quality = (DaQuality)Convert.ToInt32(qualities.GetValue(i)),
                     Timestamp = Convert.ToDateTime(timeStamps.GetValue(i)).ToLocalTime(),
                 };
 
@@ -352,7 +514,7 @@ namespace neuopc
             if (null == group) { return; }
 
             running = true;
-            ThreadStart ts = new ThreadStart(ReadThread);
+            var ts = new ThreadStart(ReadThread);
             thread = new Thread(ts);
             thread.Start();
         }
@@ -377,18 +539,18 @@ namespace neuopc
             }
             else
             {
-                Log.Error($"write node failed, name:{writeNode.Name}, value:{item.Value}");
+                Log.Error($"write node failed, name:{item.Name}, value:{item.Value}");
                 return false;
             }
         }
 
-        public void Start() { }
+        public void Open() { }
 
-        public void Stop()
+        public void Close()
         {
             running = false;
             thread?.Join();
-            DisConnect();
+            Disconnect();
         }
     }
 }

@@ -25,8 +25,8 @@ namespace neuopc
                 .WriteTo.File("neuopc.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
-            var client = new DAClient();
-            client.Setup();
+            Register.Setup();
+            var client = new DaClient();
             var server = new UAServer();
             Application.Run(new MainForm(client, server));
             Log.CloseAndFlush();
