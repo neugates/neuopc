@@ -52,30 +52,38 @@ namespace neuopc
             }
         }
 
+        public void ResetListView(List<Item> list)
+        {
+            Action<List<Item>> action = (data) =>
+            {
+                MainListView.BeginUpdate();
+                MainListView.Items.Clear();
+                for (int i = 0; i < data.Count; i++)
+                {
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.Text = data[i].ClientHandle.ToString(); // handle
+                    lvi.SubItems.Add(data[i].Name.ToString()); // name
+                    lvi.SubItems.Add(data[i].Type.ToString()); // type
+                    lvi.SubItems.Add(data[i].Rights.ToString()); // rights
+                    lvi.SubItems.Add(""); // value
+                    lvi.SubItems.Add(""); // quality
+                    lvi.SubItems.Add(""); // error
+                    lvi.SubItems.Add(""); // timestamp
+                    MainListView.Items.Add(lvi);
+                }
+                MainListView.EndUpdate();
+
+            };
+
+
+            Invoke(action, list);
+        }
+
 
         private void ReadButton_Click(object sender, EventArgs e)
         {
-            client.Connect(DAHostComboBox.Text, DAServerComboBox.Text);
-            items = client.BuildGroup();
-            MainListView.BeginUpdate();
-            MainListView.Items.Clear();
-            for (int i = 0; i < items.Count; i++)
-            {
-                ListViewItem lvi = new ListViewItem();
-                lvi.Text = items[i].ClientHandle.ToString(); // handle
-                lvi.SubItems.Add(items[i].Name.ToString()); // name
-                lvi.SubItems.Add(items[i].Type.ToString()); // type
-                lvi.SubItems.Add(items[i].Rights.ToString()); // rights
-                lvi.SubItems.Add(""); // value
-                lvi.SubItems.Add(""); // quality
-                lvi.SubItems.Add(""); // error
-                lvi.SubItems.Add(""); // timestamp
-                MainListView.Items.Add(lvi);
-            }
-            MainListView.EndUpdate();
-
-            client.Update += UpdateListView;
-            client.Read();
+            client.Close();
+            client.Open(DAHostComboBox.Text, DAServerComboBox.Text);
         }
 
 
@@ -83,6 +91,8 @@ namespace neuopc
         private void MainForm_Load(object sender, EventArgs e)
         {
             UAPortTextBox.Text = "48401";
+            client.Update += UpdateListView;
+            client.Reset += ResetListView;
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)

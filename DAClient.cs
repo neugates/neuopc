@@ -7,6 +7,7 @@ using System.Net;
 using System.Linq;
 using System.Threading;
 using Serilog;
+using System.Threading.Channels;
 
 namespace neuopc
 {
@@ -53,6 +54,12 @@ namespace neuopc
         Bad = 0,
     }
 
+    public enum MsgType
+    {
+        List = 0,
+        Data = 1,
+    }
+
     public class Item
     {
         public string Name { get; set; }
@@ -65,6 +72,12 @@ namespace neuopc
         public int Error { get; set; }
     }
 
+    public class DaMsg
+    {
+        public MsgType Type { get; set; }
+        public List<Item> Items { get; set; }
+    }
+
     public class DaClient
     {
         private const int MaxRead = 50;
@@ -73,18 +86,25 @@ namespace neuopc
         private OPCGroups groups;
         private OPCGroup group;
         private List<Node> nodes;
-        private Thread thread;
-        private bool running;
         private string hostName;
         private string serverName;
 
+        private Thread thread;
+        private bool running;
+        private object locker;
+
         public ValueUpdate Update;
         public ItemsReset Reset;
+        private List<Channel<DaMsg>> channels;
 
         public DaClient()
         {
+            running = false;
+            locker = new object();
             nodes = new List<Node>();
+            channels = new List<Channel<DaMsg>>();
         }
+
 
         public static List<string> GetHosts()
         {
@@ -112,97 +132,10 @@ namespace neuopc
             return list;
         }
 
-        public List<Item> BuildGroup()
+        public void AddDaMsgChannel(Channel<DaMsg> channel)
         {
-            try
-            {
-                brower = server?.CreateBrowser();
-                brower?.ShowBranches();
-                brower?.ShowLeafs(true);
-            }
-            catch (Exception error)
-            {
-                Log.Error($"create browser failed, msg:{error.Message}");
-                brower = null;
-                return new List<Item>();
-            }
-
-            try
-            {
-                groups = server.OPCGroups;
-                groups.DefaultGroupIsActive = true;
-                group = groups.Add("all");
-                group.IsActive = true;
-            }
-            catch (Exception error)
-            {
-                Log.Error($"add group failed, msg:{error.Message}");
-                return new List<Item>();
-            }
-
-            nodes = new List<Node>();
-            int index = 0;
-            foreach (var item in brower)
-            {
-                var node = new Node()
-                {
-                    Name = item.ToString(),
-                };
-
-                try
-                {
-                    node.Item = group.OPCItems.AddItem(node.Name, index);
-                    node.Type = (DaType)node.Item.CanonicalDataType;
-                    nodes.Add(node);
-                    index++;
-                }
-                catch (Exception exception)
-                {
-                    Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
-                }
-
-                Log.Information($"add item secceed, name:{item}, type:{node.Type}");
-            }
-
-            var list = (from node in nodes
-                        let name = node.Name
-                        select new Item
-                        {
-                            Name = name,
-                            Type = (DaType)node.Item.CanonicalDataType,
-                            Rights = (DaRights)node.Item.AccessRights,
-                            ClientHandle = node.Item.ClientHandle,
-                            Quality = 0,
-                            Timestamp = DateTime.Now,
-                        }).ToList();
-            return list;
-        }
-
-
-        public bool Connect(string host, string name)
-        {
-            hostName = host;
-            serverName = name;
-
-            if (Connected())
-            {
-                Disconnect();
-            }
-
-            try
-            {
-                server = new OPCServer();
-                server.Connect(name, host);
-            }
-            catch (Exception exception)
-            {
-                server = null;
-                Log.Error($"connect to {host}/{name} failed, error:{exception.Message}");
-                return false;
-            }
-
-            Log.Information($"Server {host}/{name} connected");
-            return true;
+            if (null == channel) { return; }
+            channels.Add(channel);
         }
 
         private bool SetServer()
@@ -311,7 +244,7 @@ namespace neuopc
 
         private void SetItems()
         {
-            var list = (from node in nodes
+            var items = (from node in nodes
                         let name = node.Name
                         select new Item
                         {
@@ -323,7 +256,17 @@ namespace neuopc
                             Timestamp = DateTime.Now,
                         }).ToList();
 
-            Reset?.Invoke(list);
+            //Reset?.Invoke(list);
+
+            foreach (var channel in channels)
+            {
+                var msg = new DaMsg
+                {
+                    Type = MsgType.List,
+                    Items = items,
+                };
+                channel.Writer.TryWrite(msg);
+            }
         }
 
         private bool SetChange()
@@ -341,13 +284,25 @@ namespace neuopc
             return true;
         }
 
+        private bool Connect()
+        {
+            bool ret = false;
+            ret = SetServer();
+            ret = SetBrower();
+            ret = SetGroup();
+            ret = SetNodes();
+            SetItems();
+            ret = SetChange();
+            return ret;
+        }
+
         private bool Connected()
         {
             if (null == server) { return false; }
             return 0 == server.ServerState;
         }
 
-        private bool ReadFunc()
+        private bool Read()
         {
             int count = null == nodes ? 0 : nodes.Count;
             int t1 = count / MaxRead;
@@ -355,40 +310,20 @@ namespace neuopc
             int times = t1 + t2;
             for (int i = 0; i < times; i++)
             {
-                var tmpNode = from node in nodes.Skip(i * MaxRead).Take(MaxRead) select node;
-                var nodeList = tmpNode.ToList();
-
-                var tmp = from node in tmpNode
-                          select node.Item.ServerHandle;
-
-                List<int> l = tmp.ToList();
-                l.Insert(0, 0);
-                Array hs = l.ToArray();
+                var tempNodes = nodes.Skip(i * MaxRead).Take(MaxRead).ToList();
+                var list = tempNodes.Select(node => node.Item.ServerHandle).ToList();
+                list.Insert(0, 0);
+                Array handles = list.ToArray();
                 var items = new List<Item>();
+
+                Array values = null;
+                Array errors = null;
+                dynamic qualities = null;
+                dynamic timestamps = null;
 
                 try
                 {
-                    short source = 1;
-                    group.SyncRead(source, tmpNode.Count(), ref hs, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
-                    Array qs = (Array)qualities;
-                    Array ts = (Array)timestamps;
-
-                    for (int j = 0; j < nodeList.Count; j++)
-                    {
-                        var n = nodeList[j];
-                        var item = new Item
-                        {
-                            Name = n.Name,
-                            ClientHandle = n.Item.ClientHandle,
-                            Type = n.Type,
-                            Value = values.GetValue(j + 1),
-                            Rights = (DaRights)n.Item.AccessRights,
-                            Quality = (DaQuality)Convert.ToInt32(qs.GetValue(j + 1)),
-                            Error = Convert.ToInt32(errors.GetValue(j + 1)),
-                            Timestamp = Convert.ToDateTime(ts.GetValue(j + 1)).ToLocalTime(),
-                        };
-                        items.Add(item);
-                    }
+                    group.SyncRead(1, tempNodes.Count, ref handles, out values, out errors, out qualities, out timestamps);
                 }
                 catch (Exception exception)
                 {
@@ -396,7 +331,34 @@ namespace neuopc
                     return false;
                 }
 
-                Update?.Invoke(items);
+                for (int j = 0; j < tempNodes.Count; j++)
+                {
+                    var n = tempNodes[j];
+                    var item = new Item
+                    {
+                        Name = n.Name,
+                        ClientHandle = n.Item.ClientHandle,
+                        Type = n.Type,
+                        Value = values.GetValue(j + 1),
+                        Rights = (DaRights)n.Item.AccessRights,
+                        Quality = (DaQuality)Convert.ToInt32(((Array)qualities).GetValue(j + 1)),
+                        Error = Convert.ToInt32(errors.GetValue(j + 1)),
+                        Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
+                    };
+                    items.Add(item);
+                }
+
+                //Update?.Invoke(items);
+
+                foreach (var channel in channels)
+                {
+                    var msg = new DaMsg
+                    {
+                        Type = MsgType.Data,
+                        Items = items,
+                    };
+                    channel.Writer.TryWrite(msg);
+                }
             }
 
             return true;
@@ -406,76 +368,12 @@ namespace neuopc
         {
             try
             {
+                group.DataChange -= GroupDataChange;
                 server?.Disconnect();
             }
             catch (Exception exception)
             {
                 Log.Error($"disconnect error:{exception.Message}");
-            }
-        }
-
-        private void ReadThread()
-        {
-            groups.DefaultGroupDeadband = 0;
-            groups.DefaultGroupUpdateRate = 200;
-
-            group.IsSubscribed = true;
-            group.UpdateRate = 200;
-            group.DataChange += GroupDataChange;
-
-            while (running)
-            {
-                int count = null == nodes ? 0 : nodes.Count;
-                int t1 = count / MaxRead;
-                int t2 = (count % MaxRead) == 0 ? 0 : 1;
-                int times = t1 + t2;
-                for (int i = 0; i < times; i++)
-                {
-                    var tmpNode = from node in nodes.Skip(i * MaxRead).Take(MaxRead)
-                                  select node;
-                    var nodeList = tmpNode.ToList();
-
-                    var tmp = from node in tmpNode
-                              select node.Item.ServerHandle;
-                    List<int> l = tmp.ToList();
-                    l.Insert(0, 0);
-                    Array hs = l.ToArray();
-                    var items = new List<Item>();
-
-                    try
-                    {
-                        short source = 1;
-                        group.SyncRead(source, tmpNode.Count(), ref hs, out Array values, out Array errors, out dynamic qualities, out dynamic timestamps);
-                        Array qs = (Array)qualities;
-                        Array ts = (Array)timestamps;
-
-                        for (int j = 0; j < nodeList.Count; j++)
-                        {
-                            var n = nodeList[j];
-                            var item = new Item
-                            {
-                                Name = n.Name,
-                                ClientHandle = n.Item.ClientHandle,
-                                Type = n.Type,
-                                Value = values.GetValue(j + 1),
-                                Rights = (DaRights)n.Item.AccessRights,
-                                Quality = (DaQuality)Convert.ToInt32(qs.GetValue(j + 1)),
-                                Error = Convert.ToInt32(errors.GetValue(j + 1)),
-                                Timestamp = Convert.ToDateTime(ts.GetValue(j + 1)).ToLocalTime(),
-                            };
-                            items.Add(item);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //Connect(host_name, server_name);
-                    }
-
-                    Update?.Invoke(items);
-
-                }
-
-                Thread.Sleep(5000);
             }
         }
 
@@ -485,7 +383,7 @@ namespace neuopc
             for (var i = 1; i <= numItems; i++)
             {
                 var handle = Convert.ToInt32(clientHandles.GetValue(i));
-                var node = nodes.FirstOrDefault(node => node.Item.ClientHandle == handle);
+                var node = nodes.FirstOrDefault(n => n.Item.ClientHandle == handle);
                 if (null == node)
                 {
                     continue;
@@ -505,18 +403,16 @@ namespace neuopc
                 items.Add(item);
             }
 
-            Update?.Invoke(items);
-        }
-
-        public void Read()
-        {
-            if (null == server) { return; }
-            if (null == group) { return; }
-
-            running = true;
-            var ts = new ThreadStart(ReadThread);
-            thread = new Thread(ts);
-            thread.Start();
+            //Update?.Invoke(items);
+            foreach (var channel in channels)
+            {
+                var msg = new DaMsg
+                {
+                    Type = MsgType.Data,
+                    Items = items,
+                };
+                channel.Writer.TryWrite(msg);
+            }
         }
 
         public bool Write(Item item)
@@ -544,13 +440,48 @@ namespace neuopc
             }
         }
 
-        public void Open() { }
+        private void Refresh()
+        {
+            // First connect
+            bool ret = false;
+            ret = Connect();
+            while (running)
+            {
+                ret = Read();
+                if (!ret)
+                {
+                    ret = Connect();
+                }
+
+                Thread.Sleep(100);
+            }
+
+            Disconnect();
+        }
+
+        public void Open(string host, string name)
+        {
+            hostName = host;
+            serverName = name;
+
+            if (running)
+            {
+                if (null != thread)
+                {
+                    running = false;
+                }
+            }
+
+            running = true;
+            var ts = new ThreadStart(Refresh);
+            thread = new Thread(ts);
+            thread.Start();
+        }
 
         public void Close()
         {
             running = false;
             thread?.Join();
-            Disconnect();
         }
     }
 }
