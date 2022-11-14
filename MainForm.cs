@@ -6,8 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
-using OPCAutomation;
+using System.Threading.Channels;
 
 namespace neuopc
 {
@@ -16,11 +17,14 @@ namespace neuopc
         private DaClient client;
         private UAServer server;
         private List<Item> items;
+        private Channel<DaMsg> channel;
+        private Task task;
 
         public MainForm(DaClient client, UAServer server) : this()
         {
             this.client = client;
             this.server = server;
+            channel = Channel.CreateUnbounded<DaMsg>();
         }
 
         public MainForm()
@@ -48,7 +52,13 @@ namespace neuopc
                     subItemTs.Text = Convert.ToString(data.Timestamp);
                 };
 
-                Invoke(action, i);
+                try
+                {
+                    Invoke(action, i);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -76,9 +86,14 @@ namespace neuopc
             };
 
 
-            Invoke(action, list);
+            try
+            {
+                Invoke(action, list);
+            }
+            catch
+            {
+            }
         }
-
 
         private void ReadButton_Click(object sender, EventArgs e)
         {
@@ -86,13 +101,30 @@ namespace neuopc
             client.Open(DAHostComboBox.Text, DAServerComboBox.Text);
         }
 
-
-
         private void MainForm_Load(object sender, EventArgs e)
         {
             UAPortTextBox.Text = "48401";
-            client.Update += UpdateListView;
-            client.Reset += ResetListView;
+
+            client.AddSlowChannel(channel);
+            task = new Task(async () =>
+            {
+                while (await channel.Reader.WaitToReadAsync())
+                {
+                    if (channel.Reader.TryRead(out var msg))
+                    {
+                        if (MsgType.List == msg.Type)
+                        {
+                            ResetListView(msg.Items);
+                        }
+                        else if (MsgType.Data == msg.Type)
+                        {
+                            UpdateListView(msg.Items);
+                        }
+                    }
+                }
+            });
+
+            task.Start();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
@@ -122,6 +154,8 @@ namespace neuopc
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             client.Close();
+            channel.Writer.Complete();
+            task.Wait();
             server.Stop();
             NotifyIcon.Dispose();
         }
@@ -130,7 +164,6 @@ namespace neuopc
         {
             server.Write += client.Write;
             server.Start(UAPortTextBox.Text, items);
-            client.Update += server.UpdateNodes;
         }
     }
 }

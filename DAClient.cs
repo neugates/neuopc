@@ -11,9 +11,6 @@ using System.Threading.Channels;
 
 namespace neuopc
 {
-    public delegate void ItemsReset(List<Item> items);
-    public delegate void ValueUpdate(List<Item> items);
-
     public class Node
     {
         public string Name { get; set; }
@@ -80,7 +77,7 @@ namespace neuopc
 
     public class DaClient
     {
-        private const int MaxRead = 50;
+        private const int MaxRead = 100;
         private OPCServer server;
         private OPCBrowser brower;
         private OPCGroups groups;
@@ -90,19 +87,19 @@ namespace neuopc
         private string serverName;
 
         private Thread thread;
-        private bool running;
         private object locker;
+        private bool running;
 
-        public ValueUpdate Update;
-        public ItemsReset Reset;
-        private List<Channel<DaMsg>> channels;
+        private List<Channel<DaMsg>> slowChannels;
+        private List<Channel<DaMsg>> fastChannels;
 
         public DaClient()
         {
-            running = false;
             locker = new object();
+            running = false;
             nodes = new List<Node>();
-            channels = new List<Channel<DaMsg>>();
+            slowChannels = new List<Channel<DaMsg>>();
+            fastChannels = new List<Channel<DaMsg>>();
         }
 
 
@@ -132,10 +129,16 @@ namespace neuopc
             return list;
         }
 
-        public void AddDaMsgChannel(Channel<DaMsg> channel)
+        public void AddSlowChannel(Channel<DaMsg> channel)
         {
             if (null == channel) { return; }
-            channels.Add(channel);
+            slowChannels.Add(channel);
+        }
+
+        public void AddFastChannel(Channel<DaMsg> channel)
+        {
+            if (null == channel) { return; }
+            fastChannels.Add(channel);
         }
 
         private bool SetServer()
@@ -236,7 +239,7 @@ namespace neuopc
                     Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
                 }
 
-                Log.Information($"add item secceed, name:{item}, type:{node.Type}");
+                //Log.Information($"add item secceed, name:{item}, type:{node.Type}");
             }
 
             return true;
@@ -245,20 +248,30 @@ namespace neuopc
         private void SetItems()
         {
             var items = (from node in nodes
-                        let name = node.Name
-                        select new Item
-                        {
-                            Name = name,
-                            Type = (DaType)node.Item.CanonicalDataType,
-                            Rights = (DaRights)node.Item.AccessRights,
-                            ClientHandle = node.Item.ClientHandle,
-                            Quality = 0,
-                            Timestamp = DateTime.Now,
-                        }).ToList();
+                         let name = node.Name
+                         select new Item
+                         {
+                             Name = name,
+                             Type = (DaType)node.Item.CanonicalDataType,
+                             Rights = (DaRights)node.Item.AccessRights,
+                             ClientHandle = node.Item.ClientHandle,
+                             Quality = 0,
+                             Timestamp = DateTime.Now,
+                         }).ToList();
 
-            //Reset?.Invoke(list);
+            // write to the slow channels
+            foreach (var channel in slowChannels)
+            {
+                var msg = new DaMsg
+                {
+                    Type = MsgType.List,
+                    Items = items,
+                };
+                channel.Writer.TryWrite(msg);
+            }
 
-            foreach (var channel in channels)
+            // write to the fast channels
+            foreach (var channel in fastChannels)
             {
                 var msg = new DaMsg
                 {
@@ -284,16 +297,24 @@ namespace neuopc
             return true;
         }
 
+        private void SetNull()
+        {
+            server = null;
+            brower = null;
+            groups = null;
+            group = null;
+            nodes.Clear();
+        }
+
         private bool Connect()
         {
-            bool ret = false;
-            ret = SetServer();
-            ret = SetBrower();
-            ret = SetGroup();
-            ret = SetNodes();
+            SetServer();
+            SetBrower();
+            SetGroup();
+            SetNodes();
             SetItems();
-            ret = SetChange();
-            return ret;
+            SetChange();
+            return true;
         }
 
         private bool Connected()
@@ -348,9 +369,19 @@ namespace neuopc
                     items.Add(item);
                 }
 
-                //Update?.Invoke(items);
+                // write to the slow channels
+                foreach (var channel in slowChannels)
+                {
+                    var msg = new DaMsg
+                    {
+                        Type = MsgType.Data,
+                        Items = items,
+                    };
+                    channel.Writer.TryWrite(msg);
+                }
 
-                foreach (var channel in channels)
+                // write to the fast channels
+                foreach (var channel in fastChannels)
                 {
                     var msg = new DaMsg
                     {
@@ -369,7 +400,8 @@ namespace neuopc
             try
             {
                 group.DataChange -= GroupDataChange;
-                server?.Disconnect();
+                server.Disconnect();
+                Log.Information($"disconnect succeed");
             }
             catch (Exception exception)
             {
@@ -403,8 +435,8 @@ namespace neuopc
                 items.Add(item);
             }
 
-            //Update?.Invoke(items);
-            foreach (var channel in channels)
+            // write Fast channels
+            foreach (var channel in fastChannels)
             {
                 var msg = new DaMsg
                 {
@@ -443,17 +475,24 @@ namespace neuopc
         private void Refresh()
         {
             // First connect
-            bool ret = false;
-            ret = Connect();
-            while (running)
+            Connect();
+
+            while (true)
             {
-                ret = Read();
-                if (!ret)
+                lock (locker)
                 {
-                    ret = Connect();
+                    if (!running)
+                    {
+                        break;
+                    }
                 }
 
-                Thread.Sleep(100);
+                if (!Read())
+                {
+                    Connect();
+                }
+
+                Thread.Sleep(1000);
             }
 
             Disconnect();
@@ -464,15 +503,18 @@ namespace neuopc
             hostName = host;
             serverName = name;
 
-            if (running)
+            lock (locker)
             {
-                if (null != thread)
+                if (running)
                 {
-                    running = false;
+                    if (null != thread)
+                    {
+                        running = false;
+                    }
                 }
             }
 
-            running = true;
+            lock (locker) { running = true; }
             var ts = new ThreadStart(Refresh);
             thread = new Thread(ts);
             thread.Start();
@@ -480,7 +522,7 @@ namespace neuopc
 
         public void Close()
         {
-            running = false;
+            lock (locker) { running = false; }
             thread?.Join();
         }
     }
