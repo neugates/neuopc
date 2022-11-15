@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Security.Cryptography.X509Certificates;
 using Serilog;
+using System.Threading.Channels;
 
 namespace neuopc
 {
@@ -17,68 +18,29 @@ namespace neuopc
     public class NodeManager : CustomNodeManager2
     {
         private IList<IReference> _references;
-        private List<Item> items;
+        private FolderState folder;
         private List<BaseDataVariableState> variables;
         private ValueWrite write;
 
-        public NodeManager(IServerInternal server, ApplicationConfiguration configuration, List<Item> items, ValueWrite write)
+        public NodeManager(IServerInternal server, ApplicationConfiguration configuration, ValueWrite write)
             : base(server, configuration, "http://opcfoundation.org/Quickstarts/ReferenceApplications")
         {
-            this.items = items;
             this.write = write;
             variables = new List<BaseDataVariableState>();
         }
 
-        public void SetItems(List<Item> list)
-        {
-            try
-            {
-                lock (Lock)
-                {
-                    foreach (var item in list)
-                    {
-                        int index = item.ClientHandle;
-                        var variable = variables[index];
-                        SetVariable(variable, item);
-                        variable.ClearChangeMasks(SystemContext, false);
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                Log.Warning($"set variable exception, error:{exception.Message}");
-            }
-        }
-
-        public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
+        public void ResetNodes(List<Item> list)
         {
             lock (Lock)
             {
-                if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out _references))
+                foreach (var variable in variables)
                 {
-                    externalReferences[ObjectIds.ObjectsFolder] = _references = new List<IReference>();
+                    folder.RemoveChild(variable);
                 }
 
-                string folderName = "NeuOPC";
-                var folder = new FolderState(null)
-                {
-                    SymbolicName = folderName,
-                    ReferenceTypeId = ReferenceTypes.Organizes,
-                    TypeDefinitionId = ObjectTypeIds.FolderType,
-                    NodeId = new NodeId(folderName, NamespaceIndex),
-                    BrowseName = new QualifiedName(folderName, NamespaceIndex),
-                    DisplayName = new LocalizedText("en", folderName),
-                    WriteMask = AttributeWriteMask.None,
-                    UserWriteMask = AttributeWriteMask.None,
-                    EventNotifier = EventNotifiers.None
-                };
+                variables.Clear();
 
-                folder.AddReference(ReferenceTypes.Organizes, true, ObjectIds.ObjectsFolder);
-                _references.Add(new NodeStateReference(ReferenceTypes.Organizes, false, folder.NodeId));
-                folder.EventNotifier = EventNotifiers.SubscribeToEvents;
-                AddRootNotifier(folder);
-
-                foreach (var item in items)
+                foreach (var item in list)
                 {
                     var variable = new BaseDataVariableState(folder)
                     {
@@ -120,6 +82,59 @@ namespace neuopc
                     variables.Add(variable);
                 }
 
+
+                AddPredefinedNode(SystemContext, folder);
+            }
+        }
+
+        public void UpdateNodes(List<Item> list)
+        {
+            try
+            {
+                lock (Lock)
+                {
+                    foreach (var item in list)
+                    {
+                        int index = item.ClientHandle;
+                        var variable = variables[index];
+                        SetVariable(variable, item);
+                        variable.ClearChangeMasks(SystemContext, false);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Warning($"set variable exception, error:{exception.Message}");
+            }
+        }
+
+        public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
+        {
+            lock (Lock)
+            {
+                if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out _references))
+                {
+                    externalReferences[ObjectIds.ObjectsFolder] = _references = new List<IReference>();
+                }
+
+                string folderName = "NeuOPC";
+                folder = new FolderState(null)
+                {
+                    SymbolicName = folderName,
+                    ReferenceTypeId = ReferenceTypes.Organizes,
+                    TypeDefinitionId = ObjectTypeIds.FolderType,
+                    NodeId = new NodeId(folderName, NamespaceIndex),
+                    BrowseName = new QualifiedName(folderName, NamespaceIndex),
+                    DisplayName = new LocalizedText("en", folderName),
+                    WriteMask = AttributeWriteMask.None,
+                    UserWriteMask = AttributeWriteMask.None,
+                    EventNotifier = EventNotifiers.None
+                };
+
+                folder.AddReference(ReferenceTypes.Organizes, true, ObjectIds.ObjectsFolder);
+                _references.Add(new NodeStateReference(ReferenceTypes.Organizes, false, folder.NodeId));
+                folder.EventNotifier = EventNotifiers.SubscribeToEvents;
+                AddRootNotifier(folder);
                 AddPredefinedNode(SystemContext, folder);
             }
         }
@@ -229,7 +244,6 @@ namespace neuopc
         {
             var variable = node as BaseDataVariableState;
             var item = new Item();
-
             try
             {
                 TypeInfo typeInfo = TypeInfo.IsInstanceOfDataType(
@@ -308,26 +322,34 @@ namespace neuopc
 
     public class Server : StandardServer
     {
-        private List<Item> items;
         private NodeManager nodeManager;
         private ValueWrite write;
 
-        public Server(List<Item> items, ValueWrite write)
+        public Server(ValueWrite write)
         {
-            this.items = items;
             this.write = write;
         }
 
-        public void SetItems(List<Item> list)
+        public NodeManager GetNodeManager()
         {
-            nodeManager.SetItems(list);
+            return nodeManager;
+        }
+
+        public void ResetNodes(List<Item> list)
+        {
+            nodeManager.ResetNodes(list);
+        }
+
+        public void UpdateNodes(List<Item> list)
+        {
+            nodeManager.UpdateNodes(list);
         }
 
         protected override MasterNodeManager CreateMasterNodeManager(IServerInternal server, ApplicationConfiguration configuration)
         {
             Utils.Trace("Creating the Node Managers.");
             var nodeManagers = new List<INodeManager>();
-            nodeManager = new NodeManager(server, configuration, items, write);
+            nodeManager = new NodeManager(server, configuration, write);
             nodeManagers.Add(nodeManager);
             return new MasterNodeManager(server, configuration, null, nodeManagers.ToArray());
         }
@@ -336,13 +358,44 @@ namespace neuopc
     public class UAServer
     {
         private ApplicationInstance application;
-        private List<Item> items;
+        private bool running;
         private Server server;
         public ValueWrite Write;
 
-        public void Start(string port, List<Item> items)
+        public Channel<DaMsg> channel;
+        private Task task;
+
+        public UAServer()
         {
-            this.items = items;
+            running = false;
+            channel = Channel.CreateUnbounded<DaMsg>();
+            task = new Task(async () =>
+            {
+                while (await channel.Reader.WaitToReadAsync())
+                {
+                    if (channel.Reader.TryRead(out var msg))
+                    {
+                        if (MsgType.List == msg.Type)
+                        {
+                            ResetNodes(msg.Items);
+                        }
+                        else if (MsgType.Data == msg.Type)
+                        {
+                            UpdateNodes(msg.Items);
+                        }
+                    }
+                }
+            });
+            task.Start();
+        }
+
+        public void Start(string port)
+        {
+            if (running)
+            {
+                return;
+            }
+
             string uri = $"opc.tcp://localhost:{port}/";
             try
             {
@@ -395,22 +448,29 @@ namespace neuopc
                     // TODO: log
                 }
 
-                var dis = new DiscoveryServerBase();
-                server = new Server(items, Write);
+                server = new Server(Write);
                 application.Start(server).Wait();
+                running = true;
             }
             catch (Exception)
             {
             }
         }
 
+        public void ResetNodes(List<Item> list)
+        {
+            server.ResetNodes(list);
+        }
+
         public void UpdateNodes(List<Item> list)
         {
-            server.SetItems(list);
+            server.UpdateNodes(list);
         }
 
         public void Stop()
         {
+            channel.Writer.Complete();
+            running = false;
             //application?.Stop();
         }
     }

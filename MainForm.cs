@@ -16,7 +16,6 @@ namespace neuopc
     {
         private DaClient client;
         private UAServer server;
-        private List<Item> items;
         private Channel<DaMsg> channel;
         private Task task;
 
@@ -32,7 +31,7 @@ namespace neuopc
             InitializeComponent();
         }
 
-        public void UpdateListView(List<Item> list)
+        private void UpdateListView(List<Item> list)
         {
             foreach (var i in list)
             {
@@ -62,7 +61,7 @@ namespace neuopc
             }
         }
 
-        public void ResetListView(List<Item> list)
+        private void ResetListView(List<Item> list)
         {
             Action<List<Item>> action = (data) =>
             {
@@ -106,6 +105,7 @@ namespace neuopc
             UAPortTextBox.Text = "48401";
 
             client.AddSlowChannel(channel);
+            client.AddFastChannel(server.channel);
             task = new Task(async () =>
             {
                 while (await channel.Reader.WaitToReadAsync())
@@ -123,7 +123,6 @@ namespace neuopc
                     }
                 }
             });
-
             task.Start();
         }
 
@@ -163,7 +162,8 @@ namespace neuopc
         private void RunButton_Click(object sender, EventArgs e)
         {
             server.Write += client.Write;
-            server.Start(UAPortTextBox.Text, items);
+            var items = new List<Item>();
+            server.Start(UAPortTextBox.Text);
         }
     }
 }
