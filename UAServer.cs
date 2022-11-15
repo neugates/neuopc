@@ -35,6 +35,7 @@ namespace neuopc
             {
                 foreach (var variable in variables)
                 {
+                    variable.StatusCode = StatusCodes.BadNotFound;
                     folder.RemoveChild(variable);
                 }
 
@@ -141,6 +142,11 @@ namespace neuopc
 
         private void SetVariable(BaseDataVariableState variable, Item item)
         {
+            if (1001 == item.Error)
+            {
+                variable.StatusCode = StatusCodes.BadNotReadable;
+            }
+
             variable.Timestamp = item.Timestamp;
             switch (item.Type)
             {
@@ -459,12 +465,12 @@ namespace neuopc
 
         public void ResetNodes(List<Item> list)
         {
-            server.ResetNodes(list);
+            server?.ResetNodes(list);
         }
 
         public void UpdateNodes(List<Item> list)
         {
-            server.UpdateNodes(list);
+            server?.UpdateNodes(list);
         }
 
         public void Stop()

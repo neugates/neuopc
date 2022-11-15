@@ -325,6 +325,7 @@ namespace neuopc
 
         private bool Read()
         {
+            bool isError = false;
             int count = null == nodes ? 0 : nodes.Count;
             int t1 = count / MaxRead;
             int t2 = (count % MaxRead) == 0 ? 0 : 1;
@@ -335,38 +336,52 @@ namespace neuopc
                 var list = tempNodes.Select(node => node.Item.ServerHandle).ToList();
                 list.Insert(0, 0);
                 Array handles = list.ToArray();
-                var items = new List<Item>();
 
                 Array values = null;
                 Array errors = null;
                 dynamic qualities = null;
                 dynamic timestamps = null;
-
+                var items = new List<Item>();
                 try
                 {
                     group.SyncRead(1, tempNodes.Count, ref handles, out values, out errors, out qualities, out timestamps);
+                    for (int j = 0; j < tempNodes.Count; j++)
+                    {
+                        var n = tempNodes[j];
+                        var item = new Item
+                        {
+                            Name = n.Name,
+                            ClientHandle = n.Item.ClientHandle,
+                            Type = n.Type,
+                            Value = values.GetValue(j + 1),
+                            Rights = (DaRights)n.Item.AccessRights,
+                            Quality = (DaQuality)Convert.ToInt32(((Array)qualities).GetValue(j + 1)),
+                            Error = Convert.ToInt32(errors.GetValue(j + 1)),
+                            Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
+                        };
+                        items.Add(item);
+                    }
                 }
                 catch (Exception exception)
                 {
-                    Log.Error($"sync read group error: {exception.Message}");
-                    return false;
-                }
-
-                for (int j = 0; j < tempNodes.Count; j++)
-                {
-                    var n = tempNodes[j];
-                    var item = new Item
+                    isError = true;
+                    items.Clear();
+                    for (int j = 0; j < tempNodes.Count; j++)
                     {
-                        Name = n.Name,
-                        ClientHandle = n.Item.ClientHandle,
-                        Type = n.Type,
-                        Value = values.GetValue(j + 1),
-                        Rights = (DaRights)n.Item.AccessRights,
-                        Quality = (DaQuality)Convert.ToInt32(((Array)qualities).GetValue(j + 1)),
-                        Error = Convert.ToInt32(errors.GetValue(j + 1)),
-                        Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
-                    };
-                    items.Add(item);
+                        var n = tempNodes[j];
+                        var item = new Item
+                        {
+                            Name = n.Name,
+                            ClientHandle = n.Item.ClientHandle,
+                            Type = n.Type,
+                            Rights = (DaRights)n.Item.AccessRights,
+                            Quality = DaQuality.Bad,
+                            Error = 1001,
+                        };
+                        items.Add(item);
+                    }
+
+                    Log.Error($"sync read group error: {exception.Message}");
                 }
 
                 // write to the slow channels
@@ -392,7 +407,7 @@ namespace neuopc
                 }
             }
 
-            return true;
+            return !isError;
         }
 
         private void Disconnect()
