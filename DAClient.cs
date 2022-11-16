@@ -72,6 +72,9 @@ namespace neuopc
     public class DaMsg
     {
         public MsgType Type { get; set; }
+        public string Host { get; set; }
+        public string Server { get; set; }
+        public string Status { get; set; }
         public List<Item> Items { get; set; }
     }
 
@@ -341,7 +344,13 @@ namespace neuopc
                 Array errors = null;
                 dynamic qualities = null;
                 dynamic timestamps = null;
-                var items = new List<Item>();
+                var msg = new DaMsg
+                {
+                    Type = MsgType.Data,
+                    Host = hostName,
+                    Server = serverName,
+                    Items = new List<Item>(),
+                };
                 try
                 {
                     group.SyncRead(1, tempNodes.Count, ref handles, out values, out errors, out qualities, out timestamps);
@@ -359,13 +368,15 @@ namespace neuopc
                             Error = Convert.ToInt32(errors.GetValue(j + 1)),
                             Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
                         };
-                        items.Add(item);
+                        msg.Items.Add(item);
                     }
+
+                    msg.Status = "connected";
                 }
                 catch (Exception exception)
                 {
                     isError = true;
-                    items.Clear();
+                    msg.Items.Clear();
                     for (int j = 0; j < tempNodes.Count; j++)
                     {
                         var n = tempNodes[j];
@@ -378,31 +389,22 @@ namespace neuopc
                             Quality = DaQuality.Bad,
                             Error = 1001,
                         };
-                        items.Add(item);
+                        msg.Items.Add(item);
                     }
 
+                    msg.Status = "disconnected";
                     Log.Error($"sync read group error: {exception.Message}");
                 }
 
                 // write to the slow channels
                 foreach (var channel in slowChannels)
                 {
-                    var msg = new DaMsg
-                    {
-                        Type = MsgType.Data,
-                        Items = items,
-                    };
                     channel.Writer.TryWrite(msg);
                 }
 
                 // write to the fast channels
                 foreach (var channel in fastChannels)
                 {
-                    var msg = new DaMsg
-                    {
-                        Type = MsgType.Data,
-                        Items = items,
-                    };
                     channel.Writer.TryWrite(msg);
                 }
             }

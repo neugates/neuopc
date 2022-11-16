@@ -61,6 +61,32 @@ namespace neuopc
             }
         }
 
+        private void UpdateDAStatusLabel(DaMsg msg)
+        {
+            Action<DaMsg> action = (data) =>
+            {
+                string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
+                DAStatusLabel.Text = label;
+                if("connected" == data.Status)
+                {
+                    DAStatusLabel.ForeColor = Color.Green;
+                }
+                else
+                {
+                    DAStatusLabel.ForeColor = Color.Red;
+                }
+            };
+
+            try
+            {
+                Invoke(action, msg);
+            }
+            catch
+            {
+            }
+        }
+
+
         private void ResetListView(List<Item> list)
         {
             Action<List<Item>> action = (data) =>
@@ -105,6 +131,7 @@ namespace neuopc
             UAPortTextBox.Text = "48401";
             UAUserTextBox.Text = "admin";
             UAPasswordTextBox.Text = "123456";
+            NotifyIcon.Visible = false;
 
             client.AddSlowChannel(channel);
             client.AddFastChannel(server.channel);
@@ -121,6 +148,7 @@ namespace neuopc
                         else if (MsgType.Data == msg.Type)
                         {
                             UpdateListView(msg.Items);
+                            UpdateDAStatusLabel(msg);
                         }
                     }
                 }
@@ -166,6 +194,11 @@ namespace neuopc
             server.Write += client.Write;
             var items = new List<Item>();
             server.Start(UAPortTextBox.Text);
+
+            RunButton.Enabled = false;
+            UAPortTextBox.Enabled = false;
+            UAUserTextBox.Enabled = false;
+            UAPasswordTextBox.Enabled = false;
         }
     }
 }

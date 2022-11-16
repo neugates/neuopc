@@ -343,12 +343,12 @@ namespace neuopc
 
         public void ResetNodes(List<Item> list)
         {
-            nodeManager.ResetNodes(list);
+            nodeManager?.ResetNodes(list);
         }
 
         public void UpdateNodes(List<Item> list)
         {
-            nodeManager.UpdateNodes(list);
+            nodeManager?.UpdateNodes(list);
         }
 
         protected override MasterNodeManager CreateMasterNodeManager(IServerInternal server, ApplicationConfiguration configuration)
@@ -370,6 +370,7 @@ namespace neuopc
 
         public Channel<DaMsg> channel;
         private Task task;
+        List<Item> list;
 
         public UAServer()
         {
@@ -401,6 +402,7 @@ namespace neuopc
             {
                 return;
             }
+
 
             string uri = $"opc.tcp://localhost:{port}/";
             try
@@ -461,10 +463,21 @@ namespace neuopc
             catch (Exception)
             {
             }
+
+            if (null != this.list)
+            {
+                server?.ResetNodes(this.list);
+            }
+        }
+
+        public bool IsRunning()
+        {
+            return running;
         }
 
         public void ResetNodes(List<Item> list)
         {
+            this.list = list;
             server?.ResetNodes(list);
         }
 

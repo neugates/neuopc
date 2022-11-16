@@ -41,7 +41,8 @@ namespace neuopc
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.documentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.DAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.UAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.UAPasswordTextBox = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -146,19 +147,24 @@ namespace neuopc
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 663);
+            this.DAStatusLabel,
+            this.UAStatusLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 666);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 17, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1128, 31);
+            this.statusStrip1.Size = new System.Drawing.Size(1128, 28);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel1
+            // DAStatusLabel
             // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(213, 24);
-            this.toolStripStatusLabel1.Text = "DA running,UA running";
+            this.DAStatusLabel.Name = "DAStatusLabel";
+            this.DAStatusLabel.Size = new System.Drawing.Size(0, 21);
+            // 
+            // UAStatusLabel
+            // 
+            this.UAStatusLabel.Name = "UAStatusLabel";
+            this.UAStatusLabel.Size = new System.Drawing.Size(0, 21);
             // 
             // groupBox1
             // 
@@ -384,7 +390,7 @@ namespace neuopc
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel DAStatusLabel;
         private System.Windows.Forms.ListView MainListView;
         private System.Windows.Forms.ToolStripMenuItem logToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
@@ -404,6 +410,7 @@ namespace neuopc
         private System.Windows.Forms.TextBox UAUserTextBox;
         private System.Windows.Forms.TextBox UAPasswordTextBox;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ToolStripStatusLabel UAStatusLabel;
     }
 }
 
