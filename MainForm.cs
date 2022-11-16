@@ -103,6 +103,8 @@ namespace neuopc
         private void MainForm_Load(object sender, EventArgs e)
         {
             UAPortTextBox.Text = "48401";
+            UAUserTextBox.Text = "admin";
+            UAPasswordTextBox.Text = "123456";
 
             client.AddSlowChannel(channel);
             client.AddFastChannel(server.channel);

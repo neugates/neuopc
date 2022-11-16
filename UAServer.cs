@@ -476,6 +476,7 @@ namespace neuopc
         public void Stop()
         {
             channel.Writer.Complete();
+            task.Wait();
             running = false;
             //application?.Stop();
         }
