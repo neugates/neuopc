@@ -55,7 +55,6 @@ namespace neuopc
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.MainListView = new System.Windows.Forms.ListView();
-            this.handle = new System.Windows.Forms.ColumnHeader();
             this.name = new System.Windows.Forms.ColumnHeader();
             this.type = new System.Windows.Forms.ColumnHeader();
             this.rights = new System.Windows.Forms.ColumnHeader();
@@ -63,6 +62,7 @@ namespace neuopc
             this.quality = new System.Windows.Forms.ColumnHeader();
             this.error = new System.Windows.Forms.ColumnHeader();
             this.timestamp = new System.Windows.Forms.ColumnHeader();
+            this.handle = new System.Windows.Forms.ColumnHeader();
             this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -75,7 +75,7 @@ namespace neuopc
             this.ReadButton.Margin = new System.Windows.Forms.Padding(2);
             this.ReadButton.Name = "ReadButton";
             this.ReadButton.Size = new System.Drawing.Size(112, 34);
-            this.ReadButton.TabIndex = 0;
+            this.ReadButton.TabIndex = 2;
             this.ReadButton.Text = "Connect";
             this.ReadButton.UseVisualStyleBackColor = true;
             this.ReadButton.Click += new System.EventHandler(this.ReadButton_Click);
@@ -86,7 +86,7 @@ namespace neuopc
             this.UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.UAPortTextBox.Name = "UAPortTextBox";
             this.UAPortTextBox.Size = new System.Drawing.Size(200, 30);
-            this.UAPortTextBox.TabIndex = 2;
+            this.UAPortTextBox.TabIndex = 3;
             // 
             // menuStrip1
             // 
@@ -196,7 +196,7 @@ namespace neuopc
             this.UAPasswordTextBox.Location = new System.Drawing.Point(739, 72);
             this.UAPasswordTextBox.Name = "UAPasswordTextBox";
             this.UAPasswordTextBox.Size = new System.Drawing.Size(180, 30);
-            this.UAPasswordTextBox.TabIndex = 16;
+            this.UAPasswordTextBox.TabIndex = 5;
             // 
             // label5
             // 
@@ -212,7 +212,7 @@ namespace neuopc
             this.UAUserTextBox.Location = new System.Drawing.Point(421, 72);
             this.UAUserTextBox.Name = "UAUserTextBox";
             this.UAUserTextBox.Size = new System.Drawing.Size(180, 30);
-            this.UAUserTextBox.TabIndex = 14;
+            this.UAUserTextBox.TabIndex = 4;
             // 
             // label4
             // 
@@ -229,7 +229,7 @@ namespace neuopc
             this.DAHostComboBox.Location = new System.Drawing.Point(108, 32);
             this.DAHostComboBox.Name = "DAHostComboBox";
             this.DAHostComboBox.Size = new System.Drawing.Size(200, 32);
-            this.DAHostComboBox.TabIndex = 12;
+            this.DAHostComboBox.TabIndex = 0;
             this.DAHostComboBox.DropDown += new System.EventHandler(this.DAHostComboBox_DropDown);
             // 
             // DAServerComboBox
@@ -238,7 +238,7 @@ namespace neuopc
             this.DAServerComboBox.Location = new System.Drawing.Point(421, 32);
             this.DAServerComboBox.Name = "DAServerComboBox";
             this.DAServerComboBox.Size = new System.Drawing.Size(498, 32);
-            this.DAServerComboBox.TabIndex = 11;
+            this.DAServerComboBox.TabIndex = 1;
             this.DAServerComboBox.DropDown += new System.EventHandler(this.DAServerComboBox_DropDown);
             // 
             // RunButton
@@ -246,7 +246,7 @@ namespace neuopc
             this.RunButton.Location = new System.Drawing.Point(924, 71);
             this.RunButton.Name = "RunButton";
             this.RunButton.Size = new System.Drawing.Size(112, 34);
-            this.RunButton.TabIndex = 9;
+            this.RunButton.TabIndex = 6;
             this.RunButton.Text = "Run";
             this.RunButton.UseVisualStyleBackColor = true;
             this.RunButton.Click += new System.EventHandler(this.RunButton_Click);
@@ -287,26 +287,22 @@ namespace neuopc
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.MainListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.handle,
             this.name,
             this.type,
             this.rights,
             this.value,
             this.quality,
             this.error,
-            this.timestamp});
+            this.timestamp,
+            this.handle});
             this.MainListView.HideSelection = false;
             this.MainListView.Location = new System.Drawing.Point(13, 166);
             this.MainListView.Name = "MainListView";
             this.MainListView.Size = new System.Drawing.Size(1103, 491);
-            this.MainListView.TabIndex = 6;
+            this.MainListView.TabIndex = 7;
             this.MainListView.UseCompatibleStateImageBehavior = false;
             this.MainListView.View = System.Windows.Forms.View.Details;
-            // 
-            // handle
-            // 
-            this.handle.Text = "Index";
-            this.handle.Width = 0;
+            this.MainListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainListView_MouseDoubleClick);
             // 
             // name
             // 
@@ -342,6 +338,11 @@ namespace neuopc
             // 
             this.timestamp.Text = "Timestamp";
             this.timestamp.Width = 200;
+            // 
+            // handle
+            // 
+            this.handle.Text = "Index";
+            this.handle.Width = 0;
             // 
             // NotifyIcon
             // 

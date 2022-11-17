@@ -40,10 +40,10 @@ namespace neuopc
                     int index = data.ClientHandle;
                     var items = MainListView.Items;
                     var item = items[index];
-                    var subItemValue = item.SubItems[4];
-                    var subItemQuality = item.SubItems[5];
-                    var subItemError = item.SubItems[6];
-                    var subItemTs = item.SubItems[7];
+                    var subItemValue = item.SubItems[3];
+                    var subItemQuality = item.SubItems[4];
+                    var subItemError = item.SubItems[5];
+                    var subItemTs = item.SubItems[6];
 
                     subItemValue.Text = Convert.ToString(data.Value);
                     subItemQuality.Text = data.Quality.ToString();
@@ -96,14 +96,14 @@ namespace neuopc
                 for (int i = 0; i < data.Count; i++)
                 {
                     ListViewItem lvi = new ListViewItem();
-                    lvi.Text = data[i].ClientHandle.ToString(); // handle
-                    lvi.SubItems.Add(data[i].Name.ToString()); // name
+                    lvi.Text = data[i].Name.ToString(); // handle
                     lvi.SubItems.Add(data[i].Type.ToString()); // type
                     lvi.SubItems.Add(data[i].Rights.ToString()); // rights
                     lvi.SubItems.Add(""); // value
                     lvi.SubItems.Add(""); // quality
                     lvi.SubItems.Add(""); // error
                     lvi.SubItems.Add(""); // timestamp
+                    lvi.SubItems.Add(data[i].ClientHandle.ToString()); // handle
                     MainListView.Items.Add(lvi);
                 }
                 MainListView.EndUpdate();
@@ -182,7 +182,7 @@ namespace neuopc
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            var result = MessageBox.Show("Do you want to exit the program?", "warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            var result = MessageBox.Show("Do you want to exit the program?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (DialogResult.Cancel == result)
             {
                 e.Cancel = true;
@@ -206,6 +206,24 @@ namespace neuopc
             UAPortTextBox.Enabled = false;
             UAUserTextBox.Enabled = false;
             UAPasswordTextBox.Enabled = false;
+        }
+
+        private void MainListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ListView listView = (ListView)sender;
+            ListViewItem row = listView.GetItemAt(e.X, e.Y);
+            ListViewItem.ListViewSubItem col = row.GetSubItemAt(e.X, e.Y);
+            string strText = col.Text;
+            try
+            {
+                Clipboard.SetDataObject(strText);
+                string info = $"The content [{strText}] has been copied to the clipboard";
+                MessageBox.Show(info, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

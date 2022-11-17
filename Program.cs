@@ -22,7 +22,7 @@ namespace neuopc
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.Console()
-                .WriteTo.File("neuopc.log", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             Register.Setup();
