@@ -330,6 +330,9 @@ namespace neuopc
     {
         private NodeManager nodeManager;
         private ValueWrite write;
+        private ICertificateValidator m_certificateValidator;
+        private string user;
+        private string password;
 
         public Server(ValueWrite write)
         {
@@ -351,6 +354,12 @@ namespace neuopc
             nodeManager?.UpdateNodes(list);
         }
 
+        public void SetUser(string user, string password)
+        {
+            this.user = user;
+            this.password = password;
+        }
+
         protected override MasterNodeManager CreateMasterNodeManager(IServerInternal server, ApplicationConfiguration configuration)
         {
             Utils.Trace("Creating the Node Managers.");
@@ -358,6 +367,138 @@ namespace neuopc
             nodeManager = new NodeManager(server, configuration, write);
             nodeManagers.Add(nodeManager);
             return new MasterNodeManager(server, configuration, null, nodeManagers.ToArray());
+        }
+
+        protected override void OnServerStarting(ApplicationConfiguration configuration)
+        {
+            Utils.Trace("The server is starting.");
+
+            base.OnServerStarting(configuration);
+            CreateUserIdentityValidators(configuration);
+        }
+
+        private void CreateUserIdentityValidators(ApplicationConfiguration configuration)
+        {
+            for (int ii = 0; ii < configuration.ServerConfiguration.UserTokenPolicies.Count; ii++)
+            {
+                UserTokenPolicy policy = configuration.ServerConfiguration.UserTokenPolicies[ii];
+                if (policy.TokenType == UserTokenType.Certificate)
+                {
+                    if (configuration.SecurityConfiguration.TrustedUserCertificates != null &&
+                        configuration.SecurityConfiguration.UserIssuerCertificates != null)
+                    {
+                        CertificateValidator certificateValidator = new CertificateValidator();
+                        certificateValidator.Update(configuration.SecurityConfiguration).Wait();
+                        certificateValidator.Update(configuration.SecurityConfiguration.UserIssuerCertificates,
+                            configuration.SecurityConfiguration.TrustedUserCertificates,
+                            configuration.SecurityConfiguration.RejectedCertificateStore);
+                        m_certificateValidator = certificateValidator.GetChannelValidator();
+                    }
+                }
+            }
+        }
+
+        protected override void OnServerStarted(IServerInternal server)
+        {
+            base.OnServerStarted(server);
+            server.SessionManager.ImpersonateUser += SessionManagerImpersonateUser;
+        }
+
+        private void SessionManagerImpersonateUser(Session session, ImpersonateEventArgs args)
+        {
+            UserNameIdentityToken userNameToken = args.NewIdentity as UserNameIdentityToken;
+            if (userNameToken != null)
+            {
+                VerifyPassword(userNameToken.UserName, userNameToken.DecryptedPassword);
+                args.Identity = new UserIdentity(userNameToken);
+                Utils.Trace("UserName Token Accepted: {0}", args.Identity.DisplayName);
+                return;
+            }
+
+            X509IdentityToken x509Token = args.NewIdentity as X509IdentityToken;
+            if (x509Token != null)
+            {
+                VerifyCertificate(x509Token.Certificate);
+                args.Identity = new UserIdentity(x509Token);
+                Utils.Trace("X509 Token Accepted: {0}", args.Identity.DisplayName);
+                return;
+            }
+        }
+
+        private void VerifyPassword(string userName, string password)
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw ServiceResultException.Create(StatusCodes.BadIdentityTokenInvalid,
+                    "Security token is not a valid username token. An empty username is not accepted.");
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                throw ServiceResultException.Create(StatusCodes.BadIdentityTokenRejected,
+                    "Security token is not a valid username token. An empty password is not accepted.");
+            }
+
+
+            if (!(userName == this.user && password == this.password))
+            {
+                TranslationInfo info = new TranslationInfo(
+                    "InvalidPassword",
+                    "en-US",
+                    "Specified password is not valid for user '{0}'.",
+                    userName);
+
+                throw new ServiceResultException(new ServiceResult(
+                    StatusCodes.BadIdentityTokenRejected,
+                    "InvalidPassword",
+                    LoadServerProperties().ProductUri,
+                    new LocalizedText(info)));
+            }
+        }
+
+        private void VerifyCertificate(X509Certificate2 certificate)
+        {
+            try
+            {
+                if (m_certificateValidator != null)
+                {
+                    m_certificateValidator.Validate(certificate);
+                }
+                else
+                {
+                    CertificateValidator.Validate(certificate);
+                }
+            }
+            catch (Exception e)
+            {
+                TranslationInfo info;
+                StatusCode result = StatusCodes.BadIdentityTokenRejected;
+                ServiceResultException se = e as ServiceResultException;
+                if (se != null && se.StatusCode == StatusCodes.BadCertificateUseNotAllowed)
+                {
+                    info = new TranslationInfo(
+                        "InvalidCertificate",
+                        "en-US",
+                        "'{0}' is an invalid user certificate.",
+                        certificate.Subject);
+
+                    result = StatusCodes.BadIdentityTokenInvalid;
+                }
+                else
+                {
+                    info = new TranslationInfo(
+                        "UntrustedCertificate",
+                        "en-US",
+                        "'{0}' is not a trusted user certificate.",
+                        certificate.Subject);
+                }
+
+                throw new ServiceResultException(new ServiceResult(
+                    result,
+                    info.Key,
+                    "http://opcfoundation.org/UA/Sample/",
+                    new LocalizedText(info)));
+            }
         }
     }
 
@@ -396,17 +537,19 @@ namespace neuopc
             task.Start();
         }
 
-        public void Start(string port)
+        public void Start(string port, string user, string password)
         {
             if (running)
             {
                 return;
             }
 
-
             string uri = $"opc.tcp://localhost:{port}/";
             try
             {
+                var tokenPolicies = new List<UserTokenPolicy>();
+                tokenPolicies.Add(new UserTokenPolicy(UserTokenType.UserName));
+                tokenPolicies.Add(new UserTokenPolicy(UserTokenType.Certificate));
                 var config = new ApplicationConfiguration()
                 {
                     ApplicationName = "neuopc",
@@ -418,6 +561,7 @@ namespace neuopc
                         MinRequestThreadCount = 5,
                         MaxRequestThreadCount = 100,
                         MaxQueuedRequestCount = 200,
+                        UserTokenPolicies = new UserTokenPolicyCollection(tokenPolicies),
                     },
 
                     SecurityConfiguration = new SecurityConfiguration
@@ -449,7 +593,6 @@ namespace neuopc
                     ApplicationConfiguration = config
                 };
 
-                //application.CheckApplicationInstanceCertificate(false, 2048).GetAwaiter().GetResult();
                 bool certOk = application.CheckApplicationInstanceCertificate(false, 0).Result;
                 if (!certOk)
                 {
@@ -459,6 +602,7 @@ namespace neuopc
                 server = new Server(Write);
                 application.Start(server).Wait();
                 running = true;
+                server.SetUser(user, password);
             }
             catch (Exception)
             {

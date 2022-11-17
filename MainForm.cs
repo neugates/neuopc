@@ -67,7 +67,7 @@ namespace neuopc
             {
                 string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
                 DAStatusLabel.Text = label;
-                if("connected" == data.Status)
+                if ("connected" == data.Status)
                 {
                     DAStatusLabel.ForeColor = Color.Green;
                 }
@@ -182,6 +182,13 @@ namespace neuopc
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            var result = MessageBox.Show("Do you want to exit the program?", "warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            if (DialogResult.Cancel == result)
+            {
+                e.Cancel = true;
+                return;
+            }
+
             client.Close();
             channel.Writer.Complete();
             task.Wait();
@@ -193,7 +200,7 @@ namespace neuopc
         {
             server.Write += client.Write;
             var items = new List<Item>();
-            server.Start(UAPortTextBox.Text);
+            server.Start(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
 
             RunButton.Enabled = false;
             UAPortTextBox.Enabled = false;

@@ -149,22 +149,22 @@ namespace neuopc
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.DAStatusLabel,
             this.UAStatusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 666);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 672);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 17, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1128, 28);
+            this.statusStrip1.Size = new System.Drawing.Size(1128, 22);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // DAStatusLabel
             // 
             this.DAStatusLabel.Name = "DAStatusLabel";
-            this.DAStatusLabel.Size = new System.Drawing.Size(0, 21);
+            this.DAStatusLabel.Size = new System.Drawing.Size(0, 15);
             // 
             // UAStatusLabel
             // 
             this.UAStatusLabel.Name = "UAStatusLabel";
-            this.UAStatusLabel.Size = new System.Drawing.Size(0, 21);
+            this.UAStatusLabel.Size = new System.Drawing.Size(0, 15);
             // 
             // groupBox1
             // 
@@ -362,6 +362,7 @@ namespace neuopc
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "neuopc";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
