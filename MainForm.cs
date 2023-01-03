@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using System.Threading.Channels;
+using Serilog;
 
 namespace neuopc
 {
@@ -33,14 +34,13 @@ namespace neuopc
 
         private void UpdateListView(List<Item> list)
         {
-            foreach (var i in list)
+            try
             {
-                try
+                Action<List<Item>> action = (data) =>
                 {
-
-                    Action<Item> action = (data) =>
+                    foreach (var i in data)
                     {
-                        int index = data.ClientHandle;
+                        int index = i.ClientHandle;
                         var items = MainListView.Items;
                         var item = items[index];
                         var subItemValue = item.SubItems[3];
@@ -48,17 +48,18 @@ namespace neuopc
                         var subItemError = item.SubItems[5];
                         var subItemTs = item.SubItems[6];
 
-                        subItemValue.Text = Convert.ToString(data.Value);
-                        subItemQuality.Text = data.Quality.ToString();
-                        subItemError.Text = data.Error.ToString();
-                        subItemTs.Text = Convert.ToString(data.Timestamp);
-                    };
+                        subItemValue.Text = Convert.ToString(i.Value);
+                        subItemQuality.Text = i.Quality.ToString();
+                        subItemError.Text = i.Error.ToString();
+                        subItemTs.Text = Convert.ToString(i.Timestamp);
+                    }
+                };
 
-                    Invoke(action, i);
-                }
-                catch
-                {
-                }
+                Invoke(action, list);
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"update list view error: {exception.Message}");
             }
         }
 
@@ -82,42 +83,43 @@ namespace neuopc
 
                 Invoke(action, msg);
             }
-            catch
+            catch (Exception exception)
             {
+                Log.Error($"update status lable error: {exception.Message}");
             }
         }
 
 
         private void ResetListView(List<Item> list)
         {
-            Action<List<Item>> action = (data) =>
-            {
-                MainListView.BeginUpdate();
-                MainListView.Items.Clear();
-                for (int i = 0; i < data.Count; i++)
-                {
-                    ListViewItem lvi = new ListViewItem();
-                    lvi.Text = data[i].Name.ToString(); // handle
-                    lvi.SubItems.Add(data[i].Type.ToString()); // type
-                    lvi.SubItems.Add(data[i].Rights.ToString()); // rights
-                    lvi.SubItems.Add(""); // value
-                    lvi.SubItems.Add(""); // quality
-                    lvi.SubItems.Add(""); // error
-                    lvi.SubItems.Add(""); // timestamp
-                    lvi.SubItems.Add(data[i].ClientHandle.ToString()); // handle
-                    MainListView.Items.Add(lvi);
-                }
-                MainListView.EndUpdate();
-
-            };
-
-
             try
             {
+                Action<List<Item>> action = (data) =>
+                {
+                    MainListView.BeginUpdate();
+                    MainListView.Items.Clear();
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        ListViewItem lvi = new ListViewItem();
+                        lvi.Text = data[i].Name.ToString(); // handle
+                        lvi.SubItems.Add(data[i].Type.ToString()); // type
+                        lvi.SubItems.Add(data[i].Rights.ToString()); // rights
+                        lvi.SubItems.Add(""); // value
+                        lvi.SubItems.Add(""); // quality
+                        lvi.SubItems.Add(""); // error
+                        lvi.SubItems.Add(""); // timestamp
+                        lvi.SubItems.Add(data[i].ClientHandle.ToString()); // handle
+                        MainListView.Items.Add(lvi);
+                    }
+                    MainListView.EndUpdate();
+
+                };
+
                 Invoke(action, list);
             }
-            catch
+            catch (Exception exception)
             {
+                Log.Error($"reset list view error: {exception.Message}");
             }
         }
 
