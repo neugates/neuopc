@@ -35,24 +35,25 @@ namespace neuopc
         {
             foreach (var i in list)
             {
-                Action<Item> action = (data) =>
-                {
-                    int index = data.ClientHandle;
-                    var items = MainListView.Items;
-                    var item = items[index];
-                    var subItemValue = item.SubItems[3];
-                    var subItemQuality = item.SubItems[4];
-                    var subItemError = item.SubItems[5];
-                    var subItemTs = item.SubItems[6];
-
-                    subItemValue.Text = Convert.ToString(data.Value);
-                    subItemQuality.Text = data.Quality.ToString();
-                    subItemError.Text = data.Error.ToString();
-                    subItemTs.Text = Convert.ToString(data.Timestamp);
-                };
-
                 try
                 {
+
+                    Action<Item> action = (data) =>
+                    {
+                        int index = data.ClientHandle;
+                        var items = MainListView.Items;
+                        var item = items[index];
+                        var subItemValue = item.SubItems[3];
+                        var subItemQuality = item.SubItems[4];
+                        var subItemError = item.SubItems[5];
+                        var subItemTs = item.SubItems[6];
+
+                        subItemValue.Text = Convert.ToString(data.Value);
+                        subItemQuality.Text = data.Quality.ToString();
+                        subItemError.Text = data.Error.ToString();
+                        subItemTs.Text = Convert.ToString(data.Timestamp);
+                    };
+
                     Invoke(action, i);
                 }
                 catch
@@ -63,22 +64,22 @@ namespace neuopc
 
         private void UpdateDAStatusLabel(DaMsg msg)
         {
-            Action<DaMsg> action = (data) =>
-            {
-                string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
-                DAStatusLabel.Text = label;
-                if ("connected" == data.Status)
-                {
-                    DAStatusLabel.ForeColor = Color.Green;
-                }
-                else
-                {
-                    DAStatusLabel.ForeColor = Color.Red;
-                }
-            };
-
             try
             {
+                Action<DaMsg> action = (data) =>
+                {
+                    string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
+                    DAStatusLabel.Text = label;
+                    if ("connected" == data.Status)
+                    {
+                        DAStatusLabel.ForeColor = Color.Green;
+                    }
+                    else
+                    {
+                        DAStatusLabel.ForeColor = Color.Red;
+                    }
+                };
+
                 Invoke(action, msg);
             }
             catch
@@ -123,6 +124,7 @@ namespace neuopc
         private void ReadButton_Click(object sender, EventArgs e)
         {
             client.Close();
+            MainListView.Items.Clear();
             client.Open(DAHostComboBox.Text, DAServerComboBox.Text);
         }
 
