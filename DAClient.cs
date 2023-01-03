@@ -171,8 +171,6 @@ namespace neuopc
 
         private bool SetBrower()
         {
-            //if (null == server) { return false; }
-
             try
             {
                 brower = server.CreateBrowser();
@@ -196,8 +194,6 @@ namespace neuopc
 
         private bool SetGroup()
         {
-            //if (null == server) { return false; }
-
             try
             {
                 groups = server.OPCGroups;
@@ -218,33 +214,32 @@ namespace neuopc
 
         private bool SetNodes()
         {
-            //if (null == server) { return false; }
-            //if (null == groups) { return false; }
-            //if (null == group) { return false; }
-            //if (null == brower) { return false; }
-
-            nodes.Clear();
-            int index = 0;
-            foreach (var item in brower)
+            lock (nodesLocker)
             {
-                var node = new Node()
-                {
-                    Name = item.ToString(),
-                };
 
-                try
+                nodes.Clear();
+                int index = 0;
+                foreach (var item in brower)
                 {
-                    node.Item = group.OPCItems.AddItem(node.Name, index);
-                    node.Type = (DaType)node.Item.CanonicalDataType;
-                    nodes.Add(node);
-                    index++;
-                }
-                catch (Exception exception)
-                {
-                    Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
-                }
+                    var node = new Node()
+                    {
+                        Name = item.ToString(),
+                    };
 
-                //Log.Information($"add item secceed, name:{item}, type:{node.Type}");
+                    try
+                    {
+                        node.Item = group.OPCItems.AddItem(node.Name, index);
+                        node.Type = (DaType)node.Item.CanonicalDataType;
+                        nodes.Add(node);
+                        index++;
+                    }
+                    catch (Exception exception)
+                    {
+                        Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
+                    }
+
+                    //Log.Information($"add item secceed, name:{item}, type:{node.Type}");
+                }
             }
 
             return true;
@@ -252,7 +247,11 @@ namespace neuopc
 
         private bool SetItems()
         {
-            var items = (from node in nodes
+            List<Item> items;
+
+            lock (nodesLocker)
+            {
+                items = (from node in nodes
                          let name = node.Name
                          select new Item
                          {
@@ -263,6 +262,7 @@ namespace neuopc
                              Quality = 0,
                              Timestamp = DateTime.Now,
                          }).ToList();
+            }
 
             // write to the slow channels
             foreach (var channel in slowChannels)
@@ -310,7 +310,11 @@ namespace neuopc
             brower = null;
             groups = null;
             group = null;
-            nodes.Clear();
+
+            lock (nodesLocker)
+            {
+                nodes.Clear();
+            }
         }
 
         private bool Connect()
@@ -351,83 +355,86 @@ namespace neuopc
         private bool Read()
         {
             bool isError = false;
-            int count = null == nodes ? 0 : nodes.Count;
-            int t1 = count / MaxRead;
-            int t2 = (count % MaxRead) == 0 ? 0 : 1;
-            int times = t1 + t2;
-            for (int i = 0; i < times; i++)
+            lock (nodesLocker)
             {
-                var tempNodes = nodes.Skip(i * MaxRead).Take(MaxRead).ToList();
-                var list = tempNodes.Select(node => node.Item.ServerHandle).ToList();
-                list.Insert(0, 0);
-                Array handles = list.ToArray();
+                int count = null == nodes ? 0 : nodes.Count;
+                int t1 = count / MaxRead;
+                int t2 = (count % MaxRead) == 0 ? 0 : 1;
+                int times = t1 + t2;
+                for (int i = 0; i < times; i++)
+                {
+                    var tempNodes = nodes.Skip(i * MaxRead).Take(MaxRead).ToList();
+                    var list = tempNodes.Select(node => node.Item.ServerHandle).ToList();
+                    list.Insert(0, 0);
+                    Array handles = list.ToArray();
 
-                Array values = null;
-                Array errors = null;
-                dynamic qualities = null;
-                dynamic timestamps = null;
-                var msg = new DaMsg
-                {
-                    Type = MsgType.Data,
-                    Host = hostName,
-                    Server = serverName,
-                    Items = new List<Item>(),
-                };
-                try
-                {
-                    group.SyncRead(1, tempNodes.Count, ref handles, out values, out errors, out qualities, out timestamps);
-                    for (int j = 0; j < tempNodes.Count; j++)
+                    Array values = null;
+                    Array errors = null;
+                    dynamic qualities = null;
+                    dynamic timestamps = null;
+                    var msg = new DaMsg
                     {
-                        var n = tempNodes[j];
-                        var item = new Item
+                        Type = MsgType.Data,
+                        Host = hostName,
+                        Server = serverName,
+                        Items = new List<Item>(),
+                    };
+                    try
+                    {
+                        group.SyncRead(1, tempNodes.Count, ref handles, out values, out errors, out qualities, out timestamps);
+                        for (int j = 0; j < tempNodes.Count; j++)
                         {
-                            Name = n.Name,
-                            ClientHandle = n.Item.ClientHandle,
-                            Type = n.Type,
-                            Value = values.GetValue(j + 1),
-                            Rights = (DaRights)n.Item.AccessRights,
-                            Quality = (DaQuality)Convert.ToInt32(((Array)qualities).GetValue(j + 1)),
-                            Error = Convert.ToInt32(errors.GetValue(j + 1)),
-                            Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
-                        };
-                        msg.Items.Add(item);
+                            var n = tempNodes[j];
+                            var item = new Item
+                            {
+                                Name = n.Name,
+                                ClientHandle = n.Item.ClientHandle,
+                                Type = n.Type,
+                                Value = values.GetValue(j + 1),
+                                Rights = (DaRights)n.Item.AccessRights,
+                                Quality = (DaQuality)Convert.ToInt32(((Array)qualities).GetValue(j + 1)),
+                                Error = Convert.ToInt32(errors.GetValue(j + 1)),
+                                Timestamp = Convert.ToDateTime(((Array)timestamps).GetValue(j + 1)).ToLocalTime(),
+                            };
+                            msg.Items.Add(item);
+                        }
+
+                        msg.Status = "connected";
+                    }
+                    catch (Exception exception)
+                    {
+                        isError = true;
+                        msg.Items.Clear();
+                        for (int j = 0; j < tempNodes.Count; j++)
+                        {
+                            var n = tempNodes[j];
+                            var item = new Item
+                            {
+                                Name = n.Name,
+                                ClientHandle = n.Item.ClientHandle,
+                                Type = n.Type,
+                                Rights = (DaRights)n.Item.AccessRights,
+                                Quality = DaQuality.Bad,
+                                Error = 1001,
+                            };
+                            msg.Items.Add(item);
+                        }
+
+                        msg.Status = "disconnected";
+                        Log.Error($"sync read group error: {exception.Message}");
                     }
 
-                    msg.Status = "connected";
-                }
-                catch (Exception exception)
-                {
-                    isError = true;
-                    msg.Items.Clear();
-                    for (int j = 0; j < tempNodes.Count; j++)
+                    // write to the slow channels
+                    foreach (var channel in slowChannels)
                     {
-                        var n = tempNodes[j];
-                        var item = new Item
-                        {
-                            Name = n.Name,
-                            ClientHandle = n.Item.ClientHandle,
-                            Type = n.Type,
-                            Rights = (DaRights)n.Item.AccessRights,
-                            Quality = DaQuality.Bad,
-                            Error = 1001,
-                        };
-                        msg.Items.Add(item);
+                        channel.Writer.TryWrite(msg);
                     }
 
-                    msg.Status = "disconnected";
-                    Log.Error($"sync read group error: {exception.Message}");
-                }
-
-                // write to the slow channels
-                foreach (var channel in slowChannels)
-                {
-                    channel.Writer.TryWrite(msg);
-                }
-
-                // write to the fast channels
-                foreach (var channel in fastChannels)
-                {
-                    channel.Writer.TryWrite(msg);
+                    // write to the fast channels
+                    foreach (var channel in fastChannels)
+                    {
+                        channel.Writer.TryWrite(msg);
+                    }
                 }
             }
 
@@ -459,7 +466,13 @@ namespace neuopc
             for (var i = 1; i <= numItems; i++)
             {
                 var handle = Convert.ToInt32(clientHandles.GetValue(i));
-                var node = nodes.FirstOrDefault(n => n.Item.ClientHandle == handle);
+
+                Node node;
+                lock (nodesLocker)
+                {
+                    node = nodes.FirstOrDefault(n => n.Item.ClientHandle == handle);
+                }
+
                 if (null == node)
                 {
                     continue;
@@ -493,7 +506,12 @@ namespace neuopc
 
         public bool Write(Item item)
         {
-            var writeNode = nodes?.FirstOrDefault(node => node.Name == item.Name);
+            Node writeNode;
+            lock (nodesLocker)
+            {
+                writeNode = nodes?.FirstOrDefault(node => node.Name == item.Name);
+            }
+
             if (null != writeNode)
             {
                 try
@@ -519,7 +537,8 @@ namespace neuopc
         private void Refresh()
         {
             // First connect
-            if (false == Connect()) {
+            if (false == Connect())
+            {
                 return;
             }
 
