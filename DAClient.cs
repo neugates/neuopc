@@ -91,6 +91,7 @@ namespace neuopc
 
         private Thread thread;
         private object locker;
+        private object nodesLocker;
         private bool running;
 
         private List<Channel<DaMsg>> slowChannels;
@@ -99,6 +100,7 @@ namespace neuopc
         public DaClient()
         {
             locker = new object();
+            nodesLocker = new object();
             running = false;
             nodes = new List<Node>();
             slowChannels = new List<Channel<DaMsg>>();
@@ -169,7 +171,7 @@ namespace neuopc
 
         private bool SetBrower()
         {
-            if (null == server) { return false; }
+            //if (null == server) { return false; }
 
             try
             {
@@ -194,7 +196,7 @@ namespace neuopc
 
         private bool SetGroup()
         {
-            if (null == server) { return false; }
+            //if (null == server) { return false; }
 
             try
             {
@@ -216,10 +218,10 @@ namespace neuopc
 
         private bool SetNodes()
         {
-            if (null == server) { return false; }
-            if (null == groups) { return false; }
-            if (null == group) { return false; }
-            if (null == brower) { return false; }
+            //if (null == server) { return false; }
+            //if (null == groups) { return false; }
+            //if (null == group) { return false; }
+            //if (null == brower) { return false; }
 
             nodes.Clear();
             int index = 0;
@@ -248,7 +250,7 @@ namespace neuopc
             return true;
         }
 
-        private void SetItems()
+        private bool SetItems()
         {
             var items = (from node in nodes
                          let name = node.Name
@@ -283,6 +285,8 @@ namespace neuopc
                 };
                 channel.Writer.TryWrite(msg);
             }
+
+            return true;
         }
 
         private bool SetChange()
@@ -311,19 +315,37 @@ namespace neuopc
 
         private bool Connect()
         {
-            SetServer();
-            SetBrower();
-            SetGroup();
-            SetNodes();
-            SetItems();
-            SetChange();
+            if (false == SetServer()) { return false; }
+
+            if (false == SetBrower()) { return false; }
+
+            if (false == SetGroup()) { return false; }
+
+            if (false == SetNodes()) { return false; }
+
+            if (false == SetItems()) { return false; }
+
+            if (false == SetChange()) { return false; }
+
             return true;
         }
 
         private bool Connected()
         {
             if (null == server) { return false; }
-            return 0 == server.ServerState;
+
+            int state;
+            try
+            {
+                state = server.ServerState;
+            }
+            catch (Exception exception)
+            {
+                state = -1;
+                Log.Error($"server state get error: {exception.Message}");
+            }
+
+            return 0 == state;
         }
 
         private bool Read()
@@ -414,6 +436,11 @@ namespace neuopc
 
         private void Disconnect()
         {
+            if (null == server)
+            {
+                return;
+            }
+
             try
             {
                 group.DataChange -= GroupDataChange;
@@ -492,7 +519,9 @@ namespace neuopc
         private void Refresh()
         {
             // First connect
-            Connect();
+            if (false == Connect()) {
+                return;
+            }
 
             while (true)
             {
