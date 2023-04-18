@@ -635,7 +635,7 @@ namespace neuopc
             channel.Writer.Complete();
             task.Wait();
             running = false;
-            //application?.Stop();
+            application?.Stop();
         }
     }
 }

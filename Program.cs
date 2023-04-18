@@ -25,10 +25,21 @@ namespace neuopc
                 .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
+            Log.Information("neuopc start...");
+
             Register.Setup();
             var client = new DaClient();
             var server = new UAServer();
-            Application.Run(new MainForm(client, server));
+
+            try
+            {
+                Application.Run(new MainForm(client, server));
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Exceptions not handled properly, error:{ex.Message}");
+            }
+
             Log.CloseAndFlush();
         }
     }
