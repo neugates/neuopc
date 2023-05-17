@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "neuopc": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\0x1c\\workbench\\neuopc\\neuopc\\bin\\x86\\Debug\\netcoreapp3.1\\neuopc.exe"
+    }
+  }
+}
