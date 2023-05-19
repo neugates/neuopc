@@ -135,7 +135,7 @@ namespace neuopc
             UAPortTextBox.Text = "48401";
             UAUserTextBox.Text = "admin";
             UAPasswordTextBox.Text = "123456";
-            NotifyIcon.Visible = false;
+            NotifyIcon.Visible = true;
 
             client.AddSlowChannel(channel);
             client.AddFastChannel(server.channel);

@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.371.3-beta" />
     <PackageReference Include="Serilog" Version="2.12.1-dev-01587" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.1-dev-00896" />
