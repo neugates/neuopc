@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using NetMQ;
 using NetMQ.Sockets;
+using Serilog;
+using neulib;
 
 namespace neuservice
 {
@@ -23,16 +25,70 @@ namespace neuservice
 
         public void Loop()
         {
-            running = false;
+            running = true;
+            using var responseSocket = new ResponseSocket(uri);
+            Log.Information("start zmq server receive loop");
 
-            using (var responseSocket = new ResponseSocket(uri))
+            while (running)
             {
-                while (!running)
+                var msg = responseSocket.ReceiveFrameBytes();
+                var baseMsg = Serializer.Deserialize<MsgBase>(msg);
+
+                switch (baseMsg.type)
                 {
-                    var msg = responseSocket.ReceiveFrameBytes();
-                    // TODO: if msg is stop then call Stop()
+                    case neulib.MsgType.DAHostsReq:
+                        {
+                            var requestMsg = Serializer.Deserialize<DAHostsReqMsg>(msg);
+                            var responseMsg = GetDAHosts(requestMsg);
+                            var buff = Serializer.Serialize<DAHostsResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
+                            break;
+                        }
+                    case neulib.MsgType.DAServersReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.DAConnectReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.DAStatusReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.DADisconnectReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.UAStartReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.UAStatusReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.UAStopReq:
+                        {
+                            break;
+                        }
+                    case neulib.MsgType.ExitReq:
+                        {
+                            running = false;
+                            var responseMsg = new ExitResMsg();
+                            responseMsg.type = neulib.MsgType.ExitRes;
+                            var buff = Serializer.Serialize<ExitResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
+
+                            break;
+                        }
+                    default:
+                        break;
+
                 }
             }
+
+            Log.Information("end zmq server receive loop");
         }
 
         private void Enter()
@@ -47,7 +103,13 @@ namespace neuservice
             StopUAServer();
         }
 
-        private void GetDAHosts() { }
+        private DAHostsResMsg GetDAHosts(DAHostsReqMsg requestMsg)
+        {
+            var responseMsg = new DAHostsResMsg();
+            responseMsg.type = neulib.MsgType.DAHostsRes;
+            responseMsg.hosts = DAClient.GetHosts();
+            return responseMsg;
+        }
 
         private void GetDAServers() { }
 

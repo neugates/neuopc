@@ -20,20 +20,31 @@ namespace neuservice
             var client = new DAClient();
             var server = new UAServer();
 
-            if (5 == args.Length)
+            for (int i = 0; i < args.Length; i++)
             {
-                Log.Information($"arg1:{args[0]}");
-                Log.Information($"arg2:{args[1]}");
-                Log.Information($"arg3:{args[2]}");
-                Log.Information($"arg4:{args[3]}");
-                Log.Information($"arg5:{args[4]}");
+                Log.Information($"arg{i}:{args[i]}");
+            }
 
+            if (5 < args.Length)
+            {
                 client.Open(args[0], args[1]);
                 server.Start(args[2], args[3], args[4]);
             }
 
-            var zmq = new ZMQServer("@tcp://*:5555", client, server);
+            var listenUri = "@tcp://*:5555";
+            if (6 == args.Length)
+            {
+                listenUri = args[5];
+            }
+
+            var zmq = new ZMQServer(listenUri, client, server);
             zmq.Loop();
+
+            client.Close();
+            Log.Information("da client close");
+
+            server.Stop();
+            Log.Information("ua server stop");
 
             Log.Information("neuservice quit...");
             Log.CloseAndFlush();
