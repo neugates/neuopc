@@ -4,6 +4,8 @@ namespace neulib
 {
     public enum MsgType
     {
+        Ping,
+        Pong,
         DAHostsReq,
         DAHostsRes,
         DAServersReq,
@@ -20,11 +22,20 @@ namespace neulib
         UAStatusRes,
         UAStopReq,
         UAStopRes,
+        ExitReq,
+        ExitRes,
+    }
+
+    public enum MsgError {
+        MsgInvalid,
+        MsgSequenceError,
     }
 
     [Serializable]
     public class MsgBase
     {
         public MsgType type;
+        public uint sequence;
+        public int error;
     }
 }
