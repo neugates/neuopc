@@ -10,11 +10,13 @@ namespace neuservice
     {
         private readonly object locker;
         private List<Item> nodes;
+        private long sequence;
 
         public DataNodes()
         {
             locker = new object();
             nodes = new List<Item>();
+            sequence = 0;
         }
 
         public void ResetNodes(List<Item> items)
@@ -26,6 +28,8 @@ namespace neuservice
                 {
                     nodes.Add(item);
                 }
+
+                sequence++;
             }
         }
 
@@ -48,11 +52,12 @@ namespace neuservice
             }
         }
 
-        public List<Item> GetNodes()
+        public List<Item> GetNodes(out long sequence)
         {
             lock (locker)
             {
-                return null;
+                sequence = this.sequence;
+                return nodes;
             }
         }
     }
@@ -82,7 +87,7 @@ namespace neuservice
                         if (MsgType.List == msg.Type)
                         {
                             nodes.ResetNodes(msg.Items);
-                            Log.Information("------------->xxxx");
+                            Log.Information("reset nodes ");
                         }
                         else if (MsgType.Data == msg.Type)
                         {

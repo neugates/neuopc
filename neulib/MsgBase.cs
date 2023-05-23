@@ -14,6 +14,8 @@ namespace neulib
         DAConnectRes,
         DAStatusReq,
         DAStatusRes,
+        DADataReq,
+        DADataRes,
         DADisconnectReq,
         DADisconnectRes,
         UAStartReq,

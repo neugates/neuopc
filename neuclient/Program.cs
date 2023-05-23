@@ -15,6 +15,39 @@ namespace neuclient
 {
     class Program
     {
+        private static bool running = true;
+
+        private static SubProcess subProccess = new SubProcess();
+
+        private static void TestGetDatas()
+        {
+            while (running)
+            {
+                Thread.Sleep(3000);
+
+                var req = new DataReqMsg();
+                req.type = neulib.MsgType.DADataReq;
+                var buff = Serializer.Serialize<DataReqMsg>(req);
+                subProccess.Request(in buff, out byte[] result);
+
+                if (null != result)
+                {
+                    try
+                    {
+                        var requestMsg = Serializer.Deserialize<DataResMsg>(result);
+                        foreach (var item in requestMsg.Items)
+                        {
+                            Log.Information($"name:{item.Name}, handle:{item.ClientHandle}, right:{item.Right}, value:{item.Value}, quality:{item.Quality}, error:{item.Error}, timestamp:{item.Timestamp}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"------------->{ex.Message}");
+                    }
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
@@ -24,23 +57,12 @@ namespace neuclient
 
             Log.Information("neuservice start...");
 
-            //using var requestSocket = new RequestSocket(">tcp://localhost:5555");
-            //var req = new DAHostsReqMsg();
-            //req.type = neulib.MsgType.DAHostsReq;
-            //var buff = Serializer.Serialize<DAHostsReqMsg>(req);
-
-            //TimeSpan ts = new TimeSpan(0, 0, 20);
-            //requestSocket.TrySendFrame(ts, buff, false);
-            //byte[] x = new byte[10240];
-            //requestSocket.TryReceiveFrameBytes(ts, out x);
-
-            //var daHostMsg = Serializer.Deserialize<DAHostsResMsg>(x);
-            //foreach (var host in daHostMsg.hosts)
-            //{
-            //    System.Console.WriteLine($"->{host}");
-            //}
-            var subProccess = new SubProcess();
             subProccess.Daemon();
+
+            var ts = new ThreadStart(TestGetDatas);
+            var thread = new Thread(ts);
+            thread.Start();
+
 
             ConsoleKeyInfo key;
             do
@@ -48,6 +70,7 @@ namespace neuclient
                 key = Console.ReadKey();
             } while (key.Key != ConsoleKey.Escape);
 
+            running = false;
             subProccess.Stop();
         }
     }

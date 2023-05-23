@@ -122,6 +122,14 @@ namespace neuservice
                         {
                             break;
                         }
+                    case neulib.MsgType.DADataReq:
+                        {
+                            var requestMsg = Serializer.Deserialize<DataReqMsg>(msg);
+                            var responseMsg = GetItems(requestMsg);
+                            var buff = Serializer.Serialize<DataResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
+                            break;
+                        }
                     case neulib.MsgType.DAStatusReq:
                         {
                             break;
@@ -183,6 +191,31 @@ namespace neuservice
         private void GetDAServers() { }
 
         private void ConnectDAServer() { }
+
+        private DataResMsg GetItems(DataReqMsg requestMsg)
+        {
+            var list = this.nodes.GetNodes(out long sequence);
+            var dataItems = new List<DataItem>();
+            foreach (var item in list)
+            {
+                dataItems.Add(new DataItem
+                {
+                    Name = item.Name,
+                    ClientHandle = item.ClientHandle.ToString(),
+                    Right = item.Rights.ToString(),
+                    Value = Convert.ToString(item.Value),
+                    Quality = item.Quality.ToString(),
+                    Error = item.Error.ToString(),
+                    Timestamp = Convert.ToString(item.Timestamp)
+                });
+            }
+
+            return new DataResMsg
+            {
+                sequence = sequence,
+                Items = dataItems
+            };
+        }
 
         private void GetDAServerStatus() { }
 
