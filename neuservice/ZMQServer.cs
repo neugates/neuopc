@@ -6,6 +6,7 @@ using NetMQ;
 using NetMQ.Sockets;
 using Serilog;
 using neulib;
+using System.Threading;
 
 namespace neuservice
 {
@@ -13,29 +14,98 @@ namespace neuservice
     {
         private string uri;
         private bool running;
+        private object runningLocker;
         private DAClient client;
         private UAServer server;
+        private Thread thread;
+        private object timestampLocker;
+        private long timestamp;
+        private DataNodes nodes;
 
-        public ZMQServer(string uri, DAClient client, UAServer server)
+        public ZMQServer(string uri, DAClient client, UAServer server, DataNodes nodes)
         {
             this.uri = uri;
             this.client = client;
             this.server = server;
+            this.nodes = nodes;
+
+            runningLocker = new object();
+            timestampLocker = new object();
+        }
+
+        public long GetTimeStamp()
+        {
+            return (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+        }
+
+        private void Tiktok()
+        {
+            while (true)
+            {
+                lock (runningLocker)
+                {
+                    if (!running)
+                    {
+                        break;
+                    }
+                }
+
+                long timeout = 0;
+                lock (timestampLocker)
+                {
+                    timeout = GetTimeStamp() - timestamp;
+                }
+
+                if (timeout > 5)
+                {
+                    this.client.Close();
+                    this.server.Stop();
+                    Environment.Exit(0);
+                    Log.Information("exit from watchdog");
+                }
+
+                Thread.Sleep(1000);
+            }
         }
 
         public void Loop()
         {
             running = true;
+            timestamp = GetTimeStamp();
+            var ts = new ThreadStart(Tiktok);
+            thread = new Thread(ts);
+            thread.Start();
+
             using var responseSocket = new ResponseSocket(uri);
             Log.Information("start zmq server receive loop");
 
-            while (running)
+            while (true)
             {
+                lock (runningLocker)
+                {
+                    if (!running)
+                    {
+                        break;
+                    }
+                }
+
                 var msg = responseSocket.ReceiveFrameBytes();
                 var baseMsg = Serializer.Deserialize<MsgBase>(msg);
 
+                lock (timestampLocker)
+                {
+                    timestamp = GetTimeStamp();
+                }
+
                 switch (baseMsg.type)
                 {
+                    case neulib.MsgType.Ping:
+                        {
+                            var pong = new PongMsg();
+                            var buff = Serializer.Serialize<PongMsg>(pong);
+                            responseSocket.SendFrame(buff, false);
+                            break;
+                        }
                     case neulib.MsgType.DAHostsReq:
                         {
                             var requestMsg = Serializer.Deserialize<DAHostsReqMsg>(msg);
@@ -84,7 +154,6 @@ namespace neuservice
                         }
                     default:
                         break;
-
                 }
             }
 

@@ -203,7 +203,15 @@ namespace neuclient
                 catch (Exception ex)
                 {
                     Log.Warning($"daemon loop error:{ex.Message}");
+                    continue;
                 }
+
+                var ping = new PingMsg
+                {
+                    type = neulib.MsgType.Ping
+                };
+                var buff = Serializer.Serialize<PingMsg>(ping);
+                Request(in buff, out byte[] result);
             }
 
             try
@@ -211,12 +219,18 @@ namespace neuclient
                 var req = new ExitReqMsg();
                 req.type = neulib.MsgType.ExitReq;
                 var buff = Serializer.Serialize<ExitReqMsg>(req);
-                var result = new byte[100];
-                Request(in buff, out result);
+                Request(in buff, out byte[] result);
                 Log.Information("send exit req msg to neuservice, wait to exit");
 
                 var process = Process.GetProcessById(processInfo.ProcessId);
-                process.WaitForExit();
+                if (null != result)
+                {
+                    process.WaitForExit();
+                }
+                else
+                {
+                    process.Kill();
+                }
             }
             catch (Exception ex)
             {
@@ -235,20 +249,23 @@ namespace neuclient
 
         public bool Request(in byte[] send, out byte[] result)
         {
-            try
+            TimeSpan ts = new TimeSpan(0, 0, 30);
+            lock (socketLocker)
             {
-                TimeSpan ts = new TimeSpan(0, 0, 1);
-                requestSocket.TrySendFrame(ts, send, false);
-                requestSocket.TryReceiveFrameBytes(ts, out result);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"send data to neuservice error:{ex.Message}");
-                result = null;
-                return false;
-            }
+                try
+                {
+                    requestSocket.TrySendFrame(ts, send, false);
+                    requestSocket.TryReceiveFrameBytes(ts, out result);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"send data to neuservice error:{ex.Message}");
+                    result = null;
+                    return false;
+                }
 
-            return true;
+                return true;
+            }
         }
 
         public void Stop()
