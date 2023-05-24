@@ -12,7 +12,7 @@ using NetMQ.Sockets;
 using Serilog;
 using neulib;
 
-namespace neuclient
+namespace neuopc
 {
     public class NeuServiceInfo
     {
@@ -22,7 +22,7 @@ namespace neuclient
         public string ConnectUri { get; set; }
         public string DAHost { get; set; }
         public string DAServer { get; set; }
-        public int UAPort { get; set; }
+        public string UAPort { get; set; }
         public string UAUsername { get; set; }
         public string UAPassword { get; set; }
     }
@@ -35,6 +35,12 @@ namespace neuclient
 
     public class SubProcess
     {
+        private string daHost;
+        private string daServer;
+        private string uaPort;
+        private string uaUser;
+        private string uaPassword;
+
         private RequestSocket requestSocket;
         private ProcessInfo processInfo = null;
         private bool running = true;
@@ -98,15 +104,15 @@ namespace neuclient
 
             return new NeuServiceInfo
             {
-                Name = "neuservice",
-                Path = @"C:\Users\0x1c\workbench\neuopc\neuservice\bin\x86\Debug\netcoreapp3.1\neuservice.exe",
+                Name = "neuservice.exe",
+                Path = "./",
                 ListenUri = zmqListenUri,
                 ConnectUri = zmqConnectUri,
-                DAHost = "kubernetes.docker.internal",
-                DAServer = "Intellution.IntellutionGatewayOPCServer",
-                UAPort = 48401,
-                UAUsername = "admin",
-                UAPassword = "123456"
+                DAHost = daHost,
+                DAServer = daServer,
+                UAPort = uaPort,
+                UAUsername = uaUser,
+                UAPassword = uaPassword 
             };
         }
 
@@ -117,12 +123,13 @@ namespace neuclient
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = @"C:\Users\0x1c\workbench\neuopc\neuservice\bin\x86\Debug\netcoreapp3.1\neuservice.exe",
+                    //FileName = @"C:\Users\0x1c\workbench\neuopc\neuservice\bin\x86\Debug\netcoreapp3.1\neuservice.exe",
+                    FileName = "neuservice.exe",
                     UseShellExecute = false,
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
-                    CreateNoWindow = true,
+                    CreateNoWindow = false,
                     ErrorDialog = false,
                     Arguments = $"{serviceInfo.DAHost} {serviceInfo.DAServer} {serviceInfo.UAPort} {serviceInfo.UAUsername} {serviceInfo.UAPassword} {serviceInfo.ListenUri}",
                 }
@@ -238,6 +245,19 @@ namespace neuclient
             }
 
             Log.Information("deamon stop");
+        }
+
+        public void SetDAArguments(string daHost, string daServer)
+        {
+            this.daHost = daHost;
+            this.daServer = daServer;
+        }
+
+        public void SetUAArguments(string uaPort, string uaUser, string uaPassword)
+        {
+            this.uaPort = uaPort;
+            this.uaUser = uaUser;
+            this.uaPassword = uaPassword;
         }
 
         public void Daemon()

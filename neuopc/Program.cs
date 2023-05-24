@@ -27,13 +27,9 @@ namespace neuopc
 
             Log.Information("neuopc start...");
 
-            Register.Setup();
-            var client = new DaClient();
-            var server = new UAServer();
-
             try
             {
-                Application.Run(new MainForm(client, server));
+                Application.Run(new MainForm());
             }
             catch (Exception ex)
             {

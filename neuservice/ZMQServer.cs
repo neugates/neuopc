@@ -56,7 +56,7 @@ namespace neuservice
                     timeout = GetTimeStamp() - timestamp;
                 }
 
-                if (timeout > 5)
+                if (timeout > 30)
                 {
                     this.client.Close();
                     this.server.Stop();
@@ -97,7 +97,7 @@ namespace neuservice
                     timestamp = GetTimeStamp();
                 }
 
-                switch (baseMsg.type)
+                switch (baseMsg.Type)
                 {
                     case neulib.MsgType.Ping:
                         {
@@ -116,10 +116,18 @@ namespace neuservice
                         }
                     case neulib.MsgType.DAServersReq:
                         {
+                            var requestMsg = Serializer.Deserialize<DAServerReqMsg>(msg);
+                            var responseMsg = GetDAServers(requestMsg);
+                            var buff = Serializer.Serialize<DAServerResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
                             break;
                         }
                     case neulib.MsgType.DAConnectReq:
                         {
+                            var requestMsg = Serializer.Deserialize<ConnectReqMsg>(msg);
+                            var responseMsg = ConnectDAServer(requestMsg);
+                            var buff = Serializer.Serialize<ConnectResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
                             break;
                         }
                     case neulib.MsgType.DADataReq:
@@ -140,6 +148,10 @@ namespace neuservice
                         }
                     case neulib.MsgType.UAStartReq:
                         {
+                            var requestMsg = Serializer.Deserialize<UAStartReqMsg>(msg);
+                            var responseMsg = StartUAServer(requestMsg);
+                            var buff = Serializer.Serialize<UAStartResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
                             break;
                         }
                     case neulib.MsgType.UAStatusReq:
@@ -154,7 +166,7 @@ namespace neuservice
                         {
                             running = false;
                             var responseMsg = new ExitResMsg();
-                            responseMsg.type = neulib.MsgType.ExitRes;
+                            responseMsg.Type = neulib.MsgType.ExitRes;
                             var buff = Serializer.Serialize<ExitResMsg>(responseMsg);
                             responseSocket.SendFrame(buff, false);
 
@@ -170,8 +182,8 @@ namespace neuservice
 
         private void Enter()
         {
-            ConnectDAServer();
-            StartUAServer();
+            //ConnectDAServer();
+            //StartUAServer();
         }
 
         private void Exit()
@@ -183,14 +195,26 @@ namespace neuservice
         private DAHostsResMsg GetDAHosts(DAHostsReqMsg requestMsg)
         {
             var responseMsg = new DAHostsResMsg();
-            responseMsg.type = neulib.MsgType.DAHostsRes;
-            responseMsg.hosts = DAClient.GetHosts();
+            responseMsg.Type = neulib.MsgType.DAHostsRes;
+            responseMsg.Hosts = DAClient.GetHosts();
             return responseMsg;
         }
 
-        private void GetDAServers() { }
+        private DAServerResMsg GetDAServers(DAServerReqMsg requestMsg)
+        {
+            var responseMsg = new DAServerResMsg();
+            responseMsg.Type = neulib.MsgType.DAServersRes;
+            responseMsg.Servers = DAClient.GetServers(requestMsg.Host);
+            return responseMsg;
+        }
 
-        private void ConnectDAServer() { }
+        private ConnectResMsg ConnectDAServer(ConnectReqMsg requestMsg)
+        {
+            var responseMsg = new ConnectResMsg();
+            responseMsg.Type = neulib.MsgType.DAConnectRes;
+            client.Open(requestMsg.Host, requestMsg.Server);
+            return responseMsg;
+        }
 
         private DataResMsg GetItems(DataReqMsg requestMsg)
         {
@@ -201,6 +225,7 @@ namespace neuservice
                 dataItems.Add(new DataItem
                 {
                     Name = item.Name,
+                    Type = item.Type.ToString(),
                     ClientHandle = item.ClientHandle.ToString(),
                     Right = item.Rights.ToString(),
                     Value = Convert.ToString(item.Value),
@@ -212,7 +237,7 @@ namespace neuservice
 
             return new DataResMsg
             {
-                sequence = sequence,
+                Sequence = sequence,
                 Items = dataItems
             };
         }
@@ -221,7 +246,13 @@ namespace neuservice
 
         private void DisconnectDAServer() { }
 
-        private void StartUAServer() { }
+        private UAStartResMsg StartUAServer(UAStartReqMsg requestMsg)
+        {
+            var responseMsg = new UAStartResMsg();
+            responseMsg.Type = neulib.MsgType.UAStartRes;
+            server.Start(requestMsg.Port, requestMsg.User, requestMsg.Password);
+            return responseMsg;
+        }
 
         private void GetUAServerStatus() { }
 

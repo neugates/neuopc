@@ -36,8 +36,7 @@ namespace neulib
     [Serializable]
     public class MsgBase
     {
-        public MsgType type;
-        public uint sequence;
-        public int error;
+        public MsgType Type;
+        public int Error;
     }
 }

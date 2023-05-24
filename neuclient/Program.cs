@@ -26,7 +26,7 @@ namespace neuclient
                 Thread.Sleep(3000);
 
                 var req = new DataReqMsg();
-                req.type = neulib.MsgType.DADataReq;
+                req.Type = neulib.MsgType.DADataReq;
                 var buff = Serializer.Serialize<DataReqMsg>(req);
                 subProccess.Request(in buff, out byte[] result);
 

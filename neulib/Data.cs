@@ -24,7 +24,7 @@ namespace neulib
     [Serializable]
     public class DataResMsg : MsgBase
     {
-        public long sequence;
+        public long Sequence;
         public List<DataItem> Items;
     }
 }

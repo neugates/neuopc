@@ -113,6 +113,7 @@ namespace neuopc
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(270, 34);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -126,13 +127,13 @@ namespace neuopc
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(270, 34);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(200, 34);
             this.aboutToolStripMenuItem.Text = "About";
             // 
             // documentToolStripMenuItem
             // 
             this.documentToolStripMenuItem.Name = "documentToolStripMenuItem";
-            this.documentToolStripMenuItem.Size = new System.Drawing.Size(270, 34);
+            this.documentToolStripMenuItem.Size = new System.Drawing.Size(200, 34);
             this.documentToolStripMenuItem.Text = "Document";
             // 
             // statusStrip1
@@ -341,6 +342,7 @@ namespace neuopc
             this.NotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIcon.Icon")));
             this.NotifyIcon.Text = "neuopc";
             this.NotifyIcon.Visible = true;
+            this.NotifyIcon.Click += new System.EventHandler(this.NotifyIcon_Click);
             // 
             // MainForm
             // 

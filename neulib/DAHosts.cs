@@ -12,6 +12,6 @@ namespace neulib
     [Serializable]
     public class DAHostsResMsg : MsgBase
     {
-        public List<string> hosts;
+        public List<string> Hosts;
     }
 }

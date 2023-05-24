@@ -108,16 +108,20 @@ namespace neuservice
                 Log.Information($"arg{i}:{args[i]}");
             }
 
-            if (5 < args.Length)
+            var listenUri = "@tcp://*:5555";
+            if (1 <= args.Length)
             {
-                client.Open(args[0], args[1]);
-                server.Start(args[2], args[3], args[4]);
+                listenUri = args[0];
             }
 
-            var listenUri = "@tcp://*:5555";
-            if (6 == args.Length)
+            if (3 <= args.Length)
             {
-                listenUri = args[5];
+                client.Open(args[1], args[2]);
+            }
+
+            if (6 <= args.Length)
+            {
+                server.Start(args[3], args[4], args[5]);
             }
 
             var zmq = new ZMQServer(listenUri, client, server, nodes);
