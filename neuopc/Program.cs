@@ -16,7 +16,7 @@ namespace neuopc
         static void Main()
         {
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
+            //Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             Log.Logger = new LoggerConfiguration()

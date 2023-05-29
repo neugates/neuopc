@@ -103,28 +103,58 @@ namespace neuservice
             client.AddFastChannel(server.channel);
             client.AddFastChannel(channel);
 
+            var daHost = "";
+            var daServer = "";
+            var uaUri = "";
+            var uaUser = "";
+            var uaPassword = "";
+            var zmqUri = "@tcp://*:5555";
+
             for (int i = 0; i < args.Length; i++)
             {
                 Log.Information($"arg{i}:{args[i]}");
+
+                if (!string.IsNullOrEmpty(args[i]))
+                {
+                    var arg = args[i].Split('=');
+                    if (2 == arg.Length)
+                    {
+                        switch (arg[0])
+                        {
+                            case "da_host":
+                                daHost = arg[1];
+                                break;
+                            case "da_server":
+                                daServer = arg[1];
+                                break;
+                            case "ua_url":
+                                uaUri = arg[1];
+                                break;
+                            case "ua_user":
+                                uaUser = arg[1];
+                                break;
+                            case "ua_password":
+                                uaPassword = arg[1];
+                                break;
+                            case "zmq_uri":
+                                zmqUri = arg[1];
+                                break;
+                        }
+                    }
+                }
             }
 
-            var listenUri = "@tcp://*:5555";
-            if (1 <= args.Length)
+            if (!string.IsNullOrEmpty(daHost) && !string.IsNullOrEmpty(daServer))
             {
-                listenUri = args[0];
+                client.Open(daHost, daServer);
             }
 
-            if (3 <= args.Length)
+            if (!string.IsNullOrEmpty(uaUri) && !string.IsNullOrEmpty(uaUser) && !string.IsNullOrEmpty(uaPassword))
             {
-                client.Open(args[1], args[2]);
+                server.Start(uaUri, uaUser, uaPassword);
             }
 
-            if (6 <= args.Length)
-            {
-                server.Start(args[3], args[4], args[5]);
-            }
-
-            var zmq = new ZMQServer(listenUri, client, server, nodes);
+            var zmq = new ZMQServer(zmqUri, client, server, nodes);
             zmq.Loop();
 
             client.Close();

@@ -7,7 +7,7 @@ namespace neulib
     [Serializable]
     public class UAStartReqMsg : MsgBase
     {
-        public string Port;
+        public string Url;
         public string User;
         public string Password;
     }
@@ -15,4 +15,14 @@ namespace neulib
     [Serializable]
     public class UAStartResMsg : MsgBase
     { }
+
+    [Serializable]
+    public class UAStopReqMsg: MsgBase
+    {
+    }
+
+    [Serializable]
+    public class UAStopResMsg: MsgBase
+    {
+    }
 }

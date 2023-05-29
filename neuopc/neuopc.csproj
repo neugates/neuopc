@@ -18,18 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <COMReference Include="OPCAutomation">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>28e68f91-8d75-11d1-8dc3-3c302a000000</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.371.3-beta" />
     <PackageReference Include="Serilog" Version="2.12.1-dev-01587" />

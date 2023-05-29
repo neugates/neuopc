@@ -12,6 +12,8 @@ namespace neulib
         DAServersRes,
         DAConnectReq,
         DAConnectRes,
+        DAConnectTestReq,
+        DAConnectTestRes,
         DAStatusReq,
         DAStatusRes,
         DADataReq,

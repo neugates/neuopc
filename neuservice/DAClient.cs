@@ -590,5 +590,30 @@ namespace neuservice
             lock (locker) { running = false; }
             thread?.Join();
         }
+
+        public bool TestServer(string host, string server)
+        {
+            var test_server = new OPCServer();
+            try
+            {
+                test_server.Connect(server, host);
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"connect to {hostName}/{serverName} failed, error:{exception.Message}");
+                return false;
+            }
+
+            try
+            {
+                test_server.Disconnect();
+            }
+            catch (Exception exception)
+            {
+                Log.Warning($"disconnect to {hostName}/{serverName} failed, error:{exception.Message}");
+            }
+
+            return true;
+        }
     }
 }

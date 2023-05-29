@@ -537,14 +537,21 @@ namespace neuservice
             task.Start();
         }
 
-        public void Start(string port, string user, string password)
+        ~UAServer()
+        {
+            channel.Writer.Complete();
+            task.Wait();
+        }
+
+        public void Start(string uri, string user, string password)
         {
             if (running)
             {
                 return;
             }
 
-            string uri = $"opc.tcp://localhost:{port}/";
+            Log.Information($"ua endpoint uri is:{uri}");
+
             try
             {
                 var tokenPolicies = new List<UserTokenPolicy>();
@@ -632,10 +639,15 @@ namespace neuservice
 
         public void Stop()
         {
-            channel.Writer.Complete();
-            task.Wait();
-            running = false;
-            application?.Stop();
+            if (running)
+            {
+                //channel.Writer.Complete();
+                //task.Wait();
+                running = false;
+                application?.Stop();
+            }
+
+            Log.Information("ua server stoped");
         }
     }
 }

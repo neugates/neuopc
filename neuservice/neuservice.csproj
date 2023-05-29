@@ -15,6 +15,7 @@
       <Lcid>0</Lcid>
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
+      <Private></Private>
     </COMReference>
   </ItemGroup>
 

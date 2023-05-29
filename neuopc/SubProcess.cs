@@ -123,7 +123,6 @@ namespace neuopc
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    //FileName = @"C:\Users\0x1c\workbench\neuopc\neuservice\bin\x86\Debug\netcoreapp3.1\neuservice.exe",
                     FileName = "neuservice.exe",
                     UseShellExecute = false,
                     RedirectStandardInput = false,
@@ -131,7 +130,7 @@ namespace neuopc
                     RedirectStandardError = false,
                     CreateNoWindow = false,
                     ErrorDialog = false,
-                    Arguments = $"{serviceInfo.DAHost} {serviceInfo.DAServer} {serviceInfo.UAPort} {serviceInfo.UAUsername} {serviceInfo.UAPassword} {serviceInfo.ListenUri}",
+                    Arguments = $"da_host={serviceInfo.DAHost} da_server={serviceInfo.DAServer} ua_url={serviceInfo.UAPort} ua_user={serviceInfo.UAUsername} ua_password={serviceInfo.UAPassword} zmq_uri={serviceInfo.ListenUri}",
                 }
             };
 

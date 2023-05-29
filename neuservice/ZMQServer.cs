@@ -130,6 +130,14 @@ namespace neuservice
                             responseSocket.SendFrame(buff, false);
                             break;
                         }
+                    case neulib.MsgType.DAConnectTestReq:
+                        {
+                            var requestMsg = Serializer.Deserialize<ConnectTestReqMsg>(msg);
+                            var responseMsg = ConnectTest(requestMsg);
+                            var buff = Serializer.Serialize<ConnectTestResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
+                            break;
+                        }
                     case neulib.MsgType.DADataReq:
                         {
                             var requestMsg = Serializer.Deserialize<DataReqMsg>(msg);
@@ -144,6 +152,11 @@ namespace neuservice
                         }
                     case neulib.MsgType.DADisconnectReq:
                         {
+                            var requestMsg = Serializer.Deserialize<DisconnectReqMsg>(msg);
+                            var responseMsg = DisconnectDAServer(requestMsg);
+                            var buff = Serializer.Serialize<DisconnectResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
+
                             break;
                         }
                     case neulib.MsgType.UAStartReq:
@@ -160,6 +173,10 @@ namespace neuservice
                         }
                     case neulib.MsgType.UAStopReq:
                         {
+                            var requestMsg = Serializer.Deserialize<UAStopReqMsg>(msg);
+                            var responseMsg = StopUAServer(requestMsg);
+                            var buff = Serializer.Serialize<UAStopResMsg>(responseMsg);
+                            responseSocket.SendFrame(buff, false);
                             break;
                         }
                     case neulib.MsgType.ExitReq:
@@ -182,14 +199,10 @@ namespace neuservice
 
         private void Enter()
         {
-            //ConnectDAServer();
-            //StartUAServer();
         }
 
         private void Exit()
         {
-            DisconnectDAServer();
-            StopUAServer();
         }
 
         private DAHostsResMsg GetDAHosts(DAHostsReqMsg requestMsg)
@@ -215,6 +228,15 @@ namespace neuservice
             client.Open(requestMsg.Host, requestMsg.Server);
             return responseMsg;
         }
+
+        private ConnectTestResMsg ConnectTest(ConnectTestReqMsg requestMsg)
+        {
+            var responseMsg = new ConnectTestResMsg();
+            responseMsg.Type = neulib.MsgType.DAConnectTestRes;
+            responseMsg.Result = client.TestServer(requestMsg.Host, requestMsg.Server);
+            return responseMsg;
+        }
+
 
         private DataResMsg GetItems(DataReqMsg requestMsg)
         {
@@ -244,18 +266,30 @@ namespace neuservice
 
         private void GetDAServerStatus() { }
 
-        private void DisconnectDAServer() { }
+        private DisconnectResMsg DisconnectDAServer(DisconnectReqMsg requestMsg)
+        {
+            var responseMsg = new DisconnectResMsg();
+            responseMsg.Type = neulib.MsgType.DADisconnectRes;
+            client.Close();
+            return responseMsg;
+        }
 
         private UAStartResMsg StartUAServer(UAStartReqMsg requestMsg)
         {
             var responseMsg = new UAStartResMsg();
             responseMsg.Type = neulib.MsgType.UAStartRes;
-            server.Start(requestMsg.Port, requestMsg.User, requestMsg.Password);
+            server.Start(requestMsg.Url, requestMsg.User, requestMsg.Password);
             return responseMsg;
         }
 
         private void GetUAServerStatus() { }
 
-        private void StopUAServer() { }
+        private UAStopResMsg StopUAServer(UAStopReqMsg requestMsg)
+        {
+            var responseMsg = new UAStopResMsg();
+            responseMsg.Type = neulib.MsgType.UAStopRes;
+            server.Stop();
+            return responseMsg;
+        }
     }
 }

@@ -18,7 +18,23 @@ namespace neulib
         public string Msg;
     }
 
+    [Serializable]
+    public class ConnectTestReqMsg : MsgBase
+    {
+        public string Host;
+        public string Server;
+    }
+
+    [Serializable]
+    public class ConnectTestResMsg : MsgBase
+    {
+        public bool Result;
+    }
+
+    [Serializable]
     public class DisconnectReqMsg : MsgBase { }
 
+
+    [Serializable]
     public class DisconnectResMsg : MsgBase { }
 }
