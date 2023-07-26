@@ -308,18 +308,6 @@ namespace neuopc
 
             Log.Information("exit neuopc");
 
-            var config = new Config
-            {
-                DAHost = DAHostComboBox.Text,
-                DAServer = DAServerComboBox.Text,
-                UAUrl = UAPortTextBox.Text,
-                UAUser = UAUserTextBox.Text,
-                UAPassword = UAPasswordTextBox.Text,
-                AutoConnect = CheckBox.Checked
-            };
-
-            ConfigUtil.SaveConfig("neuopc.json", config);
-
             running = false;
             subProcess.Stop();
 
@@ -509,6 +497,21 @@ namespace neuopc
                 UAUserTextBox.Enabled = true;
                 UAPasswordTextBox.Enabled = true;
             }
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            var config = new Config
+            {
+                DAHost = DAHostComboBox.Text,
+                DAServer = DAServerComboBox.Text,
+                UAUrl = UAPortTextBox.Text,
+                UAUser = UAUserTextBox.Text,
+                UAPassword = UAPasswordTextBox.Text,
+                AutoConnect = CheckBox.Checked
+            };
+
+            ConfigUtil.SaveConfig("neuopc.json", config);
         }
     }
 }

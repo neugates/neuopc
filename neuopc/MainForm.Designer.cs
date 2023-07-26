@@ -46,6 +46,7 @@ namespace neuopc
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabPageSetting = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.SaveButton = new System.Windows.Forms.Button();
             this.UALabel = new System.Windows.Forms.Label();
             this.CheckBox = new System.Windows.Forms.CheckBox();
             this.SwitchButton = new System.Windows.Forms.Button();
@@ -188,6 +189,7 @@ namespace neuopc
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.SaveButton);
             this.groupBox1.Controls.Add(this.UALabel);
             this.groupBox1.Controls.Add(this.CheckBox);
             this.groupBox1.Controls.Add(this.SwitchButton);
@@ -210,6 +212,16 @@ namespace neuopc
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             // 
+            // SaveButton
+            // 
+            this.SaveButton.Location = new System.Drawing.Point(560, 326);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(160, 34);
+            this.SaveButton.TabIndex = 35;
+            this.SaveButton.Text = "Save";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            // 
             // UALabel
             // 
             this.UALabel.AutoSize = true;
@@ -221,7 +233,7 @@ namespace neuopc
             // CheckBox
             // 
             this.CheckBox.AutoSize = true;
-            this.CheckBox.Location = new System.Drawing.Point(376, 330);
+            this.CheckBox.Location = new System.Drawing.Point(210, 330);
             this.CheckBox.Name = "CheckBox";
             this.CheckBox.Size = new System.Drawing.Size(178, 28);
             this.CheckBox.TabIndex = 33;
@@ -230,7 +242,7 @@ namespace neuopc
             // 
             // SwitchButton
             // 
-            this.SwitchButton.Location = new System.Drawing.Point(560, 326);
+            this.SwitchButton.Location = new System.Drawing.Point(394, 326);
             this.SwitchButton.Name = "SwitchButton";
             this.SwitchButton.Size = new System.Drawing.Size(160, 34);
             this.SwitchButton.TabIndex = 32;
@@ -417,6 +429,7 @@ namespace neuopc
         private System.Windows.Forms.Button TestButton;
         private System.Windows.Forms.CheckBox CheckBox;
         private System.Windows.Forms.Label UALabel;
+        private System.Windows.Forms.Button SaveButton;
     }
 }
 

@@ -49,7 +49,7 @@ namespace neuopc
         {
             try
             {
-                string jsonString = JsonSerializer.Serialize<Config>(config);
+                string jsonString = JsonSerializer.Serialize<Config>(config, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(filename, jsonString);
             }
             catch (Exception ex)
