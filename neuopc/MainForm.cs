@@ -212,13 +212,6 @@ namespace neuopc
                 UAPasswordTextBox.Text = "123456";
             }
 
-
-            subProcess.Daemon();
-            var ts = new ThreadStart(TestGetDatas);
-            var thread = new Thread(ts);
-            thread.Start();
-
-
             if (CheckBox.Checked)
             {
                 subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
@@ -241,6 +234,11 @@ namespace neuopc
 
                 SwitchButton.Text = "Start";
             }
+
+            subProcess.Daemon();
+            var ts = new ThreadStart(TestGetDatas);
+            var thread = new Thread(ts);
+            thread.Start();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
@@ -497,6 +495,9 @@ namespace neuopc
                 {
                     var res2 = Serializer.Deserialize<UAStopResMsg>(result2);
                 }
+
+                subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
+                subProcess.SetUAArguments(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
 
                 SwitchButton.Text = "Start";
 

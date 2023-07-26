@@ -4,10 +4,11 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
+	<ApplicationIcon></ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
     <RootNamespace>neuopc</RootNamespace>
 	  <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	  <Win32Resource />
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\neulib\neulib.csproj" />
-    <ProjectReference Include="..\neuservice\neuservice.csproj" />
   </ItemGroup>
 
   <ItemGroup>

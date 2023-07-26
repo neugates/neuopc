@@ -30,7 +30,6 @@ namespace neuopc
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.DAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.UAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -156,7 +155,6 @@ namespace neuopc
             // 
             // NotifyIcon
             // 
-            this.NotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIcon.Icon")));
             this.NotifyIcon.Text = "neuopc";
             this.NotifyIcon.Visible = true;
             this.NotifyIcon.Click += new System.EventHandler(this.NotifyIcon_Click);
@@ -367,7 +365,6 @@ namespace neuopc
             this.ClientSize = new System.Drawing.Size(784, 481);
             this.Controls.Add(this.TabControl);
             this.Controls.Add(this.statusStrip1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
