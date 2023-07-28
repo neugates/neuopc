@@ -28,37 +28,6 @@ namespace neuopc
             running = true;
         }
 
-        //private void UpdateListView(List<Item> list)
-        //{
-        //    try
-        //    {
-        //        Action<List<Item>> action = (data) =>
-        //        {
-        //            foreach (var i in data)
-        //            {
-        //                int index = i.ClientHandle;
-        //                var items = MainListView.Items;
-        //                var item = items[index];
-        //                var subItemValue = item.SubItems[3];
-        //                var subItemQuality = item.SubItems[4];
-        //                var subItemError = item.SubItems[5];
-        //                var subItemTs = item.SubItems[6];
-
-        //                subItemValue.Text = Convert.ToString(i.Value);
-        //                subItemQuality.Text = i.Quality.ToString();
-        //                subItemError.Text = i.Error.ToString();
-        //                subItemTs.Text = Convert.ToString(i.Timestamp);
-        //            }
-        //        };
-
-        //        Invoke(action, list);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        Log.Error($"update list view error: {exception.Message}");
-        //    }
-        //}
-
         //private void UpdateDAStatusLabel(DaMsg msg)
         //{
         //    try
@@ -85,62 +54,36 @@ namespace neuopc
         //    }
         //}
 
-
-        //private void ResetListView(List<Item> list)
-        //{
-        //    try
-        //    {
-        //        Action<List<Item>> action = (data) =>
-        //        {
-        //            MainListView.BeginUpdate();
-        //            MainListView.Items.Clear();
-        //            for (int i = 0; i < data.Count; i++)
-        //            {
-        //                ListViewItem lvi = new ListViewItem();
-        //                lvi.Text = data[i].Name.ToString(); // handle
-        //                lvi.SubItems.Add(data[i].Type.ToString()); // type
-        //                lvi.SubItems.Add(data[i].Rights.ToString()); // rights
-        //                lvi.SubItems.Add(""); // value
-        //                lvi.SubItems.Add(""); // quality
-        //                lvi.SubItems.Add(""); // error
-        //                lvi.SubItems.Add(""); // timestamp
-        //                lvi.SubItems.Add(data[i].ClientHandle.ToString()); // handle
-        //                MainListView.Items.Add(lvi);
-        //            }
-        //            MainListView.EndUpdate();
-
-        //        };
-
-        //        Invoke(action, list);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        Log.Error($"reset list view error: {exception.Message}");
-        //    }
-        //}
-
         private void ResetListView(List<DataItem> list)
         {
             try
             {
                 Action<List<DataItem>> action = (data) =>
                 {
-                    MainListView.BeginUpdate();
-                    MainListView.Items.Clear();
-                    for (int i = 0; i < data.Count; i++)
+                    var items = MainListView.Items;
+                    foreach (var item in data)
                     {
-                        ListViewItem lvi = new ListViewItem();
-                        lvi.Text = data[i].Name;
-                        lvi.SubItems.Add(data[i].Type); // type
-                        lvi.SubItems.Add(data[i].Right); // rights
-                        lvi.SubItems.Add(data[i].Value); // value
-                        lvi.SubItems.Add(data[i].Quality); // quality
-                        lvi.SubItems.Add(data[i].Error); // error
-                        lvi.SubItems.Add(data[i].Timestamp); // timestamp
-                        lvi.SubItems.Add(data[i].ClientHandle); // handle
-                        MainListView.Items.Add(lvi);
+                        ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
+                        if (null == li)
+                        {
+                            MainListView.BeginUpdate();
+                            ListViewItem lvi = new ListViewItem();
+                            lvi.Text = item.Name;
+                            lvi.SubItems.Add(item.Type); // type
+                            lvi.SubItems.Add(item.Right); // rights
+                            lvi.SubItems.Add(item.Value); // value
+                            lvi.SubItems.Add(item.Quality); // quality
+                            lvi.SubItems.Add(item.Error); // error
+                            lvi.SubItems.Add(item.Timestamp); // timestamp
+                            lvi.SubItems.Add(item.ClientHandle); // handle
+                            MainListView.Items.Add(lvi);
+                            MainListView.EndUpdate();
+                        }
+                        else
+                        {
+                            li.SubItems[3].Text = item.Value;
+                        }
                     }
-                    MainListView.EndUpdate();
                 };
 
                 Invoke(action, list);
@@ -167,13 +110,6 @@ namespace neuopc
                     try
                     {
                         var requestMsg = Serializer.Deserialize<DataResMsg>(result);
-                        //foreach (var item in requestMsg.Items)
-                        //{
-                        //    Log.Information($"name:{item.Name}, handle:{item.ClientHandle}, right:{item.Right}, value:{item.Value}, quality:{item.Quality}, error:{item.Error}, timestamp:{item.Timestamp}");
-
-
-                        //}
-
                         ResetListView(requestMsg.Items);
                     }
                     catch (Exception ex)
@@ -315,53 +251,23 @@ namespace neuopc
             Environment.Exit(0);
         }
 
-        //private void RunButton_Click(object sender, EventArgs e)
-        //{
-        //    //    server.Write += client.Write;
-        //    //    var items = new List<Item>();
-        //    //    server.Start(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
-
-        //    //    RunButton.Enabled = false;
-        //    //    UAPortTextBox.Enabled = false;
-        //    //    UAUserTextBox.Enabled = false;
-        //    //    UAPasswordTextBox.Enabled = false;
-
-        //    var req = new UAStartReqMsg
-        //    {
-        //        Type = neulib.MsgType.UAStartReq,
-        //        Port = UAPortTextBox.Text,
-        //        User = UAUserTextBox.Text,
-        //        Password = UAPasswordTextBox.Text
-        //    };
-        //    var buff = Serializer.Serialize<UAStartReqMsg>(req);
-        //    subProcess.Request(in buff, out byte[] result);
-        //    if (null != result)
-        //    {
-        //        var res = Serializer.Deserialize<UAStartResMsg>(result);
-        //    }
-
-        //    SwitchButton.Enabled = false;
-        //    UAPortTextBox.Enabled = false;
-        //    UAUserTextBox.Enabled = false;
-        //    UAPasswordTextBox.Enabled = false;
-        //}
-
         private void MainListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            //ListView listView = (ListView)sender;
-            //ListViewItem row = listView.GetItemAt(e.X, e.Y);
-            //ListViewItem.ListViewSubItem col = row.GetSubItemAt(e.X, e.Y);
-            //string strText = col.Text;
-            //try
-            //{
-            //    Clipboard.SetDataObject(strText);
-            //    string info = $"The content [{strText}] has been copied to the clipboard";
-            //    MessageBox.Show(info, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //}
-            //catch (System.Exception ex)
-            //{
-            //    MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
+            ListView listView = (ListView)sender;
+            ListViewItem row = listView.GetItemAt(e.X, e.Y);
+            ListViewItem.ListViewSubItem col = row.GetSubItemAt(e.X, e.Y);
+            string strText = col.Text;
+            try
+            {
+                Clipboard.SetDataObject(strText);
+                //string info = $"The content [{strText}] has been copied to the clipboard";
+                //MessageBox.Show(info, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (System.Exception ex)
+            {
+                //MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error($"clipboard error:{ex.Message}");
+            }
         }
 
         private void NotifyIcon_Click(object sender, EventArgs e)
@@ -518,7 +424,21 @@ namespace neuopc
         {
             if (1 == TabControl.SelectedIndex)
             {
-                // TODO: Get New Data List
+                try
+                {
+                    Action action = () =>
+                    {
+                        MainListView.BeginUpdate();
+                        MainListView.Items.Clear();
+                        MainListView.EndUpdate();
+                    };
+
+                    Invoke(action);
+                }
+                catch (Exception exception)
+                {
+                    Log.Error($"clear list view error: {exception.Message}");
+                }
             }
         }
     }
