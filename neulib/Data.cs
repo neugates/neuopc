@@ -10,7 +10,8 @@ namespace neulib
     }
 
     [Serializable]
-    public class DataItem {
+    public class DataItem
+    {
         public string Name;
         public string Type;
         public string Right;

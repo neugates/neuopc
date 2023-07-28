@@ -199,7 +199,7 @@ namespace neuopc
 
             if (string.IsNullOrEmpty(UAPortTextBox.Text))
             {
-                UAPortTextBox.Text = "opc.tcp//localhost:48401";
+                UAPortTextBox.Text = "opc.tcp://localhost:48401";
             }
 
             if (string.IsNullOrEmpty(UAUserTextBox.Text))
@@ -512,6 +512,14 @@ namespace neuopc
             };
 
             ConfigUtil.SaveConfig("neuopc.json", config);
+        }
+
+        private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (1 == TabControl.SelectedIndex)
+            {
+                // TODO: Get New Data List
+            }
         }
     }
 }

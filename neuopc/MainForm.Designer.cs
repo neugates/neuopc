@@ -173,6 +173,7 @@ namespace neuopc
             this.TabControl.SelectedIndex = 0;
             this.TabControl.Size = new System.Drawing.Size(784, 459);
             this.TabControl.TabIndex = 8;
+            this.TabControl.SelectedIndexChanged += new System.EventHandler(this.TabControl_SelectedIndexChanged);
             // 
             // TabPageSetting
             // 
