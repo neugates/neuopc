@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\neulib\neulib.csproj" />
+    <ProjectReference Include="..\neuservice\neuservice.csproj" />
   </ItemGroup>
 
   <ItemGroup>

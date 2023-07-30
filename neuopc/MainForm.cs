@@ -10,6 +10,8 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Text.Json;
 using System.Threading.Channels;
+using System.IO;
+using System.Diagnostics;
 using Serilog;
 using neulib;
 
@@ -82,6 +84,9 @@ namespace neuopc
                         else
                         {
                             li.SubItems[3].Text = item.Value;
+                            li.SubItems[4].Text = item.Quality;
+                            li.SubItems[5].Text = item.Error;
+                            li.SubItems[6].Text = item.Timestamp;
                         }
                     }
                 };
@@ -260,12 +265,9 @@ namespace neuopc
             try
             {
                 Clipboard.SetDataObject(strText);
-                //string info = $"The content [{strText}] has been copied to the clipboard";
-                //MessageBox.Show(info, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (System.Exception ex)
             {
-                //MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Log.Error($"clipboard error:{ex.Message}");
             }
         }
@@ -439,6 +441,55 @@ namespace neuopc
                 {
                     Log.Error($"clear list view error: {exception.Message}");
                 }
+            }
+
+            if (2 == TabControl.SelectedIndex)
+            {
+                try
+                {
+                    Action action = () =>
+                    {
+                        DirectoryInfo di = new DirectoryInfo("./log");
+                        LogListView.BeginUpdate();
+                        LogListView.Items.Clear();
+
+                        foreach (var fi in di.GetFiles())
+                        {
+                            ListViewItem lvi = new ListViewItem
+                            {
+                                Text = fi.Name,
+                            };
+
+                            lvi.SubItems.Add(fi.LastWriteTime.ToString());
+                            lvi.SubItems.Add(fi.Length.ToString());
+                            LogListView.Items.Add(lvi);
+                        }
+
+                        LogListView.EndUpdate();
+                    };
+
+                    Invoke(action);
+                }
+                catch (Exception exception)
+                {
+                    Log.Error($"get logs error: {exception.Message}");
+                }
+            }
+        }
+
+        private void LogListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ListView listView = (ListView)sender;
+            ListViewItem row = listView.GetItemAt(e.X, e.Y);
+            ListViewItem.ListViewSubItem col = row.GetSubItemAt(e.X, e.Y);
+            string strText = col.Text;
+            try
+            {
+                Process.Start("notepad.exe", $"./log/{strText}");
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"clipboard error:{ex.Message}");
             }
         }
     }

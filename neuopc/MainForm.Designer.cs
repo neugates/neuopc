@@ -62,12 +62,18 @@ namespace neuopc
             this.label1 = new System.Windows.Forms.Label();
             this.TestButton = new System.Windows.Forms.Button();
             this.TabPageData = new System.Windows.Forms.TabPage();
+            this.TabPageLog = new System.Windows.Forms.TabPage();
+            this.LogListView = new System.Windows.Forms.ListView();
+            this.filename = new System.Windows.Forms.ColumnHeader();
+            this.time = new System.Windows.Forms.ColumnHeader();
             this.TabPageAbout = new System.Windows.Forms.TabPage();
+            this.length = new System.Windows.Forms.ColumnHeader();
             this.statusStrip1.SuspendLayout();
             this.TabControl.SuspendLayout();
             this.TabPageSetting.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.TabPageData.SuspendLayout();
+            this.TabPageLog.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -165,6 +171,7 @@ namespace neuopc
             this.TabControl.Appearance = System.Windows.Forms.TabAppearance.Buttons;
             this.TabControl.Controls.Add(this.TabPageSetting);
             this.TabControl.Controls.Add(this.TabPageData);
+            this.TabControl.Controls.Add(this.TabPageLog);
             this.TabControl.Controls.Add(this.TabPageAbout);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -361,6 +368,42 @@ namespace neuopc
             this.TabPageData.Text = "Data view";
             this.TabPageData.UseVisualStyleBackColor = true;
             // 
+            // TabPageLog
+            // 
+            this.TabPageLog.Controls.Add(this.LogListView);
+            this.TabPageLog.Location = new System.Drawing.Point(4, 36);
+            this.TabPageLog.Name = "TabPageLog";
+            this.TabPageLog.Size = new System.Drawing.Size(776, 419);
+            this.TabPageLog.TabIndex = 3;
+            this.TabPageLog.Text = "Log";
+            this.TabPageLog.UseVisualStyleBackColor = true;
+            // 
+            // LogListView
+            // 
+            this.LogListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.filename,
+            this.time,
+            this.length});
+            this.LogListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LogListView.HideSelection = false;
+            this.LogListView.Location = new System.Drawing.Point(0, 0);
+            this.LogListView.Name = "LogListView";
+            this.LogListView.Size = new System.Drawing.Size(776, 419);
+            this.LogListView.TabIndex = 0;
+            this.LogListView.UseCompatibleStateImageBehavior = false;
+            this.LogListView.View = System.Windows.Forms.View.Details;
+            this.LogListView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LogListView_MouseDoubleClick);
+            // 
+            // filename
+            // 
+            this.filename.Text = "Name";
+            this.filename.Width = 300;
+            // 
+            // time
+            // 
+            this.time.Text = "Time";
+            this.time.Width = 200;
+            // 
             // TabPageAbout
             // 
             this.TabPageAbout.Location = new System.Drawing.Point(4, 36);
@@ -370,6 +413,11 @@ namespace neuopc
             this.TabPageAbout.TabIndex = 2;
             this.TabPageAbout.Text = "About";
             this.TabPageAbout.UseVisualStyleBackColor = true;
+            // 
+            // length
+            // 
+            this.length.Text = "Length";
+            this.length.Width = 200;
             // 
             // MainForm
             // 
@@ -391,6 +439,7 @@ namespace neuopc
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.TabPageData.ResumeLayout(false);
+            this.TabPageLog.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -431,6 +480,11 @@ namespace neuopc
         private System.Windows.Forms.CheckBox CheckBox;
         private System.Windows.Forms.Label UALabel;
         private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.TabPage TabPageLog;
+        private System.Windows.Forms.ListView LogListView;
+        private System.Windows.Forms.ColumnHeader filename;
+        private System.Windows.Forms.ColumnHeader time;
+        private System.Windows.Forms.ColumnHeader length;
     }
 }
 

@@ -43,6 +43,10 @@ namespace neuservice
                     try
                     {
                         nodes[index].Value = item.Value;
+                        nodes[index].Quality = item.Quality;
+                        nodes[index].Error = item.Error;
+                        nodes[index].Timestamp = item.Timestamp;
+                        //System.Console.WriteLine($"quality:{nodes[index].Quality.ToString()}, timestamp:{nodes[index].Timestamp.ToString()}");
                     }
                     catch (Exception ex)
                     {
