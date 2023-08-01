@@ -82,20 +82,19 @@ namespace neuservice
     {
         private const int MaxRead = 100;
         private OPCServer server;
-        private OPCBrowser brower;
         private OPCGroups groups;
         private OPCGroup group;
-        private List<Node> nodes;
+        private readonly List<Node> nodes;
         private string hostName;
         private string serverName;
 
         private Thread thread;
-        private object locker;
-        private object nodesLocker;
+        private readonly object locker;
+        private readonly object nodesLocker;
         private bool running;
 
-        private List<Channel<DaMsg>> slowChannels;
-        private List<Channel<DaMsg>> fastChannels;
+        private readonly List<Channel<DaMsg>> slowChannels;
+        private readonly List<Channel<DaMsg>> fastChannels;
 
         public DAClient()
         {
@@ -169,29 +168,6 @@ namespace neuservice
             return true;
         }
 
-        private bool SetBrower()
-        {
-            try
-            {
-                brower = server.CreateBrowser();
-                if (null == brower)
-                {
-                    return false;
-                }
-
-                brower.ShowBranches();
-                brower.ShowLeafs(true);
-            }
-            catch (Exception error)
-            {
-                brower = null;
-                Log.Error($"create browser failed, msg:{error.Message}");
-                return false;
-            }
-
-            return true;
-        }
-
         private bool SetGroup()
         {
             try
@@ -214,9 +190,21 @@ namespace neuservice
 
         private bool SetNodes()
         {
+            OPCBrowser brower;
+            try
+            {
+                brower = server.CreateBrowser();
+                brower.ShowBranches();
+                brower.ShowLeafs(true);
+            }
+            catch (Exception error)
+            {
+                Log.Error($"create browser failed, msg:{error.Message}");
+                return false;
+            }
+
             lock (nodesLocker)
             {
-
                 nodes.Clear();
                 int index = 0;
                 foreach (var item in brower)
@@ -237,13 +225,12 @@ namespace neuservice
                     {
                         Log.Warning($"add item failed, name:{item}, error:{exception.Message}");
                     }
-
-                    //Log.Information($"add item secceed, name:{item}, type:{node.Type}");
                 }
             }
 
             return true;
         }
+
 
         private bool SetItems()
         {
@@ -294,6 +281,7 @@ namespace neuservice
             if (null == groups) { return false; }
             if (null == group) { return false; }
 
+
             groups.DefaultGroupDeadband = 0;
             groups.DefaultGroupUpdateRate = 200;
 
@@ -307,7 +295,6 @@ namespace neuservice
         private void SetNull()
         {
             server = null;
-            brower = null;
             groups = null;
             group = null;
 
@@ -320,8 +307,6 @@ namespace neuservice
         private bool Connect()
         {
             if (false == SetServer()) { return false; }
-
-            if (false == SetBrower()) { return false; }
 
             if (false == SetGroup()) { return false; }
 
