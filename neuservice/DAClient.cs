@@ -82,7 +82,6 @@ namespace neuservice
     {
         private const int MaxRead = 100;
         private OPCServer server;
-        private OPCGroups groups;
         private OPCGroup group;
         private readonly List<Node> nodes;
         private string hostName;
@@ -112,7 +111,6 @@ namespace neuservice
             var list = new List<string>();
             var ipHost = Dns.GetHostEntry("127.0.0.1");
             list.Add(ipHost.HostName);
-            // TODO: enum all host
             return list;
         }
 
@@ -172,14 +170,12 @@ namespace neuservice
         {
             try
             {
-                groups = server.OPCGroups;
-                groups.DefaultGroupIsActive = true;
-                group = groups.Add("all");
+                server.OPCGroups.DefaultGroupIsActive = true;
+                group = server.OPCGroups.Add("all");
                 group.IsActive = true;
             }
             catch (Exception error)
             {
-                groups = null;
                 group = null;
                 Log.Error($"add group failed, msg:{error.Message}");
                 return false;
@@ -232,6 +228,7 @@ namespace neuservice
         }
 
 
+
         private bool SetItems()
         {
             List<Item> items;
@@ -278,12 +275,10 @@ namespace neuservice
 
         private bool SetChange()
         {
-            if (null == groups) { return false; }
             if (null == group) { return false; }
 
-
-            groups.DefaultGroupDeadband = 0;
-            groups.DefaultGroupUpdateRate = 200;
+            server.OPCGroups.DefaultGroupDeadband = 0;
+            server.OPCGroups.DefaultGroupUpdateRate = 200;
 
             group.IsSubscribed = true;
             group.UpdateRate = 200;
@@ -295,7 +290,6 @@ namespace neuservice
         private void SetNull()
         {
             server = null;
-            groups = null;
             group = null;
 
             lock (nodesLocker)
