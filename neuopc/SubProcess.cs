@@ -128,7 +128,7 @@ namespace neuopc
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
-                    CreateNoWindow = true,
+                    //CreateNoWindow = true,
                     ErrorDialog = false,
                     Arguments = $"da_host={serviceInfo.DAHost} da_server={serviceInfo.DAServer} ua_url={serviceInfo.UAPort} ua_user={serviceInfo.UAUsername} ua_password={serviceInfo.UAPassword} zmq_uri={serviceInfo.ListenUri}",
                 }

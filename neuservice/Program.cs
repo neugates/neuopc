@@ -50,7 +50,7 @@ namespace neuservice
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"update node error:{ex.Message}");
+                        Log.Error($"update node error:{ex.Message}, index:{index}");
                     }
                 }
             }

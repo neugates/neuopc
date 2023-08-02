@@ -203,6 +203,7 @@ namespace neuservice
             {
                 nodes.Clear();
                 int index = 0;
+
                 foreach (var item in brower)
                 {
                     var node = new Node()
@@ -215,6 +216,8 @@ namespace neuservice
                         node.Item = group.OPCItems.AddItem(node.Name, index);
                         node.Type = (DaType)node.Item.CanonicalDataType;
                         nodes.Add(node);
+                        Log.Information($"add item success, name:{node.Name}, index:{index}");
+
                         index++;
                     }
                     catch (Exception exception)
@@ -227,7 +230,53 @@ namespace neuservice
             return true;
         }
 
+        private void UpdateNodes()
+        {
+            OPCBrowser brower;
+            try
+            {
+                brower = server.CreateBrowser();
+                brower.ShowBranches();
+                brower.ShowLeafs(true);
+            }
+            catch (Exception error)
+            {
+                Log.Error($"create browser failed, msg:{error.Message}");
+                return;
+            }
 
+            lock (nodesLocker)
+            {
+                foreach (var item in brower)
+                {
+                    var name = item.ToString();
+                    if (nodes.Where(node => node.Name.Equals(name)).Count() > 0)
+                    {
+                        continue;
+                    }
+
+                    var node = new Node()
+                    {
+                        Name = name,
+                    };
+
+                    try
+                    {
+                        var last = nodes.LastOrDefault();
+                        var lastHandle = last.Item.ClientHandle;
+                        var index = null == last ? 0 : (lastHandle + 1);
+                        node.Item = group.OPCItems.AddItem(node.Name, index);
+                        node.Type = (DaType)node.Item.CanonicalDataType;
+                        nodes.Add(node);
+                        Log.Information($"update item success, name:{item}, index:{index}");
+                    }
+                    catch (Exception exception)
+                    {
+                        Log.Warning($"update item failed, name:{item}, error:{exception.Message}");
+                    }
+                }
+            }
+        }
 
         private bool SetItems()
         {
@@ -246,6 +295,7 @@ namespace neuservice
                              Quality = 0,
                              Timestamp = DateTime.Now,
                          }).ToList();
+
             }
 
             // write to the slow channels
@@ -276,14 +326,11 @@ namespace neuservice
         private bool SetChange()
         {
             if (null == group) { return false; }
-
             server.OPCGroups.DefaultGroupDeadband = 0;
             server.OPCGroups.DefaultGroupUpdateRate = 200;
-
             group.IsSubscribed = true;
             group.UpdateRate = 200;
             group.DataChange += GroupDataChange;
-
             return true;
         }
 
@@ -333,6 +380,7 @@ namespace neuservice
 
         private bool Read()
         {
+
             bool isError = false;
             lock (nodesLocker)
             {
@@ -536,6 +584,7 @@ namespace neuservice
                     Connect();
                 }
 
+                UpdateNodes();
                 Thread.Sleep(1000);
             }
 
