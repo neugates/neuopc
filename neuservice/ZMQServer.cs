@@ -12,15 +12,15 @@ namespace neuservice
 {
     class ZMQServer
     {
-        private string uri;
+        private readonly string uri;
         private bool running;
-        private object runningLocker;
-        private DAClient client;
-        private UAServer server;
+        private readonly object runningLocker;
+        private readonly DAClient client;
+        private readonly UAServer server;
         private Thread thread;
-        private object timestampLocker;
+        private readonly object timestampLocker;
         private long timestamp;
-        private DataNodes nodes;
+        private readonly DataNodes nodes;
 
         public ZMQServer(string uri, DAClient client, UAServer server, DataNodes nodes)
         {
@@ -240,7 +240,7 @@ namespace neuservice
 
         private DataResMsg GetItems(DataReqMsg requestMsg)
         {
-            var list = this.nodes.GetNodes(out long sequence);
+            var list = this.nodes.GetNodes();
             var dataItems = new List<DataItem>();
             foreach (var item in list)
             {
@@ -259,7 +259,6 @@ namespace neuservice
 
             return new DataResMsg
             {
-                Sequence = sequence,
                 Items = dataItems
             };
         }

@@ -3,20 +3,19 @@ using Serilog;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace neuservice
 {
     public class DataNodes
     {
         private readonly object locker;
-        private List<Item> nodes;
-        private long sequence;
+        private readonly List<Item> nodes;
 
         public DataNodes()
         {
             locker = new object();
             nodes = new List<Item>();
-            sequence = 0;
         }
 
         public void ResetNodes(List<Item> items)
@@ -24,12 +23,7 @@ namespace neuservice
             lock (locker)
             {
                 nodes.Clear();
-                foreach (var item in items)
-                {
-                    nodes.Add(item);
-                }
-
-                sequence++;
+                nodes.AddRange(items);
             }
         }
 
@@ -39,28 +33,32 @@ namespace neuservice
             {
                 foreach (var item in items)
                 {
-                    int index = item.ClientHandle;
+                    var node = nodes.Where(n => n.Name.Equals(item.Name)).FirstOrDefault();
+                    if (null == node)
+                    {
+                        nodes.Add(item);
+                        continue;
+                    }
+
                     try
                     {
-                        nodes[index].Value = item.Value;
-                        nodes[index].Quality = item.Quality;
-                        nodes[index].Error = item.Error;
-                        nodes[index].Timestamp = item.Timestamp;
-                        //System.Console.WriteLine($"quality:{nodes[index].Quality.ToString()}, timestamp:{nodes[index].Timestamp.ToString()}");
+                        node.Value = item.Value;
+                        node.Quality = item.Quality;
+                        node.Error = item.Error;
+                        node.Timestamp = item.Timestamp;
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"update node error:{ex.Message}, index:{index}");
+                        Log.Error($"update node error:{ex.Message}, index:{node.ClientHandle}");
                     }
                 }
             }
         }
 
-        public List<Item> GetNodes(out long sequence)
+        public List<Item> GetNodes()
         {
             lock (locker)
             {
-                sequence = this.sequence;
                 return nodes;
             }
         }
