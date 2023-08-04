@@ -49,6 +49,7 @@ namespace neuservice
     {
         Good = 192,
         Bad = 0,
+        BadConfigurationErrorInServer = 4,
     }
 
     public enum MsgType

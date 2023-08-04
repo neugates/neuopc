@@ -66,8 +66,8 @@ namespace neuopc
             this.LogListView = new System.Windows.Forms.ListView();
             this.filename = new System.Windows.Forms.ColumnHeader();
             this.time = new System.Windows.Forms.ColumnHeader();
-            this.TabPageAbout = new System.Windows.Forms.TabPage();
             this.length = new System.Windows.Forms.ColumnHeader();
+            this.TabPageAbout = new System.Windows.Forms.TabPage();
             this.statusStrip1.SuspendLayout();
             this.TabControl.SuspendLayout();
             this.TabPageSetting.SuspendLayout();
@@ -82,10 +82,10 @@ namespace neuopc
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.DAStatusLabel,
             this.UAStatusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 459);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 672);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 17, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(784, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(1128, 22);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -114,7 +114,7 @@ namespace neuopc
             this.MainListView.HideSelection = false;
             this.MainListView.Location = new System.Drawing.Point(3, 3);
             this.MainListView.Name = "MainListView";
-            this.MainListView.Size = new System.Drawing.Size(770, 413);
+            this.MainListView.Size = new System.Drawing.Size(1114, 626);
             this.MainListView.TabIndex = 7;
             this.MainListView.UseCompatibleStateImageBehavior = false;
             this.MainListView.View = System.Windows.Forms.View.Details;
@@ -178,7 +178,7 @@ namespace neuopc
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Name = "TabControl";
             this.TabControl.SelectedIndex = 0;
-            this.TabControl.Size = new System.Drawing.Size(784, 459);
+            this.TabControl.Size = new System.Drawing.Size(1128, 672);
             this.TabControl.TabIndex = 8;
             this.TabControl.SelectedIndexChanged += new System.EventHandler(this.TabControl_SelectedIndexChanged);
             // 
@@ -188,14 +188,15 @@ namespace neuopc
             this.TabPageSetting.Location = new System.Drawing.Point(4, 36);
             this.TabPageSetting.Name = "TabPageSetting";
             this.TabPageSetting.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageSetting.Size = new System.Drawing.Size(776, 419);
+            this.TabPageSetting.Size = new System.Drawing.Size(1120, 632);
             this.TabPageSetting.TabIndex = 0;
             this.TabPageSetting.Text = "Setting";
             this.TabPageSetting.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.SaveButton);
             this.groupBox1.Controls.Add(this.UALabel);
@@ -216,13 +217,13 @@ namespace neuopc
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(758, 405);
+            this.groupBox1.Size = new System.Drawing.Size(1102, 618);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             // 
             // SaveButton
             // 
-            this.SaveButton.Location = new System.Drawing.Point(560, 326);
+            this.SaveButton.Location = new System.Drawing.Point(564, 314);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(160, 34);
             this.SaveButton.TabIndex = 35;
@@ -233,7 +234,7 @@ namespace neuopc
             // UALabel
             // 
             this.UALabel.AutoSize = true;
-            this.UALabel.Location = new System.Drawing.Point(227, 132);
+            this.UALabel.Location = new System.Drawing.Point(226, 120);
             this.UALabel.Name = "UALabel";
             this.UALabel.Size = new System.Drawing.Size(0, 24);
             this.UALabel.TabIndex = 34;
@@ -241,7 +242,7 @@ namespace neuopc
             // CheckBox
             // 
             this.CheckBox.AutoSize = true;
-            this.CheckBox.Location = new System.Drawing.Point(210, 330);
+            this.CheckBox.Location = new System.Drawing.Point(209, 318);
             this.CheckBox.Name = "CheckBox";
             this.CheckBox.Size = new System.Drawing.Size(178, 28);
             this.CheckBox.TabIndex = 33;
@@ -250,7 +251,7 @@ namespace neuopc
             // 
             // SwitchButton
             // 
-            this.SwitchButton.Location = new System.Drawing.Point(394, 326);
+            this.SwitchButton.Location = new System.Drawing.Point(393, 314);
             this.SwitchButton.Name = "SwitchButton";
             this.SwitchButton.Size = new System.Drawing.Size(160, 34);
             this.SwitchButton.TabIndex = 32;
@@ -260,7 +261,7 @@ namespace neuopc
             // 
             // UAPasswordTextBox
             // 
-            this.UAPasswordTextBox.Location = new System.Drawing.Point(222, 280);
+            this.UAPasswordTextBox.Location = new System.Drawing.Point(226, 269);
             this.UAPasswordTextBox.Name = "UAPasswordTextBox";
             this.UAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
             this.UAPasswordTextBox.TabIndex = 29;
@@ -268,7 +269,7 @@ namespace neuopc
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(9, 287);
+            this.label5.Location = new System.Drawing.Point(8, 275);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(164, 24);
             this.label5.TabIndex = 30;
@@ -277,7 +278,7 @@ namespace neuopc
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 199);
+            this.label3.Location = new System.Drawing.Point(8, 187);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(119, 24);
@@ -286,7 +287,7 @@ namespace neuopc
             // 
             // UAPortTextBox
             // 
-            this.UAPortTextBox.Location = new System.Drawing.Point(222, 195);
+            this.UAPortTextBox.Location = new System.Drawing.Point(226, 187);
             this.UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.UAPortTextBox.Name = "UAPortTextBox";
             this.UAPortTextBox.Size = new System.Drawing.Size(498, 30);
@@ -294,7 +295,7 @@ namespace neuopc
             // 
             // UAUserTextBox
             // 
-            this.UAUserTextBox.Location = new System.Drawing.Point(222, 240);
+            this.UAUserTextBox.Location = new System.Drawing.Point(226, 229);
             this.UAUserTextBox.Name = "UAUserTextBox";
             this.UAUserTextBox.Size = new System.Drawing.Size(498, 30);
             this.UAUserTextBox.TabIndex = 26;
@@ -302,7 +303,7 @@ namespace neuopc
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 244);
+            this.label4.Location = new System.Drawing.Point(8, 232);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(121, 24);
             this.label4.TabIndex = 28;
@@ -311,7 +312,7 @@ namespace neuopc
             // DAHostComboBox
             // 
             this.DAHostComboBox.FormattingEnabled = true;
-            this.DAHostComboBox.Location = new System.Drawing.Point(227, 35);
+            this.DAHostComboBox.Location = new System.Drawing.Point(226, 23);
             this.DAHostComboBox.Name = "DAHostComboBox";
             this.DAHostComboBox.Size = new System.Drawing.Size(498, 32);
             this.DAHostComboBox.TabIndex = 0;
@@ -320,7 +321,7 @@ namespace neuopc
             // DAServerComboBox
             // 
             this.DAServerComboBox.FormattingEnabled = true;
-            this.DAServerComboBox.Location = new System.Drawing.Point(227, 77);
+            this.DAServerComboBox.Location = new System.Drawing.Point(226, 65);
             this.DAServerComboBox.Name = "DAServerComboBox";
             this.DAServerComboBox.Size = new System.Drawing.Size(498, 32);
             this.DAServerComboBox.TabIndex = 1;
@@ -329,7 +330,7 @@ namespace neuopc
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 81);
+            this.label2.Location = new System.Drawing.Point(8, 69);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(137, 24);
@@ -339,7 +340,7 @@ namespace neuopc
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 39);
+            this.label1.Location = new System.Drawing.Point(8, 27);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(124, 24);
@@ -348,7 +349,7 @@ namespace neuopc
             // 
             // TestButton
             // 
-            this.TestButton.Location = new System.Drawing.Point(565, 127);
+            this.TestButton.Location = new System.Drawing.Point(564, 115);
             this.TestButton.Margin = new System.Windows.Forms.Padding(2);
             this.TestButton.Name = "TestButton";
             this.TestButton.Size = new System.Drawing.Size(160, 34);
@@ -363,7 +364,7 @@ namespace neuopc
             this.TabPageData.Location = new System.Drawing.Point(4, 36);
             this.TabPageData.Name = "TabPageData";
             this.TabPageData.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageData.Size = new System.Drawing.Size(776, 419);
+            this.TabPageData.Size = new System.Drawing.Size(1120, 632);
             this.TabPageData.TabIndex = 1;
             this.TabPageData.Text = "Data view";
             this.TabPageData.UseVisualStyleBackColor = true;
@@ -373,7 +374,7 @@ namespace neuopc
             this.TabPageLog.Controls.Add(this.LogListView);
             this.TabPageLog.Location = new System.Drawing.Point(4, 36);
             this.TabPageLog.Name = "TabPageLog";
-            this.TabPageLog.Size = new System.Drawing.Size(776, 419);
+            this.TabPageLog.Size = new System.Drawing.Size(1120, 632);
             this.TabPageLog.TabIndex = 3;
             this.TabPageLog.Text = "Log";
             this.TabPageLog.UseVisualStyleBackColor = true;
@@ -388,7 +389,7 @@ namespace neuopc
             this.LogListView.HideSelection = false;
             this.LogListView.Location = new System.Drawing.Point(0, 0);
             this.LogListView.Name = "LogListView";
-            this.LogListView.Size = new System.Drawing.Size(776, 419);
+            this.LogListView.Size = new System.Drawing.Size(1120, 632);
             this.LogListView.TabIndex = 0;
             this.LogListView.UseCompatibleStateImageBehavior = false;
             this.LogListView.View = System.Windows.Forms.View.Details;
@@ -404,26 +405,26 @@ namespace neuopc
             this.time.Text = "Time";
             this.time.Width = 200;
             // 
-            // TabPageAbout
-            // 
-            this.TabPageAbout.Location = new System.Drawing.Point(4, 36);
-            this.TabPageAbout.Name = "TabPageAbout";
-            this.TabPageAbout.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageAbout.Size = new System.Drawing.Size(776, 419);
-            this.TabPageAbout.TabIndex = 2;
-            this.TabPageAbout.Text = "About";
-            this.TabPageAbout.UseVisualStyleBackColor = true;
-            // 
             // length
             // 
             this.length.Text = "Length";
             this.length.Width = 200;
             // 
+            // TabPageAbout
+            // 
+            this.TabPageAbout.Location = new System.Drawing.Point(4, 36);
+            this.TabPageAbout.Name = "TabPageAbout";
+            this.TabPageAbout.Padding = new System.Windows.Forms.Padding(3);
+            this.TabPageAbout.Size = new System.Drawing.Size(1120, 632);
+            this.TabPageAbout.TabIndex = 2;
+            this.TabPageAbout.Text = "About";
+            this.TabPageAbout.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 481);
+            this.ClientSize = new System.Drawing.Size(1128, 694);
             this.Controls.Add(this.TabControl);
             this.Controls.Add(this.statusStrip1);
             this.Margin = new System.Windows.Forms.Padding(2);
