@@ -47,7 +47,19 @@ namespace neuservice
 
     public enum DaQuality
     {
+        GoodLocalOverrideValueForced = 216,
         Good = 192,
+        UncertainValueFromMultipleSources = 88,
+        UncertainEngineeringUnitsExceeded = 84,
+        UncertainSensorNotAccurate = 80,
+        UncertainLastUsableValue = 68,
+        Uncertain = 64,
+        BadOutOfService = 28, // Also happens when item or group is inactive
+        BadCommFailure = 24,
+        BadLastKnowValuePassed = 20,
+        BadSensorFailure = 16,
+        BadDeviceFailure = 12,
+        BadNotConnected = 8,
         Bad = 0,
         BadConfigurationErrorInServer = 4,
     }

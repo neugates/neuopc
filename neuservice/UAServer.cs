@@ -172,10 +172,25 @@ namespace neuservice
                 variable.StatusCode = StatusCodes.BadNotReadable;
             }
 
-            if (DaQuality.BadConfigurationErrorInServer == item.Quality)
+            variable.StatusCode = item.Quality switch
             {
-                variable.StatusCode = StatusCodes.BadConfigurationError;
-            }
+                DaQuality.GoodLocalOverrideValueForced => StatusCodes.GoodLocalOverride,
+                DaQuality.Good => StatusCodes.Good,
+                DaQuality.UncertainValueFromMultipleSources => StatusCodes.UncertainConfigurationError,
+                DaQuality.UncertainEngineeringUnitsExceeded => StatusCodes.UncertainEngineeringUnitsExceeded,
+                DaQuality.UncertainSensorNotAccurate => StatusCodes.UncertainSensorNotAccurate,
+                DaQuality.UncertainLastUsableValue => StatusCodes.UncertainLastUsableValue,
+                DaQuality.Uncertain => StatusCodes.Uncertain,
+                DaQuality.BadOutOfService => StatusCodes.BadOutOfService,
+                DaQuality.BadCommFailure => StatusCodes.BadCommunicationError,
+                DaQuality.BadLastKnowValuePassed => StatusCodes.BadDependentValueChanged,
+                DaQuality.BadSensorFailure => StatusCodes.BadSensorFailure,
+                DaQuality.BadDeviceFailure => StatusCodes.BadDeviceFailure,
+                DaQuality.BadNotConnected => StatusCodes.BadNotConnected,
+                DaQuality.Bad => StatusCodes.Bad,
+                DaQuality.BadConfigurationErrorInServer => StatusCodes.BadConfigurationError,
+                _ => StatusCodes.Good,
+            };
 
             variable.Timestamp = item.Timestamp;
             switch (item.Type)
