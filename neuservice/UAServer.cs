@@ -41,7 +41,7 @@ namespace neuservice
                 DisplayName = new LocalizedText("en", item.Name),
                 WriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description,
                 UserWriteMask = AttributeWriteMask.DisplayName | AttributeWriteMask.Description,
-                DataType = DataTypeIds.Double,
+                DataType = DataTypeIds.Union,
                 ValueRank = ValueRanks.Scalar,
                 AccessLevel = AccessLevels.CurrentReadOrWrite,
                 UserAccessLevel = AccessLevels.CurrentReadOrWrite,
@@ -275,6 +275,10 @@ namespace neuservice
 
                         break;
                     }
+                case DaType.VtEmpty:
+                    variable.DataType = DataTypeIds.Union;
+                    variable.Value = item.Value as Union;
+                    break;
                 default:
                     {
                         variable.DataType = DataTypeIds.BaseDataType;
@@ -559,6 +563,7 @@ namespace neuservice
         {
             running = false;
             channel = Channel.CreateUnbounded<DaMsg>();
+
             task = new Task(async () =>
             {
                 while (await channel.Reader.WaitToReadAsync())

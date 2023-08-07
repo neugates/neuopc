@@ -36,6 +36,7 @@ namespace neuservice
         String = 8, // UA_TYPES_STRING/VT_BSTR
         Bool = 11, // UA_TYPES_BOOLEAN/VT_BOOL
         Money = 6, // Money
+        VtEmpty = 0, // UA_TYPES_STRING/VT_STRING
     }
 
     public enum DaRights
