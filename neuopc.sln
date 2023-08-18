@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neuopc", "neuopc\neuopc.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neuservice", "neuservice\neuservice.csproj", "{E0EA2C0E-57CD-4AC4-A491-5C4E0EB9E405}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neulib", "neulib\neulib.csproj", "{49F6BB27-3EAE-4AD5-B081-CE896A33D4DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neulib", "neulib\neulib.csproj", "{49F6BB27-3EAE-4AD5-B081-CE896A33D4DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neuclient", "neuclient\neuclient.csproj", "{0F272311-6E54-46E3-8437-3499784974F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neuclient", "neuclient\neuclient.csproj", "{8E067467-89FE-45C5-A9FE-A2EAEBD96219}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,14 +43,14 @@ Global
 		{49F6BB27-3EAE-4AD5-B081-CE896A33D4DF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{49F6BB27-3EAE-4AD5-B081-CE896A33D4DF}.Release|x86.ActiveCfg = Release|Any CPU
 		{49F6BB27-3EAE-4AD5-B081-CE896A33D4DF}.Release|x86.Build.0 = Release|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Debug|x86.Build.0 = Debug|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Release|x86.ActiveCfg = Release|Any CPU
-		{0F272311-6E54-46E3-8437-3499784974F0}.Release|x86.Build.0 = Release|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E067467-89FE-45C5-A9FE-A2EAEBD96219}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\neuclient\neuclient.csproj" />
     <ProjectReference Include="..\neulib\neulib.csproj" />
     <ProjectReference Include="..\neuservice\neuservice.csproj" />
   </ItemGroup>
