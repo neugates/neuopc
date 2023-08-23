@@ -4,7 +4,7 @@ using System.Text;
 
 namespace neuclient
 {
-    public class Node
+    public class DaServer
     {
     }
 }

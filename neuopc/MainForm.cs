@@ -187,23 +187,26 @@ namespace neuopc
             DAServerComboBox.Text = string.Empty;
             DAServerComboBox.Items.Clear();
 
-            var req = new DAServerReqMsg
-            {
-                Type = neulib.MsgType.DAServersReq,
-                Host = DAHostComboBox.Text
-            };
-            var buff = Serializer.Serialize<DAServerReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
-            {
-                var res = Serializer.Deserialize<DAServerResMsg>(result);
-                var list = res.Servers;
-                DAServerComboBox.Items.AddRange(list.ToArray());
-                if (0 < DAServerComboBox.Items.Count)
-                {
-                    DAServerComboBox.SelectedIndex = 0;
-                }
-            }
+            //var req = new DAServerReqMsg
+            //{
+            //    Type = neulib.MsgType.DAServersReq,
+            //    Host = DAHostComboBox.Text
+            //};
+            //var buff = Serializer.Serialize<DAServerReqMsg>(req);
+            //subProcess.Request(in buff, out byte[] result);
+            //if (null != result)
+            //{
+            //    var res = Serializer.Deserialize<DAServerResMsg>(result);
+            //    var list = res.Servers;
+            //    DAServerComboBox.Items.AddRange(list.ToArray());
+            //    if (0 < DAServerComboBox.Items.Count)
+            //    {
+            //        DAServerComboBox.SelectedIndex = 0;
+            //    }
+            //}
+
+            var host = DAHostComboBox.Text;
+            DAServerComboBox.Items.AddRange(neuclient.DaDiscovery.GetServers(host, 2).ToArray());
         }
 
         private void DAHostComboBox_DropDown(object sender, EventArgs e)
@@ -211,22 +214,29 @@ namespace neuopc
             DAHostComboBox.Text = string.Empty;
             DAHostComboBox.Items.Clear();
 
-            var req = new DAHostsReqMsg
+            DAHostComboBox.Items.AddRange(neuclient.DaDiscovery.GetHosts().ToArray());
+            if(0 < DAHostComboBox.Items.Count)
             {
-                Type = neulib.MsgType.DAHostsReq
-            };
-            var buff = Serializer.Serialize<DAHostsReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
-            {
-                var res = Serializer.Deserialize<DAHostsResMsg>(result);
-                var list = res.Hosts;
-                DAHostComboBox.Items.AddRange(list.ToArray());
-                if (0 < DAHostComboBox.Items.Count)
-                {
-                    DAHostComboBox.SelectedIndex = 0;
-                }
+                DAHostComboBox.SelectedIndex = 0;
             }
+
+
+            //var req = new DAHostsReqMsg
+            //{
+            //    Type = neulib.MsgType.DAHostsReq
+            //};
+            //var buff = Serializer.Serialize<DAHostsReqMsg>(req);
+            //subProcess.Request(in buff, out byte[] result);
+            //if (null != result)
+            //{
+            //    var res = Serializer.Deserialize<DAHostsResMsg>(result);
+            //    var list = res.Hosts;
+            //    DAHostComboBox.Items.AddRange(list.ToArray());
+            //    if (0 < DAHostComboBox.Items.Count)
+            //    {
+            //        DAHostComboBox.SelectedIndex = 0;
+            //    }
+            //}
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
