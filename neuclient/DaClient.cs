@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Globalization;
+using System.Net;
 using Opc;
 
 namespace neuclient
@@ -15,17 +16,28 @@ namespace neuclient
 
         private readonly URL _url;
 
+        private readonly string _user;
+
+        private readonly string _password;
+
+        private readonly string _domain;
+
         private Opc.Da.Server _server;
+
+        private WebProxy _proxy = null;
 
         private long _subscription;
 
-        public DaClient(Uri serverUrl)
+        public DaClient(Uri serverUrl, string user, string password, string domain)
         {
             _url = new URL(serverUrl.AbsolutePath)
             {
                 Scheme = serverUrl.Scheme,
                 HostName = serverUrl.Host
             };
+            _user = user;
+            _password = password;
+            _domain = domain;
         }
 
         public ServerStatus Status { get; set; }
@@ -41,9 +53,28 @@ namespace neuclient
                 return;
             }
 
+
             _server = new Opc.Da.Server(new OpcCom.Factory(), _url);
+
+            if (!string.IsNullOrEmpty(_user))
+            {
+                var credential = DaServer.GetNetCredential(_user, _password, _domain);
+                var connectData = DaServer.GetConnectData(credential, _proxy);
+                _server.Connect(connectData);
+            }
+
             _server.Connect();
             Status = ServerStatus.Connected;
+        }
+
+        public void Disconnect()
+        {
+            if (Status == ServerStatus.Disconnected)
+            {
+                return;
+            }
+
+            _server.Disconnect();
         }
 
         public System.Type GetDataType(string tag)
@@ -341,7 +372,7 @@ namespace neuclient
 
                 foreach (Opc.Da.ItemValueResult itemValueResult in values)
                 {
-                    var monitorItem= new ReadItem()
+                    var monitorItem = new ReadItem()
                     {
                         Value = itemValueResult.Value,
                         SourceTimestamp = itemValueResult.Timestamp,

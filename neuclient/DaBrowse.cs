@@ -8,9 +8,13 @@ namespace neuclient
 {
     public class DaBrowse
     {
-        public static IEnumerable<Node> AllNode(Server server)
+        public static IEnumerable<Node> AllNode(Server server, Opc.ItemIdentifier id = null, List<Node> nodes = null)
         {
-            var nodes = new List<Node>();
+            if (null == nodes)
+            {
+                nodes = new List<Node>();
+            }
+
             BrowseElement[] elements;
             var filters = new BrowseFilters
             {
@@ -18,7 +22,7 @@ namespace neuclient
             };
             try
             {
-                elements = server.Browse(null, filters, out BrowsePosition position);
+                elements = server.Browse(id, filters, out BrowsePosition position);
             }
             catch (Exception ex)
             {
@@ -27,14 +31,24 @@ namespace neuclient
 
             if (null != elements)
             {
-                elements.Select(x => new Node
+                var list = elements.Select(x => new Node
                 {
                     Name = x.Name,
                     ItemName = x.ItemName,
                     ItemPath = x.ItemPath,
                     IsItem = x.IsItem,
                     Type = x.GetType()
-                });
+                }).ToList();
+                nodes.AddRange(list);
+
+                foreach (var element in elements)
+                {
+                    if (element.HasChildren)
+                    {
+                        id = new Opc.ItemIdentifier(element.ItemPath, element.ItemName);
+                        AllNode(server, id, nodes);
+                    }
+                }
             }
 
             return nodes;

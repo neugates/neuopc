@@ -186,27 +186,16 @@ namespace neuopc
         {
             DAServerComboBox.Text = string.Empty;
             DAServerComboBox.Items.Clear();
-
-            //var req = new DAServerReqMsg
-            //{
-            //    Type = neulib.MsgType.DAServersReq,
-            //    Host = DAHostComboBox.Text
-            //};
-            //var buff = Serializer.Serialize<DAServerReqMsg>(req);
-            //subProcess.Request(in buff, out byte[] result);
-            //if (null != result)
-            //{
-            //    var res = Serializer.Deserialize<DAServerResMsg>(result);
-            //    var list = res.Servers;
-            //    DAServerComboBox.Items.AddRange(list.ToArray());
-            //    if (0 < DAServerComboBox.Items.Count)
-            //    {
-            //        DAServerComboBox.SelectedIndex = 0;
-            //    }
-            //}
-
             var host = DAHostComboBox.Text;
-            DAServerComboBox.Items.AddRange(neuclient.DaDiscovery.GetServers(host, 2).ToArray());
+
+            try
+            {
+                DAServerComboBox.Items.AddRange(neuclient.DaDiscovery.GetServers(host, 2).ToArray());
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"GetServer, msg: ${ex.Message}");
+            }
         }
 
         private void DAHostComboBox_DropDown(object sender, EventArgs e)
@@ -214,29 +203,19 @@ namespace neuopc
             DAHostComboBox.Text = string.Empty;
             DAHostComboBox.Items.Clear();
 
-            DAHostComboBox.Items.AddRange(neuclient.DaDiscovery.GetHosts().ToArray());
-            if(0 < DAHostComboBox.Items.Count)
+            try
+            {
+                DAHostComboBox.Items.AddRange(neuclient.DaDiscovery.GetHosts().ToArray());
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"GetHosts falied, msg ${ex.Message}");
+            }
+
+            if (0 < DAHostComboBox.Items.Count)
             {
                 DAHostComboBox.SelectedIndex = 0;
             }
-
-
-            //var req = new DAHostsReqMsg
-            //{
-            //    Type = neulib.MsgType.DAHostsReq
-            //};
-            //var buff = Serializer.Serialize<DAHostsReqMsg>(req);
-            //subProcess.Request(in buff, out byte[] result);
-            //if (null != result)
-            //{
-            //    var res = Serializer.Deserialize<DAHostsResMsg>(result);
-            //    var list = res.Hosts;
-            //    DAHostComboBox.Items.AddRange(list.ToArray());
-            //    if (0 < DAHostComboBox.Items.Count)
-            //    {
-            //        DAHostComboBox.SelectedIndex = 0;
-            //    }
-            //}
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -307,27 +286,52 @@ namespace neuopc
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            var req = new ConnectTestReqMsg
+            //var req = new ConnectTestReqMsg
+            //{
+            //    Type = neulib.MsgType.DAConnectTestReq,
+            //    Host = DAHostComboBox.Text,
+            //    Server = DAServerComboBox.Text
+            //};
+            //var buff = Serializer.Serialize<ConnectTestReqMsg>(req);
+            //subProcess.Request(in buff, out byte[] result);
+            //if (null != result)
+            //{
+            //    var res = Serializer.Deserialize<ConnectTestResMsg>(result);
+            //    if (res.Result)
+            //    {
+            //        UALabel.Text = "Connection tested successfully";
+            //        UALabel.ForeColor = Color.Green;
+            //    }
+            //    else
+            //    {
+            //        UALabel.Text = "Connection tested failed";
+            //        UALabel.ForeColor = Color.Red;
+            //    }
+            //}
+
+            var str = DAServerComboBox.Text;
+            var uri = new Uri(str);
+            var user = DAUserTextBox.Text;
+            var password = DAPasswordTextBox.Text;
+            var domain = DADomainTextBox.Text;
+            var client = new neuclient.DaClient(uri, user, password, domain);
+
+            try
             {
-                Type = neulib.MsgType.DAConnectTestReq,
-                Host = DAHostComboBox.Text,
-                Server = DAServerComboBox.Text
-            };
-            var buff = Serializer.Serialize<ConnectTestReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
+                client.Connect();
+            }
+            catch (Exception ex)
             {
-                var res = Serializer.Deserialize<ConnectTestResMsg>(result);
-                if (res.Result)
-                {
-                    UALabel.Text = "Connection tested successfully";
-                    UALabel.ForeColor = Color.Green;
-                }
-                else
-                {
-                    UALabel.Text = "Connection tested failed";
-                    UALabel.ForeColor = Color.Red;
-                }
+                Log.Error($"connect to server failed, msg:${ex.Message}");
+            }
+
+            try
+            {
+                var nodes = neuclient.DaBrowse.AllNode(client.Server);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"connect to server failed, msg:${ex.Message}");
             }
         }
 

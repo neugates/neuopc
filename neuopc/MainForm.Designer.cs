@@ -46,6 +46,18 @@ namespace neuopc
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabPageSetting = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.DADomainTextBox = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.DAPasswordTextBox = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.DAUserTextBox = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.SaveButton = new System.Windows.Forms.Button();
             this.UALabel = new System.Windows.Forms.Label();
             this.CheckBox = new System.Windows.Forms.CheckBox();
@@ -198,6 +210,18 @@ namespace neuopc
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.label14);
+            this.groupBox1.Controls.Add(this.label13);
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.DADomainTextBox);
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.DAPasswordTextBox);
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.DAUserTextBox);
+            this.groupBox1.Controls.Add(this.label8);
+            this.groupBox1.Controls.Add(this.label7);
+            this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.SaveButton);
             this.groupBox1.Controls.Add(this.UALabel);
             this.groupBox1.Controls.Add(this.CheckBox);
@@ -221,9 +245,123 @@ namespace neuopc
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label14.Location = new System.Drawing.Point(730, 302);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(18, 24);
+            this.label14.TabIndex = 47;
+            this.label14.Text = "*";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label13.Location = new System.Drawing.Point(730, 210);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(20, 24);
+            this.label13.TabIndex = 46;
+            this.label13.Text = "  ";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label12.Location = new System.Drawing.Point(730, 162);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(20, 24);
+            this.label12.TabIndex = 45;
+            this.label12.Text = "  ";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label11.Location = new System.Drawing.Point(730, 117);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(20, 24);
+            this.label11.TabIndex = 44;
+            this.label11.Text = "  ";
+            // 
+            // DADomainTextBox
+            // 
+            this.DADomainTextBox.Location = new System.Drawing.Point(226, 207);
+            this.DADomainTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.DADomainTextBox.Name = "DADomainTextBox";
+            this.DADomainTextBox.Size = new System.Drawing.Size(498, 30);
+            this.DADomainTextBox.TabIndex = 43;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(10, 210);
+            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(157, 24);
+            this.label10.TabIndex = 42;
+            this.label10.Text = "OPC DA Domain:";
+            // 
+            // DAPasswordTextBox
+            // 
+            this.DAPasswordTextBox.Location = new System.Drawing.Point(226, 159);
+            this.DAPasswordTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.DAPasswordTextBox.Name = "DAPasswordTextBox";
+            this.DAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
+            this.DAPasswordTextBox.TabIndex = 41;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(10, 162);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(170, 24);
+            this.label9.TabIndex = 40;
+            this.label9.Text = "OPC DA Password:";
+            // 
+            // DAUserTextBox
+            // 
+            this.DAUserTextBox.Location = new System.Drawing.Point(226, 117);
+            this.DAUserTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.DAUserTextBox.Name = "DAUserTextBox";
+            this.DAUserTextBox.Size = new System.Drawing.Size(498, 30);
+            this.DAUserTextBox.TabIndex = 39;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(8, 120);
+            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(127, 24);
+            this.label8.TabIndex = 38;
+            this.label8.Text = "OPC DA User:";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label7.Location = new System.Drawing.Point(730, 68);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(18, 24);
+            this.label7.TabIndex = 37;
+            this.label7.Text = "*";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.ForeColor = System.Drawing.SystemColors.ButtonShadow;
+            this.label6.Location = new System.Drawing.Point(730, 26);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(18, 24);
+            this.label6.TabIndex = 36;
+            this.label6.Text = "*";
+            // 
             // SaveButton
             // 
-            this.SaveButton.Location = new System.Drawing.Point(564, 314);
+            this.SaveButton.Location = new System.Drawing.Point(564, 429);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(160, 34);
             this.SaveButton.TabIndex = 35;
@@ -242,7 +380,7 @@ namespace neuopc
             // CheckBox
             // 
             this.CheckBox.AutoSize = true;
-            this.CheckBox.Location = new System.Drawing.Point(209, 318);
+            this.CheckBox.Location = new System.Drawing.Point(209, 433);
             this.CheckBox.Name = "CheckBox";
             this.CheckBox.Size = new System.Drawing.Size(178, 28);
             this.CheckBox.TabIndex = 33;
@@ -251,7 +389,7 @@ namespace neuopc
             // 
             // SwitchButton
             // 
-            this.SwitchButton.Location = new System.Drawing.Point(393, 314);
+            this.SwitchButton.Location = new System.Drawing.Point(393, 429);
             this.SwitchButton.Name = "SwitchButton";
             this.SwitchButton.Size = new System.Drawing.Size(160, 34);
             this.SwitchButton.TabIndex = 32;
@@ -261,7 +399,7 @@ namespace neuopc
             // 
             // UAPasswordTextBox
             // 
-            this.UAPasswordTextBox.Location = new System.Drawing.Point(226, 269);
+            this.UAPasswordTextBox.Location = new System.Drawing.Point(226, 384);
             this.UAPasswordTextBox.Name = "UAPasswordTextBox";
             this.UAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
             this.UAPasswordTextBox.TabIndex = 29;
@@ -269,25 +407,25 @@ namespace neuopc
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 275);
+            this.label5.Location = new System.Drawing.Point(8, 390);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(164, 24);
+            this.label5.Size = new System.Drawing.Size(169, 24);
             this.label5.TabIndex = 30;
-            this.label5.Text = "OPCUA Password:";
+            this.label5.Text = "OPC UA Password:";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(8, 187);
+            this.label3.Location = new System.Drawing.Point(8, 302);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(119, 24);
+            this.label3.Size = new System.Drawing.Size(124, 24);
             this.label3.TabIndex = 27;
-            this.label3.Text = "OPCUA Port:";
+            this.label3.Text = "OPC UA Port:";
             // 
             // UAPortTextBox
             // 
-            this.UAPortTextBox.Location = new System.Drawing.Point(226, 187);
+            this.UAPortTextBox.Location = new System.Drawing.Point(226, 302);
             this.UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.UAPortTextBox.Name = "UAPortTextBox";
             this.UAPortTextBox.Size = new System.Drawing.Size(498, 30);
@@ -295,7 +433,7 @@ namespace neuopc
             // 
             // UAUserTextBox
             // 
-            this.UAUserTextBox.Location = new System.Drawing.Point(226, 229);
+            this.UAUserTextBox.Location = new System.Drawing.Point(226, 344);
             this.UAUserTextBox.Name = "UAUserTextBox";
             this.UAUserTextBox.Size = new System.Drawing.Size(498, 30);
             this.UAUserTextBox.TabIndex = 26;
@@ -303,11 +441,11 @@ namespace neuopc
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(8, 232);
+            this.label4.Location = new System.Drawing.Point(8, 347);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(121, 24);
+            this.label4.Size = new System.Drawing.Size(126, 24);
             this.label4.TabIndex = 28;
-            this.label4.Text = "OPCUA User:";
+            this.label4.Text = "OPC UA User:";
             // 
             // DAHostComboBox
             // 
@@ -333,9 +471,9 @@ namespace neuopc
             this.label2.Location = new System.Drawing.Point(8, 69);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(137, 24);
+            this.label2.Size = new System.Drawing.Size(142, 24);
             this.label2.TabIndex = 6;
-            this.label2.Text = "OPCDA Server:";
+            this.label2.Text = "OPC DA Server:";
             // 
             // label1
             // 
@@ -343,13 +481,13 @@ namespace neuopc
             this.label1.Location = new System.Drawing.Point(8, 27);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(124, 24);
+            this.label1.Size = new System.Drawing.Size(129, 24);
             this.label1.TabIndex = 3;
-            this.label1.Text = "OPCDA Host:";
+            this.label1.Text = "OPC DA Host:";
             // 
             // TestButton
             // 
-            this.TestButton.Location = new System.Drawing.Point(564, 115);
+            this.TestButton.Location = new System.Drawing.Point(564, 253);
             this.TestButton.Margin = new System.Windows.Forms.Padding(2);
             this.TestButton.Name = "TestButton";
             this.TestButton.Size = new System.Drawing.Size(160, 34);
@@ -486,6 +624,18 @@ namespace neuopc
         private System.Windows.Forms.ColumnHeader filename;
         private System.Windows.Forms.ColumnHeader time;
         private System.Windows.Forms.ColumnHeader length;
+        private System.Windows.Forms.TextBox DAPasswordTextBox;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox DAUserTextBox;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox DADomainTextBox;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label14;
     }
 }
 
