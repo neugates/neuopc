@@ -19,6 +19,18 @@ namespace neuclient
             return hosts;
         }
 
+        public static string FixedUrl(string url)
+        {
+            int index = url.IndexOf("/{");
+            if(- 1== index)
+            {
+                return url;
+            }
+
+
+            return url.Substring(0, index);
+        }
+
         public static IEnumerable<string> GetServers(string host, int version)
         {
             var allServer = new List<string>();
@@ -40,7 +52,7 @@ namespace neuclient
             var servers = discovery.GetAvailableServers(spec, host, null);
             if (null != servers)
             {
-                allServer.AddRange(servers.Where(x => null != x).Select(x => $"{x.Url}"));
+                allServer.AddRange(servers.Where(x => null != x).Select(x => FixedUrl(x.Url.ToString())));
             }
 
             return allServer;
