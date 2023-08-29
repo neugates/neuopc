@@ -24,9 +24,9 @@ namespace neuclient
             {
                 elements = server.Browse(id, filters, out BrowsePosition position);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
 
             if (null != elements)

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Serilog;
+using Serilog.Formatting.Display;
+using Serilog.Sinks.WinForms.Base;
 
 namespace neuopc
 {
@@ -23,6 +25,7 @@ namespace neuopc
                 .MinimumLevel.Information()
                 .WriteTo.Console()
                 .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
+                .WriteToSimpleAndRichTextBox(new MessageTemplateTextFormatter("{Timestamp} [{Level}] {Message:lj}{NewLine}{Exception}"))
                 .CreateLogger();
 
             Log.Information("neuopc start...");

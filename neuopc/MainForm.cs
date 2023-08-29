@@ -13,21 +13,20 @@ using System.Threading.Channels;
 using System.IO;
 using System.Diagnostics;
 using Serilog;
-using neulib;
+using neuclient;
 
 namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private Task task;
-        private SubProcess subProcess;
-        private bool running;
+        private readonly Task _task;
+        private DaClient _client;
+        private bool _clientRunning;
+        private Thread _clientThread;
 
         public MainForm()
         {
             InitializeComponent();
-            subProcess = new SubProcess();
-            running = true;
         }
 
         //private void UpdateDAStatusLabel(DaMsg msg)
@@ -56,74 +55,48 @@ namespace neuopc
         //    }
         //}
 
-        private void ResetListView(List<DataItem> list)
-        {
-            try
-            {
-                Action<List<DataItem>> action = (data) =>
-                {
-                    var items = MainListView.Items;
-                    foreach (var item in data)
-                    {
-                        ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
-                        if (null == li)
-                        {
-                            MainListView.BeginUpdate();
-                            ListViewItem lvi = new ListViewItem();
-                            lvi.Text = item.Name;
-                            lvi.SubItems.Add(item.Type); // type
-                            lvi.SubItems.Add(item.Right); // rights
-                            lvi.SubItems.Add(item.Value); // value
-                            lvi.SubItems.Add(item.Quality); // quality
-                            lvi.SubItems.Add(item.Error); // error
-                            lvi.SubItems.Add(item.Timestamp); // timestamp
-                            lvi.SubItems.Add(item.ClientHandle); // handle
-                            MainListView.Items.Add(lvi);
-                            MainListView.EndUpdate();
-                        }
-                        else
-                        {
-                            li.SubItems[3].Text = item.Value;
-                            li.SubItems[4].Text = item.Quality;
-                            li.SubItems[5].Text = item.Error;
-                            li.SubItems[6].Text = item.Timestamp;
-                        }
-                    }
-                };
+        //private void ResetListView(List<DataItem> list)
+        //{
+        //    try
+        //    {
+        //        Action<List<DataItem>> action = (data) =>
+        //        {
+        //            var items = MainListView.Items;
+        //            foreach (var item in data)
+        //            {
+        //                ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
+        //                if (null == li)
+        //                {
+        //                    MainListView.BeginUpdate();
+        //                    ListViewItem lvi = new ListViewItem();
+        //                    lvi.Text = item.Name;
+        //                    lvi.SubItems.Add(item.Type); // type
+        //                    lvi.SubItems.Add(item.Right); // rights
+        //                    lvi.SubItems.Add(item.Value); // value
+        //                    lvi.SubItems.Add(item.Quality); // quality
+        //                    lvi.SubItems.Add(item.Error); // error
+        //                    lvi.SubItems.Add(item.Timestamp); // timestamp
+        //                    lvi.SubItems.Add(item.ClientHandle); // handle
+        //                    MainListView.Items.Add(lvi);
+        //                    MainListView.EndUpdate();
+        //                }
+        //                else
+        //                {
+        //                    li.SubItems[3].Text = item.Value;
+        //                    li.SubItems[4].Text = item.Quality;
+        //                    li.SubItems[5].Text = item.Error;
+        //                    li.SubItems[6].Text = item.Timestamp;
+        //                }
+        //            }
+        //        };
 
-                Invoke(action, list);
-            }
-            catch (Exception exception)
-            {
-                Log.Error($"reset list view error: {exception.Message}");
-            }
-        }
-
-        private void TestGetDatas()
-        {
-            while (running)
-            {
-                Thread.Sleep(3000);
-
-                var req = new DataReqMsg();
-                req.Type = neulib.MsgType.DADataReq;
-                var buff = Serializer.Serialize<DataReqMsg>(req);
-                subProcess.Request(in buff, out byte[] result);
-
-                if (null != result)
-                {
-                    try
-                    {
-                        var requestMsg = Serializer.Deserialize<DataResMsg>(result);
-                        ResetListView(requestMsg.Items);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"get datas error:{ex.Message}");
-                    }
-                }
-            }
-        }
+        //        Invoke(action, list);
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        Log.Error($"reset list view error: {exception.Message}");
+        //    }
+        //}
 
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -155,9 +128,6 @@ namespace neuopc
 
             if (CheckBox.Checked)
             {
-                subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
-                subProcess.SetUAArguments(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
-
                 SwitchButton.Text = "Stop";
 
                 DAHostComboBox.Enabled = false;
@@ -170,16 +140,8 @@ namespace neuopc
             }
             else
             {
-                subProcess.SetDAArguments("", "");
-                subProcess.SetUAArguments("", "", "");
-
                 SwitchButton.Text = "Start";
             }
-
-            subProcess.Daemon();
-            var ts = new ThreadStart(TestGetDatas);
-            var thread = new Thread(ts);
-            thread.Start();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
@@ -238,9 +200,6 @@ namespace neuopc
 
             Log.Information("exit neuopc");
 
-            running = false;
-            subProcess.Stop();
-
             NotifyIcon.Dispose();
             Environment.Exit(0);
         }
@@ -279,142 +238,100 @@ namespace neuopc
             }
 
 
-            running = false;
-            subProcess.Stop();
             Environment.Exit(0);
         }
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            //var req = new ConnectTestReqMsg
-            //{
-            //    Type = neulib.MsgType.DAConnectTestReq,
-            //    Host = DAHostComboBox.Text,
-            //    Server = DAServerComboBox.Text
-            //};
-            //var buff = Serializer.Serialize<ConnectTestReqMsg>(req);
-            //subProcess.Request(in buff, out byte[] result);
-            //if (null != result)
-            //{
-            //    var res = Serializer.Deserialize<ConnectTestResMsg>(result);
-            //    if (res.Result)
-            //    {
-            //        UALabel.Text = "Connection tested successfully";
-            //        UALabel.ForeColor = Color.Green;
-            //    }
-            //    else
-            //    {
-            //        UALabel.Text = "Connection tested failed";
-            //        UALabel.ForeColor = Color.Red;
-            //    }
-            //}
-
             var str = DAServerComboBox.Text;
-            var uri = new Uri(str);
+            Uri uri;
+            try
+            {
+                uri = new Uri(str);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "");
+                // TODO: label tips
+                return;
+            }
+
             var user = DAUserTextBox.Text;
             var password = DAPasswordTextBox.Text;
             var domain = DADomainTextBox.Text;
-            var client = new neuclient.DaClient(uri, user, password, domain);
 
             try
             {
+                var client = new DaClient(uri, user, password, domain);
                 client.Connect();
+                client.Disconnect();
             }
             catch (Exception ex)
             {
                 Log.Error($"connect to server failed, msg:${ex.Message}");
+                // TODO: label tips
+                return;
             }
 
-            try
+            // TODO: label tips
+
+            //try
+            //{
+            //    var nodes = neuclient.DaBrowse.AllNode(client.Server);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Error($"connect to server failed, msg:${ex.Message}");
+            //}
+        }
+
+        private void DaClientThread()
+        {
+            _client.Connect();
+            while (_clientRunning)
             {
-                var nodes = neuclient.DaBrowse.AllNode(client.Server);
             }
-            catch (Exception ex)
-            {
-                Log.Error($"connect to server failed, msg:${ex.Message}");
-            }
+        }
+
+        private void DaClientStart()
+        {
+            var urlStr = DAServerComboBox.Text;
+            var uri = new Uri(urlStr);
+            var user = DAUserTextBox.Text;
+            var password = DAPasswordTextBox.Text;
+            var domain = DADomainTextBox.Text;
+            _client = new DaClient(uri, user, password, domain);
+            _clientThread = new Thread(new ThreadStart(DaClientThread));
+            _clientRunning = true;
+            _clientThread.Start();
+        }
+
+        private void DaClientStop()
+        {
+            _clientRunning = false;
+            _clientThread.Join();
         }
 
         private void SwitchButton_Click(object sender, EventArgs e)
         {
             if (SwitchButton.Text.Equals("Start"))
             {
-                // DA start
-                var req1 = new ConnectReqMsg
-                {
-                    Type = neulib.MsgType.DAConnectReq,
-                    Host = DAHostComboBox.Text,
-                    Server = DAServerComboBox.Text
-                };
-                var buff1 = Serializer.Serialize<ConnectReqMsg>(req1);
-                subProcess.Request(in buff1, out byte[] result1);
-                if (null != result1)
-                {
-                    var res1 = Serializer.Deserialize<ConnectResMsg>(result1);
-                    Log.Information($"connect to da, code:{res1.Code}, msg:{res1.Msg}");
-                }
-
-                // UA start
-                var req2 = new UAStartReqMsg
-                {
-                    Type = neulib.MsgType.UAStartReq,
-                    Url = UAPortTextBox.Text,
-                    User = UAUserTextBox.Text,
-                    Password = UAPasswordTextBox.Text
-                };
-                var buff2 = Serializer.Serialize<UAStartReqMsg>(req2);
-                subProcess.Request(in buff2, out byte[] result2);
-                if (null != result2)
-                {
-                    var res2 = Serializer.Deserialize<UAStartResMsg>(result2);
-                }
-
+                DaClientStart();
                 SwitchButton.Text = "Stop";
-
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
                 TestButton.Enabled = false;
-
                 UAPortTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
             }
             else
             {
-                // DA start
-                var req1 = new DisconnectReqMsg
-                {
-                    Type = neulib.MsgType.DADisconnectReq,
-                };
-                var buff1 = Serializer.Serialize<DisconnectReqMsg>(req1);
-                subProcess.Request(in buff1, out byte[] result1);
-                if (null != result1)
-                {
-                    var res1 = Serializer.Deserialize<DisconnectResMsg>(result1);
-                }
-
-
-                // UA start
-                var req2 = new UAStopReqMsg
-                {
-                    Type = neulib.MsgType.UAStopReq
-                };
-                var buff2 = Serializer.Serialize<UAStopReqMsg>(req2);
-                subProcess.Request(in buff2, out byte[] result2);
-                if (null != result2)
-                {
-                    var res2 = Serializer.Deserialize<UAStopResMsg>(result2);
-                }
-
-                subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
-                subProcess.SetUAArguments(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
-
+                DaClientStop();
                 SwitchButton.Text = "Start";
-
                 DAHostComboBox.Enabled = true;
                 DAServerComboBox.Enabled = true;
                 TestButton.Enabled = true;
-
                 UAPortTextBox.Enabled = true;
                 UAUserTextBox.Enabled = true;
                 UAPasswordTextBox.Enabled = true;
@@ -459,35 +376,6 @@ namespace neuopc
 
             if (2 == TabControl.SelectedIndex)
             {
-                try
-                {
-                    Action action = () =>
-                    {
-                        DirectoryInfo di = new DirectoryInfo("./log");
-                        LogListView.BeginUpdate();
-                        LogListView.Items.Clear();
-
-                        foreach (var fi in di.GetFiles())
-                        {
-                            ListViewItem lvi = new ListViewItem
-                            {
-                                Text = fi.Name,
-                            };
-
-                            lvi.SubItems.Add(fi.LastWriteTime.ToString());
-                            lvi.SubItems.Add(fi.Length.ToString());
-                            LogListView.Items.Add(lvi);
-                        }
-
-                        LogListView.EndUpdate();
-                    };
-
-                    Invoke(action);
-                }
-                catch (Exception exception)
-                {
-                    Log.Error($"get logs error: {exception.Message}");
-                }
             }
         }
 
