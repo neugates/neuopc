@@ -47,19 +47,10 @@ namespace neuopc
             TabPageSetting = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label14 = new System.Windows.Forms.Label();
-            label13 = new System.Windows.Forms.Label();
-            label12 = new System.Windows.Forms.Label();
-            label11 = new System.Windows.Forms.Label();
-            DADomainTextBox = new System.Windows.Forms.TextBox();
-            label10 = new System.Windows.Forms.Label();
-            DAPasswordTextBox = new System.Windows.Forms.TextBox();
-            label9 = new System.Windows.Forms.Label();
-            DAUserTextBox = new System.Windows.Forms.TextBox();
-            label8 = new System.Windows.Forms.Label();
             label7 = new System.Windows.Forms.Label();
             label6 = new System.Windows.Forms.Label();
             SaveButton = new System.Windows.Forms.Button();
-            UALabel = new System.Windows.Forms.Label();
+            DALabel = new System.Windows.Forms.Label();
             CheckBox = new System.Windows.Forms.CheckBox();
             SwitchButton = new System.Windows.Forms.Button();
             UAPasswordTextBox = new System.Windows.Forms.TextBox();
@@ -195,19 +186,10 @@ namespace neuopc
             // 
             groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             groupBox1.Controls.Add(label14);
-            groupBox1.Controls.Add(label13);
-            groupBox1.Controls.Add(label12);
-            groupBox1.Controls.Add(label11);
-            groupBox1.Controls.Add(DADomainTextBox);
-            groupBox1.Controls.Add(label10);
-            groupBox1.Controls.Add(DAPasswordTextBox);
-            groupBox1.Controls.Add(label9);
-            groupBox1.Controls.Add(DAUserTextBox);
-            groupBox1.Controls.Add(label8);
             groupBox1.Controls.Add(label7);
             groupBox1.Controls.Add(label6);
             groupBox1.Controls.Add(SaveButton);
-            groupBox1.Controls.Add(UALabel);
+            groupBox1.Controls.Add(DALabel);
             groupBox1.Controls.Add(CheckBox);
             groupBox1.Controls.Add(SwitchButton);
             groupBox1.Controls.Add(UAPasswordTextBox);
@@ -233,95 +215,11 @@ namespace neuopc
             // 
             label14.AutoSize = true;
             label14.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label14.Location = new System.Drawing.Point(730, 302);
+            label14.Location = new System.Drawing.Point(730, 191);
             label14.Name = "label14";
             label14.Size = new System.Drawing.Size(18, 24);
             label14.TabIndex = 47;
             label14.Text = "*";
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label13.Location = new System.Drawing.Point(730, 210);
-            label13.Name = "label13";
-            label13.Size = new System.Drawing.Size(20, 24);
-            label13.TabIndex = 46;
-            label13.Text = "  ";
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label12.Location = new System.Drawing.Point(730, 162);
-            label12.Name = "label12";
-            label12.Size = new System.Drawing.Size(20, 24);
-            label12.TabIndex = 45;
-            label12.Text = "  ";
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label11.Location = new System.Drawing.Point(730, 117);
-            label11.Name = "label11";
-            label11.Size = new System.Drawing.Size(20, 24);
-            label11.TabIndex = 44;
-            label11.Text = "  ";
-            // 
-            // DADomainTextBox
-            // 
-            DADomainTextBox.Location = new System.Drawing.Point(226, 207);
-            DADomainTextBox.Margin = new System.Windows.Forms.Padding(2);
-            DADomainTextBox.Name = "DADomainTextBox";
-            DADomainTextBox.Size = new System.Drawing.Size(498, 30);
-            DADomainTextBox.TabIndex = 43;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Location = new System.Drawing.Point(10, 210);
-            label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label10.Name = "label10";
-            label10.Size = new System.Drawing.Size(157, 24);
-            label10.TabIndex = 42;
-            label10.Text = "OPC DA Domain:";
-            // 
-            // DAPasswordTextBox
-            // 
-            DAPasswordTextBox.Location = new System.Drawing.Point(226, 159);
-            DAPasswordTextBox.Margin = new System.Windows.Forms.Padding(2);
-            DAPasswordTextBox.Name = "DAPasswordTextBox";
-            DAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
-            DAPasswordTextBox.TabIndex = 41;
-            // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.Location = new System.Drawing.Point(10, 162);
-            label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label9.Name = "label9";
-            label9.Size = new System.Drawing.Size(170, 24);
-            label9.TabIndex = 40;
-            label9.Text = "OPC DA Password:";
-            // 
-            // DAUserTextBox
-            // 
-            DAUserTextBox.Location = new System.Drawing.Point(226, 117);
-            DAUserTextBox.Margin = new System.Windows.Forms.Padding(2);
-            DAUserTextBox.Name = "DAUserTextBox";
-            DAUserTextBox.Size = new System.Drawing.Size(498, 30);
-            DAUserTextBox.TabIndex = 39;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new System.Drawing.Point(8, 120);
-            label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(127, 24);
-            label8.TabIndex = 38;
-            label8.Text = "OPC DA User:";
             // 
             // label7
             // 
@@ -345,7 +243,7 @@ namespace neuopc
             // 
             // SaveButton
             // 
-            SaveButton.Location = new System.Drawing.Point(564, 429);
+            SaveButton.Location = new System.Drawing.Point(564, 318);
             SaveButton.Name = "SaveButton";
             SaveButton.Size = new System.Drawing.Size(160, 34);
             SaveButton.TabIndex = 35;
@@ -353,18 +251,18 @@ namespace neuopc
             SaveButton.UseVisualStyleBackColor = true;
             SaveButton.Click += SaveButton_Click;
             // 
-            // UALabel
+            // DALabel
             // 
-            UALabel.AutoSize = true;
-            UALabel.Location = new System.Drawing.Point(226, 120);
-            UALabel.Name = "UALabel";
-            UALabel.Size = new System.Drawing.Size(0, 24);
-            UALabel.TabIndex = 34;
+            DALabel.AutoSize = true;
+            DALabel.Location = new System.Drawing.Point(226, 107);
+            DALabel.Name = "DALabel";
+            DALabel.Size = new System.Drawing.Size(0, 24);
+            DALabel.TabIndex = 34;
             // 
             // CheckBox
             // 
             CheckBox.AutoSize = true;
-            CheckBox.Location = new System.Drawing.Point(209, 433);
+            CheckBox.Location = new System.Drawing.Point(209, 322);
             CheckBox.Name = "CheckBox";
             CheckBox.Size = new System.Drawing.Size(178, 28);
             CheckBox.TabIndex = 33;
@@ -373,7 +271,7 @@ namespace neuopc
             // 
             // SwitchButton
             // 
-            SwitchButton.Location = new System.Drawing.Point(393, 429);
+            SwitchButton.Location = new System.Drawing.Point(393, 318);
             SwitchButton.Name = "SwitchButton";
             SwitchButton.Size = new System.Drawing.Size(160, 34);
             SwitchButton.TabIndex = 32;
@@ -383,7 +281,7 @@ namespace neuopc
             // 
             // UAPasswordTextBox
             // 
-            UAPasswordTextBox.Location = new System.Drawing.Point(226, 384);
+            UAPasswordTextBox.Location = new System.Drawing.Point(226, 273);
             UAPasswordTextBox.Name = "UAPasswordTextBox";
             UAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
             UAPasswordTextBox.TabIndex = 29;
@@ -391,7 +289,7 @@ namespace neuopc
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(8, 390);
+            label5.Location = new System.Drawing.Point(8, 279);
             label5.Name = "label5";
             label5.Size = new System.Drawing.Size(169, 24);
             label5.TabIndex = 30;
@@ -400,7 +298,7 @@ namespace neuopc
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(8, 302);
+            label3.Location = new System.Drawing.Point(8, 191);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(124, 24);
@@ -409,7 +307,7 @@ namespace neuopc
             // 
             // UAPortTextBox
             // 
-            UAPortTextBox.Location = new System.Drawing.Point(226, 302);
+            UAPortTextBox.Location = new System.Drawing.Point(226, 191);
             UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             UAPortTextBox.Name = "UAPortTextBox";
             UAPortTextBox.Size = new System.Drawing.Size(498, 30);
@@ -417,7 +315,7 @@ namespace neuopc
             // 
             // UAUserTextBox
             // 
-            UAUserTextBox.Location = new System.Drawing.Point(226, 344);
+            UAUserTextBox.Location = new System.Drawing.Point(226, 233);
             UAUserTextBox.Name = "UAUserTextBox";
             UAUserTextBox.Size = new System.Drawing.Size(498, 30);
             UAUserTextBox.TabIndex = 26;
@@ -425,7 +323,7 @@ namespace neuopc
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new System.Drawing.Point(8, 347);
+            label4.Location = new System.Drawing.Point(8, 236);
             label4.Name = "label4";
             label4.Size = new System.Drawing.Size(126, 24);
             label4.TabIndex = 28;
@@ -471,7 +369,7 @@ namespace neuopc
             // 
             // TestButton
             // 
-            TestButton.Location = new System.Drawing.Point(564, 253);
+            TestButton.Location = new System.Drawing.Point(564, 107);
             TestButton.Margin = new System.Windows.Forms.Padding(2);
             TestButton.Name = "TestButton";
             TestButton.Size = new System.Drawing.Size(160, 34);
@@ -580,20 +478,11 @@ namespace neuopc
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button TestButton;
         private System.Windows.Forms.CheckBox CheckBox;
-        private System.Windows.Forms.Label UALabel;
+        private System.Windows.Forms.Label DALabel;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.TabPage TabPageLog;
-        private System.Windows.Forms.TextBox DAPasswordTextBox;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox DAUserTextBox;
-        private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox DADomainTextBox;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label14;
         private Serilog.Sinks.WinForms.Core.RichTextBoxLogControl richTextBoxLogControl1;
     }

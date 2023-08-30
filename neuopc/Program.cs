@@ -28,7 +28,6 @@ namespace neuopc
                 .WriteToSimpleAndRichTextBox(new MessageTemplateTextFormatter("{Timestamp} [{Level}] {Message:lj}{NewLine}{Exception}"))
                 .CreateLogger();
 
-            Log.Information("neuopc start...");
 
             try
             {
@@ -36,7 +35,7 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Error($"Exceptions not handled properly, error:{ex.Message}");
+                Log.Error(ex, "");
             }
 
             Log.CloseAndFlush();

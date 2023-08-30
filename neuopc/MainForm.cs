@@ -14,6 +14,7 @@ using System.IO;
 using System.Diagnostics;
 using Serilog;
 using neuclient;
+using Accessibility;
 
 namespace neuopc
 {
@@ -23,10 +24,12 @@ namespace neuopc
         private DaClient _client;
         private bool _clientRunning;
         private Thread _clientThread;
+        private readonly Dictionary<string, Node> _nodeMap;
 
         public MainForm()
         {
             InitializeComponent();
+            _nodeMap = new Dictionary<string, Node>();
         }
 
         //private void UpdateDAStatusLabel(DaMsg msg)
@@ -101,6 +104,8 @@ namespace neuopc
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            Log.Information("neuopc start");
+
             NotifyIcon.Visible = true;
             var config = ConfigUtil.LoadConfig("neuopc.json");
             DAHostComboBox.Text = config.DAHost;
@@ -152,11 +157,17 @@ namespace neuopc
 
             try
             {
-                DAServerComboBox.Items.AddRange(neuclient.DaDiscovery.GetServers(host, 2).ToArray());
+                DAServerComboBox.Items.AddRange(DaDiscovery.GetServers(host, 2).ToArray());
             }
             catch (Exception ex)
             {
-                Log.Error($"GetServer, msg: ${ex.Message}");
+                Log.Error(ex, $"get da servers error, host:{host}");
+                return;
+            }
+
+            if (0 < DAServerComboBox.Items.Count)
+            {
+                DAServerComboBox.SelectedIndex = 0;
             }
         }
 
@@ -167,11 +178,12 @@ namespace neuopc
 
             try
             {
-                DAHostComboBox.Items.AddRange(neuclient.DaDiscovery.GetHosts().ToArray());
+                DAHostComboBox.Items.AddRange(DaDiscovery.GetHosts().ToArray());
             }
             catch (Exception ex)
             {
-                Log.Error($"GetHosts falied, msg ${ex.Message}");
+                Log.Error(ex, "get da hosts error");
+                return;
             }
 
             if (0 < DAHostComboBox.Items.Count)
@@ -229,7 +241,7 @@ namespace neuopc
 
         private void ExitButton_Click(object sender, EventArgs e)
         {
-            Log.Information("exit neuopc");
+            Log.Information("neuopc exit");
 
             var result = MessageBox.Show("Do you want to exit the program?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (DialogResult.Cancel == result)
@@ -243,6 +255,7 @@ namespace neuopc
 
         private void TestButton_Click(object sender, EventArgs e)
         {
+            DALabel.Text = string.Empty;
             var str = DAServerComboBox.Text;
             Uri uri;
             try
@@ -252,13 +265,15 @@ namespace neuopc
             catch (Exception ex)
             {
                 Log.Error(ex, "");
-                // TODO: label tips
+
+                DALabel.Text = "Arguments invalid";
+                DALabel.ForeColor = Color.Red;
                 return;
             }
 
-            var user = DAUserTextBox.Text;
-            var password = DAPasswordTextBox.Text;
-            var domain = DADomainTextBox.Text;
+            var user = string.Empty;
+            var password = string.Empty;
+            var domain = string.Empty;
 
             try
             {
@@ -269,11 +284,14 @@ namespace neuopc
             catch (Exception ex)
             {
                 Log.Error($"connect to server failed, msg:${ex.Message}");
-                // TODO: label tips
+
+                DALabel.Text = "Connection tested failed";
+                DALabel.ForeColor = Color.Red;
                 return;
             }
 
-            // TODO: label tips
+            DALabel.Text = "Connection tested successfully";
+            DALabel.ForeColor = Color.Green;
 
             //try
             //{
@@ -287,9 +305,27 @@ namespace neuopc
 
         private void DaClientThread()
         {
-            _client.Connect();
             while (_clientRunning)
             {
+                _client.Connect();
+                Thread.Sleep(1000);
+
+                var nodes = DaBrowse.AllNode(_client.Server);
+                foreach (var node in nodes)
+                {
+                    if (!_nodeMap.ContainsKey(node.Name))
+                    {
+                        _nodeMap.Add(node.Name, node);
+                        Log.Information($"add item:{node.Name}");
+                    }
+                }
+
+                foreach (var pair in _nodeMap)
+                {
+                    var name = pair.Key;
+                    var readItem = _client.Read("_System._ActiveTagCount");
+                    //Log.Information($"read item:{name}");
+                }
             }
         }
 
@@ -297,9 +333,9 @@ namespace neuopc
         {
             var urlStr = DAServerComboBox.Text;
             var uri = new Uri(urlStr);
-            var user = DAUserTextBox.Text;
-            var password = DAPasswordTextBox.Text;
-            var domain = DADomainTextBox.Text;
+            var user = string.Empty;
+            var password = string.Empty;
+            var domain = string.Empty;
             _client = new DaClient(uri, user, password, domain);
             _clientThread = new Thread(new ThreadStart(DaClientThread));
             _clientRunning = true;

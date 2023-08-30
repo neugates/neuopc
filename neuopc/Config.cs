@@ -28,7 +28,7 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Warning($"read config file fail:{ex.Message}");
+                Log.Warning(ex, "read config file failed");
             }
 
             var config = new Config();
@@ -39,7 +39,7 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Warning($"deserialize config fail:{ex.Message}");
+                Log.Warning(ex, "deserialize config failed");
             }
 
             return config;
@@ -54,7 +54,7 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Warning($"write config file error:{ex.Message}");
+                Log.Warning(ex, "write config file error");
             }
         }
     }
