@@ -19,12 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NetMQ" Version="4.0.1.12" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.371.3-beta" />
     <PackageReference Include="Serilog" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.WinForms.Core" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

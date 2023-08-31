@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Serilog;
-using Serilog.Formatting.Display;
-using Serilog.Sinks.WinForms.Base;
 
 namespace neuopc
 {
@@ -21,13 +20,12 @@ namespace neuopc
             //Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            var _ = NeuSinkChannel.GetChannel();
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.Console()
-                .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
-                .WriteToSimpleAndRichTextBox(new MessageTemplateTextFormatter("{Timestamp} [{Level}] {Message:lj}{NewLine}{Exception}"))
-                .CreateLogger();
-
+                    .MinimumLevel.Information()
+                    .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
+                    .WriteTo.NeuSink()
+                    .CreateLogger();
 
             try
             {
@@ -39,6 +37,7 @@ namespace neuopc
             }
 
             Log.CloseAndFlush();
+            NeuSinkChannel.CloseChannel();
         }
     }
 }

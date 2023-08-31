@@ -20,7 +20,8 @@ namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private readonly Task _task;
+        private readonly Task _logTask;
+        private bool _running;
         private DaClient _client;
         private bool _clientRunning;
         private Thread _clientThread;
@@ -29,6 +30,44 @@ namespace neuopc
         public MainForm()
         {
             InitializeComponent();
+
+            _logTask = Task.Run(async () =>
+             {
+                 var channel = NeuSinkChannel.GetChannel();
+                 _running = true;
+                 int MaxLogLines = 1000;
+                 while (await channel.Reader.WaitToReadAsync())
+                 {
+                     if (!_running)
+                     {
+                         break;
+                     }
+
+                     if (channel.Reader.TryRead(out var msg))
+                     {
+                         try
+                         {
+                             Action<string> action = (data) =>
+                             {
+                                 if (LogRichTextBox.Lines.Length > MaxLogLines)
+                                 {
+                                     LogRichTextBox.Clear();
+                                 }
+
+                                 LogRichTextBox.AppendText(data);
+                                 LogRichTextBox.ScrollToCaret();
+                             };
+
+                             Invoke(action, msg);
+                         }
+                         catch (Exception)
+                         {
+                             continue;
+                         }
+                     }
+                 }
+             });
+
             _nodeMap = new Dictionary<string, Node>();
         }
 
@@ -211,6 +250,8 @@ namespace neuopc
             //NotifyIcon.Dispose();
 
             Log.Information("exit neuopc");
+            _running = false;
+            _logTask.Wait();
 
             NotifyIcon.Dispose();
             Environment.Exit(0);
@@ -283,7 +324,7 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Error($"connect to server failed, msg:${ex.Message}");
+                Log.Error(ex, "connect to server failed");
 
                 DALabel.Text = "Connection tested failed";
                 DALabel.ForeColor = Color.Red;
@@ -307,7 +348,17 @@ namespace neuopc
         {
             while (_clientRunning)
             {
-                _client.Connect();
+                try
+                {
+                    _client.Connect();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "connect to server failed");
+                    Thread.Sleep(1000);
+                    continue;
+                }
+
                 Thread.Sleep(1000);
 
                 var nodes = DaBrowse.AllNode(_client.Server);
@@ -324,7 +375,7 @@ namespace neuopc
                 {
                     var name = pair.Key;
                     var readItem = _client.Read("_System._ActiveTagCount");
-                    //Log.Information($"read item:{name}");
+                    Log.Information($"read item:{name}");
                 }
             }
         }

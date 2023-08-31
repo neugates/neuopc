@@ -33,6 +33,11 @@ namespace neuopc
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             DAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             UAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            NotifyIcon = new System.Windows.Forms.NotifyIcon(components);
+            TabPageAbout = new System.Windows.Forms.TabPage();
+            TabPageLog = new System.Windows.Forms.TabPage();
+            LogRichTextBox = new System.Windows.Forms.RichTextBox();
+            TabPageData = new System.Windows.Forms.TabPage();
             MainListView = new System.Windows.Forms.ListView();
             name = new System.Windows.Forms.ColumnHeader();
             type = new System.Windows.Forms.ColumnHeader();
@@ -42,8 +47,6 @@ namespace neuopc
             error = new System.Windows.Forms.ColumnHeader();
             timestamp = new System.Windows.Forms.ColumnHeader();
             handle = new System.Windows.Forms.ColumnHeader();
-            NotifyIcon = new System.Windows.Forms.NotifyIcon(components);
-            TabControl = new System.Windows.Forms.TabControl();
             TabPageSetting = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label14 = new System.Windows.Forms.Label();
@@ -64,16 +67,13 @@ namespace neuopc
             label2 = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             TestButton = new System.Windows.Forms.Button();
-            TabPageData = new System.Windows.Forms.TabPage();
-            TabPageLog = new System.Windows.Forms.TabPage();
-            richTextBoxLogControl1 = new Serilog.Sinks.WinForms.Core.RichTextBoxLogControl();
-            TabPageAbout = new System.Windows.Forms.TabPage();
+            TabControl = new System.Windows.Forms.TabControl();
             statusStrip1.SuspendLayout();
-            TabControl.SuspendLayout();
+            TabPageLog.SuspendLayout();
+            TabPageData.SuspendLayout();
             TabPageSetting.SuspendLayout();
             groupBox1.SuspendLayout();
-            TabPageData.SuspendLayout();
-            TabPageLog.SuspendLayout();
+            TabControl.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
@@ -96,6 +96,53 @@ namespace neuopc
             // 
             UAStatusLabel.Name = "UAStatusLabel";
             UAStatusLabel.Size = new System.Drawing.Size(0, 15);
+            // 
+            // NotifyIcon
+            // 
+            NotifyIcon.Text = "neuopc";
+            NotifyIcon.Visible = true;
+            NotifyIcon.Click += NotifyIcon_Click;
+            // 
+            // TabPageAbout
+            // 
+            TabPageAbout.Location = new System.Drawing.Point(4, 36);
+            TabPageAbout.Name = "TabPageAbout";
+            TabPageAbout.Padding = new System.Windows.Forms.Padding(3);
+            TabPageAbout.Size = new System.Drawing.Size(1120, 632);
+            TabPageAbout.TabIndex = 2;
+            TabPageAbout.Text = "About";
+            TabPageAbout.UseVisualStyleBackColor = true;
+            // 
+            // TabPageLog
+            // 
+            TabPageLog.Controls.Add(LogRichTextBox);
+            TabPageLog.Location = new System.Drawing.Point(4, 36);
+            TabPageLog.Name = "TabPageLog";
+            TabPageLog.Size = new System.Drawing.Size(1120, 632);
+            TabPageLog.TabIndex = 3;
+            TabPageLog.Text = "Log";
+            TabPageLog.UseVisualStyleBackColor = true;
+            // 
+            // LogRichTextBox
+            // 
+            LogRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            LogRichTextBox.Location = new System.Drawing.Point(0, 0);
+            LogRichTextBox.Name = "LogRichTextBox";
+            LogRichTextBox.ReadOnly = true;
+            LogRichTextBox.Size = new System.Drawing.Size(1120, 632);
+            LogRichTextBox.TabIndex = 0;
+            LogRichTextBox.Text = "";
+            // 
+            // TabPageData
+            // 
+            TabPageData.Controls.Add(MainListView);
+            TabPageData.Location = new System.Drawing.Point(4, 36);
+            TabPageData.Name = "TabPageData";
+            TabPageData.Padding = new System.Windows.Forms.Padding(3);
+            TabPageData.Size = new System.Drawing.Size(1120, 632);
+            TabPageData.TabIndex = 1;
+            TabPageData.Text = "Tags";
+            TabPageData.UseVisualStyleBackColor = true;
             // 
             // MainListView
             // 
@@ -149,28 +196,6 @@ namespace neuopc
             handle.Text = "Index";
             handle.Width = 0;
             // 
-            // NotifyIcon
-            // 
-            NotifyIcon.Text = "neuopc";
-            NotifyIcon.Visible = true;
-            NotifyIcon.Click += NotifyIcon_Click;
-            // 
-            // TabControl
-            // 
-            TabControl.Appearance = System.Windows.Forms.TabAppearance.Buttons;
-            TabControl.Controls.Add(TabPageSetting);
-            TabControl.Controls.Add(TabPageData);
-            TabControl.Controls.Add(TabPageLog);
-            TabControl.Controls.Add(TabPageAbout);
-            TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            TabControl.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            TabControl.Location = new System.Drawing.Point(0, 0);
-            TabControl.Name = "TabControl";
-            TabControl.SelectedIndex = 0;
-            TabControl.Size = new System.Drawing.Size(1128, 672);
-            TabControl.TabIndex = 8;
-            TabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
-            // 
             // TabPageSetting
             // 
             TabPageSetting.Controls.Add(groupBox1);
@@ -207,7 +232,7 @@ namespace neuopc
             groupBox1.Margin = new System.Windows.Forms.Padding(4);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            groupBox1.Size = new System.Drawing.Size(1102, 618);
+            groupBox1.Size = new System.Drawing.Size(1107, 618);
             groupBox1.TabIndex = 6;
             groupBox1.TabStop = false;
             // 
@@ -215,7 +240,7 @@ namespace neuopc
             // 
             label14.AutoSize = true;
             label14.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label14.Location = new System.Drawing.Point(730, 191);
+            label14.Location = new System.Drawing.Point(730, 245);
             label14.Name = "label14";
             label14.Size = new System.Drawing.Size(18, 24);
             label14.TabIndex = 47;
@@ -225,7 +250,7 @@ namespace neuopc
             // 
             label7.AutoSize = true;
             label7.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label7.Location = new System.Drawing.Point(730, 68);
+            label7.Location = new System.Drawing.Point(730, 97);
             label7.Name = "label7";
             label7.Size = new System.Drawing.Size(18, 24);
             label7.TabIndex = 37;
@@ -235,7 +260,7 @@ namespace neuopc
             // 
             label6.AutoSize = true;
             label6.ForeColor = System.Drawing.SystemColors.ButtonShadow;
-            label6.Location = new System.Drawing.Point(730, 26);
+            label6.Location = new System.Drawing.Point(730, 55);
             label6.Name = "label6";
             label6.Size = new System.Drawing.Size(18, 24);
             label6.TabIndex = 36;
@@ -243,7 +268,7 @@ namespace neuopc
             // 
             // SaveButton
             // 
-            SaveButton.Location = new System.Drawing.Point(564, 318);
+            SaveButton.Location = new System.Drawing.Point(564, 437);
             SaveButton.Name = "SaveButton";
             SaveButton.Size = new System.Drawing.Size(160, 34);
             SaveButton.TabIndex = 35;
@@ -254,7 +279,7 @@ namespace neuopc
             // DALabel
             // 
             DALabel.AutoSize = true;
-            DALabel.Location = new System.Drawing.Point(226, 107);
+            DALabel.Location = new System.Drawing.Point(226, 136);
             DALabel.Name = "DALabel";
             DALabel.Size = new System.Drawing.Size(0, 24);
             DALabel.TabIndex = 34;
@@ -262,7 +287,7 @@ namespace neuopc
             // CheckBox
             // 
             CheckBox.AutoSize = true;
-            CheckBox.Location = new System.Drawing.Point(209, 322);
+            CheckBox.Location = new System.Drawing.Point(209, 441);
             CheckBox.Name = "CheckBox";
             CheckBox.Size = new System.Drawing.Size(178, 28);
             CheckBox.TabIndex = 33;
@@ -271,7 +296,7 @@ namespace neuopc
             // 
             // SwitchButton
             // 
-            SwitchButton.Location = new System.Drawing.Point(393, 318);
+            SwitchButton.Location = new System.Drawing.Point(393, 437);
             SwitchButton.Name = "SwitchButton";
             SwitchButton.Size = new System.Drawing.Size(160, 34);
             SwitchButton.TabIndex = 32;
@@ -281,7 +306,7 @@ namespace neuopc
             // 
             // UAPasswordTextBox
             // 
-            UAPasswordTextBox.Location = new System.Drawing.Point(226, 273);
+            UAPasswordTextBox.Location = new System.Drawing.Point(226, 327);
             UAPasswordTextBox.Name = "UAPasswordTextBox";
             UAPasswordTextBox.Size = new System.Drawing.Size(498, 30);
             UAPasswordTextBox.TabIndex = 29;
@@ -289,25 +314,25 @@ namespace neuopc
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(8, 279);
+            label5.Location = new System.Drawing.Point(54, 330);
             label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(169, 24);
+            label5.Size = new System.Drawing.Size(165, 24);
             label5.TabIndex = 30;
-            label5.Text = "OPC UA Password:";
+            label5.Text = "OPC UA Password";
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(8, 191);
+            label3.Location = new System.Drawing.Point(100, 248);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(124, 24);
+            label3.Size = new System.Drawing.Size(120, 24);
             label3.TabIndex = 27;
-            label3.Text = "OPC UA Port:";
+            label3.Text = "OPC UA Port";
             // 
             // UAPortTextBox
             // 
-            UAPortTextBox.Location = new System.Drawing.Point(226, 191);
+            UAPortTextBox.Location = new System.Drawing.Point(226, 245);
             UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
             UAPortTextBox.Name = "UAPortTextBox";
             UAPortTextBox.Size = new System.Drawing.Size(498, 30);
@@ -315,7 +340,7 @@ namespace neuopc
             // 
             // UAUserTextBox
             // 
-            UAUserTextBox.Location = new System.Drawing.Point(226, 233);
+            UAUserTextBox.Location = new System.Drawing.Point(226, 287);
             UAUserTextBox.Name = "UAUserTextBox";
             UAUserTextBox.Size = new System.Drawing.Size(498, 30);
             UAUserTextBox.TabIndex = 26;
@@ -323,16 +348,16 @@ namespace neuopc
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new System.Drawing.Point(8, 236);
+            label4.Location = new System.Drawing.Point(97, 290);
             label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(126, 24);
+            label4.Size = new System.Drawing.Size(122, 24);
             label4.TabIndex = 28;
-            label4.Text = "OPC UA User:";
+            label4.Text = "OPC UA User";
             // 
             // DAHostComboBox
             // 
             DAHostComboBox.FormattingEnabled = true;
-            DAHostComboBox.Location = new System.Drawing.Point(226, 23);
+            DAHostComboBox.Location = new System.Drawing.Point(226, 52);
             DAHostComboBox.Name = "DAHostComboBox";
             DAHostComboBox.Size = new System.Drawing.Size(498, 32);
             DAHostComboBox.TabIndex = 0;
@@ -341,7 +366,7 @@ namespace neuopc
             // DAServerComboBox
             // 
             DAServerComboBox.FormattingEnabled = true;
-            DAServerComboBox.Location = new System.Drawing.Point(226, 65);
+            DAServerComboBox.Location = new System.Drawing.Point(226, 94);
             DAServerComboBox.Name = "DAServerComboBox";
             DAServerComboBox.Size = new System.Drawing.Size(498, 32);
             DAServerComboBox.TabIndex = 1;
@@ -350,26 +375,26 @@ namespace neuopc
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(8, 69);
+            label2.Location = new System.Drawing.Point(81, 97);
             label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(142, 24);
+            label2.Size = new System.Drawing.Size(138, 24);
             label2.TabIndex = 6;
-            label2.Text = "OPC DA Server:";
+            label2.Text = "OPC DA Server";
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(8, 27);
+            label1.Location = new System.Drawing.Point(94, 56);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(129, 24);
+            label1.Size = new System.Drawing.Size(125, 24);
             label1.TabIndex = 3;
-            label1.Text = "OPC DA Host:";
+            label1.Text = "OPC DA Host";
             // 
             // TestButton
             // 
-            TestButton.Location = new System.Drawing.Point(564, 107);
+            TestButton.Location = new System.Drawing.Point(564, 136);
             TestButton.Margin = new System.Windows.Forms.Padding(2);
             TestButton.Name = "TestButton";
             TestButton.Size = new System.Drawing.Size(160, 34);
@@ -378,47 +403,22 @@ namespace neuopc
             TestButton.UseVisualStyleBackColor = true;
             TestButton.Click += TestButton_Click;
             // 
-            // TabPageData
+            // TabControl
             // 
-            TabPageData.Controls.Add(MainListView);
-            TabPageData.Location = new System.Drawing.Point(4, 36);
-            TabPageData.Name = "TabPageData";
-            TabPageData.Padding = new System.Windows.Forms.Padding(3);
-            TabPageData.Size = new System.Drawing.Size(1120, 632);
-            TabPageData.TabIndex = 1;
-            TabPageData.Text = "Tag list";
-            TabPageData.UseVisualStyleBackColor = true;
-            // 
-            // TabPageLog
-            // 
-            TabPageLog.Controls.Add(richTextBoxLogControl1);
-            TabPageLog.Location = new System.Drawing.Point(4, 36);
-            TabPageLog.Name = "TabPageLog";
-            TabPageLog.Size = new System.Drawing.Size(1120, 632);
-            TabPageLog.TabIndex = 3;
-            TabPageLog.Text = "Log";
-            TabPageLog.UseVisualStyleBackColor = true;
-            // 
-            // richTextBoxLogControl1
-            // 
-            richTextBoxLogControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            richTextBoxLogControl1.ForContext = "";
-            richTextBoxLogControl1.Location = new System.Drawing.Point(0, 0);
-            richTextBoxLogControl1.Name = "richTextBoxLogControl1";
-            richTextBoxLogControl1.ReadOnly = true;
-            richTextBoxLogControl1.Size = new System.Drawing.Size(1120, 632);
-            richTextBoxLogControl1.TabIndex = 0;
-            richTextBoxLogControl1.Text = "";
-            // 
-            // TabPageAbout
-            // 
-            TabPageAbout.Location = new System.Drawing.Point(4, 36);
-            TabPageAbout.Name = "TabPageAbout";
-            TabPageAbout.Padding = new System.Windows.Forms.Padding(3);
-            TabPageAbout.Size = new System.Drawing.Size(1120, 632);
-            TabPageAbout.TabIndex = 2;
-            TabPageAbout.Text = "About";
-            TabPageAbout.UseVisualStyleBackColor = true;
+            TabControl.Appearance = System.Windows.Forms.TabAppearance.Buttons;
+            TabControl.Controls.Add(TabPageSetting);
+            TabControl.Controls.Add(TabPageData);
+            TabControl.Controls.Add(TabPageLog);
+            TabControl.Controls.Add(TabPageAbout);
+            TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            TabControl.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            TabControl.ItemSize = new System.Drawing.Size(74, 32);
+            TabControl.Location = new System.Drawing.Point(0, 0);
+            TabControl.Name = "TabControl";
+            TabControl.SelectedIndex = 0;
+            TabControl.Size = new System.Drawing.Size(1128, 672);
+            TabControl.TabIndex = 8;
+            TabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
             // 
             // MainForm
             // 
@@ -435,12 +435,12 @@ namespace neuopc
             Load += MainForm_Load;
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
-            TabControl.ResumeLayout(false);
+            TabPageLog.ResumeLayout(false);
+            TabPageData.ResumeLayout(false);
             TabPageSetting.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            TabPageData.ResumeLayout(false);
-            TabPageLog.ResumeLayout(false);
+            TabControl.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -448,23 +448,30 @@ namespace neuopc
         #endregion
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel DAStatusLabel;
-        private System.Windows.Forms.ListView MainListView;
         private System.Windows.Forms.NotifyIcon NotifyIcon;
-        private System.Windows.Forms.ColumnHeader handle;
+        private System.Windows.Forms.ToolStripStatusLabel UAStatusLabel;
+        private System.Windows.Forms.TabPage TabPageWriteLog;
+        private System.Windows.Forms.TabPage TabPageAbout;
+        private System.Windows.Forms.TabPage TabPageLog;
+        private System.Windows.Forms.RichTextBox LogRichTextBox;
+        private System.Windows.Forms.TabPage TabPageData;
+        private System.Windows.Forms.ListView MainListView;
         private System.Windows.Forms.ColumnHeader name;
-        private System.Windows.Forms.ColumnHeader quality;
-        private System.Windows.Forms.ColumnHeader value;
+        private System.Windows.Forms.ColumnHeader type;
         private System.Windows.Forms.ColumnHeader rights;
+        private System.Windows.Forms.ColumnHeader value;
+        private System.Windows.Forms.ColumnHeader quality;
         private System.Windows.Forms.ColumnHeader error;
         private System.Windows.Forms.ColumnHeader timestamp;
-        private System.Windows.Forms.ColumnHeader type;
-        private System.Windows.Forms.ToolStripStatusLabel UAStatusLabel;
-        private System.Windows.Forms.TabControl TabControl;
+        private System.Windows.Forms.ColumnHeader handle;
         private System.Windows.Forms.TabPage TabPageSetting;
-        private System.Windows.Forms.TabPage TabPageData;
-        private System.Windows.Forms.TabPage TabPageAbout;
-        private System.Windows.Forms.TabPage TabPageWriteLog;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.Label DALabel;
+        private System.Windows.Forms.CheckBox CheckBox;
         private System.Windows.Forms.Button SwitchButton;
         private System.Windows.Forms.TextBox UAPasswordTextBox;
         private System.Windows.Forms.Label label5;
@@ -477,14 +484,7 @@ namespace neuopc
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button TestButton;
-        private System.Windows.Forms.CheckBox CheckBox;
-        private System.Windows.Forms.Label DALabel;
-        private System.Windows.Forms.Button SaveButton;
-        private System.Windows.Forms.TabPage TabPageLog;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label14;
-        private Serilog.Sinks.WinForms.Core.RichTextBoxLogControl richTextBoxLogControl1;
+        private System.Windows.Forms.TabControl TabControl;
     }
 }
 
