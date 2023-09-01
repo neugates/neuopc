@@ -52,7 +52,7 @@ namespace neuclient
             var servers = discovery.GetAvailableServers(spec, host, null);
             if (null != servers)
             {
-                allServer.AddRange(servers.Where(x => null != x).Select(x => FixedUrl(x.Url.ToString())));
+                allServer.AddRange(servers.Where(x => null != x).Select(x => $"{x.Url}"));
             }
 
             return allServer;

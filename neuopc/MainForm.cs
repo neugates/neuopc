@@ -20,22 +20,41 @@ namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private readonly Task _logTask;
         private bool _running;
+        private const int _MaxLogLines = 1000;
+
         private DaClient _client;
         private bool _clientRunning;
         private Thread _clientThread;
+
         private readonly Dictionary<string, Node> _nodeMap;
 
         public MainForm()
         {
             InitializeComponent();
 
-            _logTask = Task.Run(async () =>
+            _running = true;
+            _nodeMap = new Dictionary<string, Node>();
+
+            LogTaskRun();
+        }
+
+        private void LogTaskRun()
+        {
+            var _ = Task.Run(async () =>
              {
                  var channel = NeuSinkChannel.GetChannel();
-                 _running = true;
-                 int MaxLogLines = 1000;
+                 Action<string> action = (data) =>
+                 {
+                     if (LogRichTextBox.Lines.Length > _MaxLogLines)
+                     {
+                         LogRichTextBox.Clear();
+                     }
+
+                     LogRichTextBox.AppendText(data);
+                     LogRichTextBox.ScrollToCaret();
+                 };
+
                  while (await channel.Reader.WaitToReadAsync())
                  {
                      if (!_running)
@@ -43,102 +62,22 @@ namespace neuopc
                          break;
                      }
 
-                     if (channel.Reader.TryRead(out var msg))
+                     if (!channel.Reader.TryRead(out var msg))
                      {
-                         try
-                         {
-                             Action<string> action = (data) =>
-                             {
-                                 if (LogRichTextBox.Lines.Length > MaxLogLines)
-                                 {
-                                     LogRichTextBox.Clear();
-                                 }
+                         continue;
+                     }
 
-                                 LogRichTextBox.AppendText(data);
-                                 LogRichTextBox.ScrollToCaret();
-                             };
-
-                             Invoke(action, msg);
-                         }
-                         catch (Exception)
-                         {
-                             continue;
-                         }
+                     try
+                     {
+                         Invoke(action, msg);
+                     }
+                     catch (Exception)
+                     {
+                         continue;
                      }
                  }
              });
-
-            _nodeMap = new Dictionary<string, Node>();
         }
-
-        //private void UpdateDAStatusLabel(DaMsg msg)
-        //{
-        //    try
-        //    {
-        //        Action<DaMsg> action = (data) =>
-        //        {
-        //            string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
-        //            DAStatusLabel.Text = label;
-        //            if ("connected" == data.Status)
-        //            {
-        //                DAStatusLabel.ForeColor = Color.Green;
-        //            }
-        //            else
-        //            {
-        //                DAStatusLabel.ForeColor = Color.Red;
-        //            }
-        //        };
-
-        //        Invoke(action, msg);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        Log.Error($"update status lable error: {exception.Message}");
-        //    }
-        //}
-
-        //private void ResetListView(List<DataItem> list)
-        //{
-        //    try
-        //    {
-        //        Action<List<DataItem>> action = (data) =>
-        //        {
-        //            var items = MainListView.Items;
-        //            foreach (var item in data)
-        //            {
-        //                ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
-        //                if (null == li)
-        //                {
-        //                    MainListView.BeginUpdate();
-        //                    ListViewItem lvi = new ListViewItem();
-        //                    lvi.Text = item.Name;
-        //                    lvi.SubItems.Add(item.Type); // type
-        //                    lvi.SubItems.Add(item.Right); // rights
-        //                    lvi.SubItems.Add(item.Value); // value
-        //                    lvi.SubItems.Add(item.Quality); // quality
-        //                    lvi.SubItems.Add(item.Error); // error
-        //                    lvi.SubItems.Add(item.Timestamp); // timestamp
-        //                    lvi.SubItems.Add(item.ClientHandle); // handle
-        //                    MainListView.Items.Add(lvi);
-        //                    MainListView.EndUpdate();
-        //                }
-        //                else
-        //                {
-        //                    li.SubItems[3].Text = item.Value;
-        //                    li.SubItems[4].Text = item.Quality;
-        //                    li.SubItems[5].Text = item.Error;
-        //                    li.SubItems[6].Text = item.Timestamp;
-        //                }
-        //            }
-        //        };
-
-        //        Invoke(action, list);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        Log.Error($"reset list view error: {exception.Message}");
-        //    }
-        //}
 
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -240,19 +179,9 @@ namespace neuopc
                 return;
             }
 
-            //this.Hide();
-            //e.Cancel = true;
-
-            //client.Close();
-            //channel.Writer.Complete();
-            //task.Wait();
-            //server.Stop();
-            //NotifyIcon.Dispose();
-
             Log.Information("exit neuopc");
             _running = false;
-            _logTask.Wait();
-
+            DaClientStop();
             NotifyIcon.Dispose();
             Environment.Exit(0);
         }
@@ -297,30 +226,17 @@ namespace neuopc
         private void TestButton_Click(object sender, EventArgs e)
         {
             DALabel.Text = string.Empty;
-            var str = DAServerComboBox.Text;
-            Uri uri;
-            try
-            {
-                uri = new Uri(str);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "");
-
-                DALabel.Text = "Arguments invalid";
-                DALabel.ForeColor = Color.Red;
-                return;
-            }
-
+            var uri = DAServerComboBox.Text;
             var user = string.Empty;
             var password = string.Empty;
             var domain = string.Empty;
 
+            DaClient client;
             try
             {
-                var client = new DaClient(uri, user, password, domain);
+                client = new DaClient(uri, user, password, domain);
                 client.Connect();
-                client.Disconnect();
+                //client.Disconnect();
             }
             catch (Exception ex)
             {
@@ -334,14 +250,20 @@ namespace neuopc
             DALabel.Text = "Connection tested successfully";
             DALabel.ForeColor = Color.Green;
 
-            //try
-            //{
-            //    var nodes = neuclient.DaBrowse.AllNode(client.Server);
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.Error($"connect to server failed, msg:${ex.Message}");
-            //}
+            try
+            {
+                var nodes = DaBrowse.AllNode(client.Server);
+
+                foreach (var node in nodes)
+                {
+                    var item = client.Read(node.Name);
+                    Log.Information($"name:{node.ItemName}, value:{item.Value}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"read server failed");
+            }
         }
 
         private void DaClientThread()
@@ -382,8 +304,7 @@ namespace neuopc
 
         private void DaClientStart()
         {
-            var urlStr = DAServerComboBox.Text;
-            var uri = new Uri(urlStr);
+            var uri = DAServerComboBox.Text;
             var user = string.Empty;
             var password = string.Empty;
             var domain = string.Empty;
@@ -395,8 +316,11 @@ namespace neuopc
 
         private void DaClientStop()
         {
-            _clientRunning = false;
-            _clientThread.Join();
+            if (_clientRunning)
+            {
+                _clientRunning = false;
+                _clientThread.Join();
+            }
         }
 
         private void SwitchButton_Click(object sender, EventArgs e)

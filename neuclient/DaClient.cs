@@ -28,13 +28,17 @@ namespace neuclient
 
         private long _subscription;
 
-        public DaClient(Uri serverUrl, string user, string password, string domain)
+        public DaClient(string serverUrl, string user, string password, string domain)
         {
-            _url = new URL(serverUrl.AbsolutePath)
+            try
             {
-                Scheme = serverUrl.Scheme,
-                HostName = serverUrl.Host
-            };
+                _url = new URL(serverUrl);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
             _user = user;
             _password = password;
             _domain = domain;
@@ -122,7 +126,7 @@ namespace neuclient
             return readItem;
         }
 
-        private T TryCastResult<T>(object value)
+        private static T TryCastResult<T>(object value)
         {
             try
             {
