@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Opc.Da;
+using System.Reflection.Metadata.Ecma335;
 
 namespace neuclient
 {
@@ -36,8 +37,7 @@ namespace neuclient
                     Name = x.Name,
                     ItemName = x.ItemName,
                     ItemPath = x.ItemPath,
-                    IsItem = x.IsItem,
-                    Type = x.GetType()
+                    IsItem = x.IsItem
                 }).ToList();
                 nodes.AddRange(list);
 
@@ -52,6 +52,39 @@ namespace neuclient
             }
 
             return nodes;
+        }
+
+        public static Type GetDataType(Server server, string tag)
+        {
+            var item = new Item { ItemName = tag };
+            ItemProperty result;
+
+            try
+            {
+                var propertyCollection = server.GetProperties(new Opc.ItemIdentifier[] { item }, new[] { new PropertyID(1) }, false)[0];
+                result = propertyCollection[0];
+            }
+            catch (Exception)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetProperties Exception {tag}");
+                return null;
+            }
+
+            return result.DataType;
+        }
+
+
+
+        public static IEnumerable<Node> AllItemNode(Server server)
+        {
+            var nodes = AllNode(server);
+            var items = nodes.Where(x => x.IsItem);
+            foreach (var item in items)
+            {
+                item.Type = GetDataType(server, item.ItemName);
+            }
+
+            return items;
         }
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -14,7 +10,7 @@ using System.Threading.Channels;
 
 namespace neuopc
 {
-    public class NeuSinkChannel
+    internal class NeuSinkChannel
     {
         private static Channel<string> _channel = null;
 
@@ -22,7 +18,7 @@ namespace neuopc
         {
             if (null == _channel)
             {
-                _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(100)
+                _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(1000)
                 {
                     FullMode = BoundedChannelFullMode.Wait,
                     SingleReader = true,
@@ -63,7 +59,7 @@ namespace neuopc
         }
     }
 
-    public class NeuSink : ILogEventSink
+    internal class NeuSink : ILogEventSink
     {
         private readonly ITextFormatter _textFormatter;
 
@@ -82,7 +78,7 @@ namespace neuopc
         }
     }
 
-    public static class NeuSinkExtensions
+    internal static class NeuSinkExtensions
     {
         public static LoggerConfiguration NeuSink(
                              this LoggerSinkConfiguration loggerConfiguration,

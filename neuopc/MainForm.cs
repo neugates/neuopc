@@ -21,21 +21,14 @@ namespace neuopc
     public partial class MainForm : Form
     {
         private bool _running;
-        private const int _MaxLogLines = 1000;
+        private const int _MaxLogLines = 5000;
 
-        private DaClient _client;
-        private bool _clientRunning;
-        private Thread _clientThread;
-
-        private readonly Dictionary<string, Node> _nodeMap;
 
         public MainForm()
         {
             InitializeComponent();
 
             _running = true;
-            _nodeMap = new Dictionary<string, Node>();
-
             LogTaskRun();
         }
 
@@ -181,7 +174,6 @@ namespace neuopc
 
             Log.Information("exit neuopc");
             _running = false;
-            DaClientStop();
             NotifyIcon.Dispose();
             Environment.Exit(0);
         }
@@ -236,7 +228,7 @@ namespace neuopc
             {
                 client = new DaClient(uri, user, password, domain);
                 client.Connect();
-                //client.Disconnect();
+                client.Disconnect();
             }
             catch (Exception ex)
             {
@@ -250,84 +242,27 @@ namespace neuopc
             DALabel.Text = "Connection tested successfully";
             DALabel.ForeColor = Color.Green;
 
-            try
-            {
-                var nodes = DaBrowse.AllNode(client.Server);
+            //try
+            //{
+            //    var nodes = DaBrowse.AllItemNode(client.Server);
+            //    Log.Information($"node count:{nodes.Count()}");
 
-                foreach (var node in nodes)
-                {
-                    var item = client.Read(node.Name);
-                    Log.Information($"name:{node.ItemName}, value:{item.Value}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"read server failed");
-            }
-        }
-
-        private void DaClientThread()
-        {
-            while (_clientRunning)
-            {
-                try
-                {
-                    _client.Connect();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "connect to server failed");
-                    Thread.Sleep(1000);
-                    continue;
-                }
-
-                Thread.Sleep(1000);
-
-                var nodes = DaBrowse.AllNode(_client.Server);
-                foreach (var node in nodes)
-                {
-                    if (!_nodeMap.ContainsKey(node.Name))
-                    {
-                        _nodeMap.Add(node.Name, node);
-                        Log.Information($"add item:{node.Name}");
-                    }
-                }
-
-                foreach (var pair in _nodeMap)
-                {
-                    var name = pair.Key;
-                    var readItem = _client.Read("_System._ActiveTagCount");
-                    Log.Information($"read item:{name}");
-                }
-            }
-        }
-
-        private void DaClientStart()
-        {
-            var uri = DAServerComboBox.Text;
-            var user = string.Empty;
-            var password = string.Empty;
-            var domain = string.Empty;
-            _client = new DaClient(uri, user, password, domain);
-            _clientThread = new Thread(new ThreadStart(DaClientThread));
-            _clientRunning = true;
-            _clientThread.Start();
-        }
-
-        private void DaClientStop()
-        {
-            if (_clientRunning)
-            {
-                _clientRunning = false;
-                _clientThread.Join();
-            }
+            //    foreach (var node in nodes)
+            //    {
+            //        var item = client.Read(node.ItemName);
+            //        Log.Information($"name:{node.ItemName}, type:{node.Type}, value:{item.Value}");
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Error(ex, $"read server failed");
+            //}
         }
 
         private void SwitchButton_Click(object sender, EventArgs e)
         {
             if (SwitchButton.Text.Equals("Start"))
             {
-                DaClientStart();
                 SwitchButton.Text = "Stop";
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
@@ -338,7 +273,6 @@ namespace neuopc
             }
             else
             {
-                DaClientStop();
                 SwitchButton.Text = "Start";
                 DAHostComboBox.Enabled = true;
                 DAServerComboBox.Enabled = true;
