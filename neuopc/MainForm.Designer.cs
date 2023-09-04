@@ -159,17 +159,17 @@ namespace neuopc
             // name
             // 
             name.Text = "Name";
-            name.Width = 250;
+            name.Width = 300;
             // 
             // type
             // 
             type.Text = "Type";
-            type.Width = 100;
+            type.Width = 200;
             // 
             // rights
             // 
             rights.Text = "Rights";
-            rights.Width = 100;
+            rights.Width = 0;
             // 
             // value
             // 
@@ -179,12 +179,12 @@ namespace neuopc
             // quality
             // 
             quality.Text = "Quality";
-            quality.Width = 80;
+            quality.Width = 120;
             // 
             // error
             // 
             error.Text = "Error";
-            error.Width = 80;
+            error.Width = 0;
             // 
             // timestamp
             // 

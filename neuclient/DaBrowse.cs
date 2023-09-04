@@ -9,7 +9,7 @@ namespace neuclient
 {
     public class DaBrowse
     {
-        public static IEnumerable<Node> AllNode(Server server, Opc.ItemIdentifier id = null, List<Node> nodes = null)
+        private static IEnumerable<Node> AllNode(Server server, Opc.ItemIdentifier id = null, List<Node> nodes = null)
         {
             if (null == nodes)
             {
@@ -21,6 +21,7 @@ namespace neuclient
             {
                 BrowseFilter = browseFilter.all
             };
+
             try
             {
                 elements = server.Browse(id, filters, out BrowsePosition position);
@@ -54,14 +55,14 @@ namespace neuclient
             return nodes;
         }
 
-        public static Type GetDataType(Server server, string tag)
+        public static Type GetDataType(Server server, string tag, string path)
         {
-            var item = new Item { ItemName = tag };
+            var item = new Item { ItemName = tag, ItemPath = path };
             ItemProperty result;
 
             try
             {
-                var propertyCollection = server.GetProperties(new Opc.ItemIdentifier[] { item }, new[] { new PropertyID(1) }, false)[0];
+                var propertyCollection = server.GetProperties(new Opc.ItemIdentifier[] { item }, new[] { new PropertyID(1) }, true)[0];
                 result = propertyCollection[0];
             }
             catch (Exception)
@@ -70,7 +71,7 @@ namespace neuclient
                 return null;
             }
 
-            return result.DataType;
+            return (Type)result.Value;
         }
 
 
@@ -81,7 +82,7 @@ namespace neuclient
             var items = nodes.Where(x => x.IsItem);
             foreach (var item in items)
             {
-                item.Type = GetDataType(server, item.ItemName);
+                item.Type = GetDataType(server, item.ItemName, item.ItemPath);
             }
 
             return items;

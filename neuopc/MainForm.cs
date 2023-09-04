@@ -241,28 +241,14 @@ namespace neuopc
 
             DALabel.Text = "Connection tested successfully";
             DALabel.ForeColor = Color.Green;
-
-            //try
-            //{
-            //    var nodes = DaBrowse.AllItemNode(client.Server);
-            //    Log.Information($"node count:{nodes.Count()}");
-
-            //    foreach (var node in nodes)
-            //    {
-            //        var item = client.Read(node.ItemName);
-            //        Log.Information($"name:{node.ItemName}, type:{node.Type}, value:{item.Value}");
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.Error(ex, $"read server failed");
-            //}
         }
 
         private void SwitchButton_Click(object sender, EventArgs e)
         {
             if (SwitchButton.Text.Equals("Start"))
             {
+                var uri = DAServerComboBox.Text;
+                Client.Start(uri);
                 SwitchButton.Text = "Stop";
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
@@ -273,6 +259,7 @@ namespace neuopc
             }
             else
             {
+                Client.Stop();
                 SwitchButton.Text = "Start";
                 DAHostComboBox.Enabled = true;
                 DAServerComboBox.Enabled = true;
@@ -298,24 +285,98 @@ namespace neuopc
             ConfigUtil.SaveConfig("neuopc.json", config);
         }
 
+        private void ResetListView(IEnumerable<Node> nodes)
+        {
+            Action<IEnumerable<Node>> action = (data) =>
+            {
+                var items = MainListView.Items;
+                foreach (var node in data)
+                {
+                    //ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
+                    ////if (null == li)
+                    //{
+                    MainListView.BeginUpdate();
+                    ListViewItem lvi = new ListViewItem();
+
+                    var itemType = "unknow";
+                    if (null != node.Type)
+                    {
+                        itemType = node.Type.ToString();
+                    }
+
+                    var itemValue = "null";
+                    if (null != node.Item && null != node.Item.Value)
+                    {
+                        itemValue = node.Item.Value.ToString();
+                    }
+
+                    var itemQuality = "unknow";
+                    if (null != node.Item)
+                    {
+                        itemQuality = node.Item.Quality.ToString();
+                    }
+
+                    var itemSourceTimestamp = "unknow";
+                    if (null != node.Item)
+                    {
+                        itemSourceTimestamp = node.Item.SourceTimestamp.ToString();
+                    }
+
+                    lvi.Text = node.ItemName;
+                    lvi.SubItems.Add(itemType); // type
+                    lvi.SubItems.Add(""); // rights
+                    lvi.SubItems.Add(itemValue); // value
+                    lvi.SubItems.Add(itemQuality); // quality
+                    lvi.SubItems.Add(""); // error
+                    lvi.SubItems.Add(itemSourceTimestamp); // timestamp
+                    lvi.SubItems.Add(""); // handle
+                    MainListView.Items.Add(lvi);
+                    MainListView.EndUpdate();
+                    //}
+                    //else
+                    //{
+                    //    li.SubItems[3].Text = item.Value;
+                    //    li.SubItems[4].Text = item.Quality;
+                    //    li.SubItems[5].Text = item.Error;
+                    //    li.SubItems[6].Text = item.Timestamp;
+                    //}
+                }
+            };
+
+            try
+            {
+                Invoke(action, nodes);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, $"reset list view error");
+            }
+        }
+
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (1 == TabControl.SelectedIndex)
             {
+                Action action = () =>
+                {
+                    MainListView.BeginUpdate();
+                    MainListView.Items.Clear();
+                    MainListView.EndUpdate();
+                };
+
                 try
                 {
-                    Action action = () =>
-                    {
-                        MainListView.BeginUpdate();
-                        MainListView.Items.Clear();
-                        MainListView.EndUpdate();
-                    };
-
                     Invoke(action);
                 }
                 catch (Exception exception)
                 {
                     Log.Error($"clear list view error: {exception.Message}");
+                }
+
+                var nodes = Client.GetNodes();
+                if (nodes != null)
+                {
+                    ResetListView(nodes);
                 }
             }
 

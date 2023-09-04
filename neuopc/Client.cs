@@ -20,23 +20,42 @@ namespace neuopc
         private static bool UpdateNodeMap()
         {
             bool upgrade = false;
-            var nodes = DaBrowse.AllNode(_client.Server);
+            var nodes = DaBrowse.AllItemNode(_client.Server);
             foreach (var node in nodes)
             {
-                if (!_nodeMap.ContainsKey(node.Name))
+                if (!_nodeMap.ContainsKey(node.ItemName))
                 {
                     upgrade = true;
-                    _nodeMap.Add(node.Name, node);
-                    Log.Information($"add item:{node.Name}");
+                    _nodeMap.Add(node.ItemName, node);
                 }
             }
 
             return upgrade;
         }
 
+        private static void ReadTags()
+        {
+            int MaxReadCount = 100;
+            int count = _nodeMap.Count;
+            int times = count / MaxReadCount + ((count % MaxReadCount) == 0 ? 0 : 1);
+
+            for (int i = 0; i < times; i++)
+            {
+                var nodes = _nodeMap.Values.Skip(i * MaxReadCount).Take(MaxReadCount);
+                var tags = nodes.Select(n => n.ItemName).ToList();
+                var items = _client.Read(tags);
+
+                foreach (var item in items)
+                {
+                    var node = _nodeMap[item.Key];
+                    node.Item = item.Value;
+                }
+            }
+        }
+
         private static void ClientThread()
         {
-            int count = 0;
+            int count = 100;
             while (_clientRunning)
             {
                 try
@@ -50,9 +69,12 @@ namespace neuopc
                     continue;
                 }
 
-                Thread.Sleep(100);
-                count++;
+                if (_nodeMap.Count == 0)
+                {
+                    Thread.Sleep(100);
+                }
 
+                count++;
                 if (count >= 100)
                 {
                     if (true == UpdateNodeMap())
@@ -63,7 +85,7 @@ namespace neuopc
                     count = 0;
                 }
 
-                // TODO: read all tags
+                ReadTags();
             }
         }
 
@@ -95,7 +117,12 @@ namespace neuopc
 
         public static IEnumerable<Node> GetNodes()
         {
-            return _nodeMap.Values;
+            if (null != _nodeMap)
+            {
+                return _nodeMap.Values;
+            }
+
+            return null;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Opc.Da;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -66,5 +67,7 @@ namespace neuclient
         public bool IsItem { get; set; }
 
         public Type Type { get; set; }
+
+        public ReadItem Item { get; set; }
     }
 }
