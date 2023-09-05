@@ -10,4 +10,8 @@
     <PackageReference Include="OpcNetApi.Com" Version="2.1.109" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\neulib\neulib.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -59,7 +59,7 @@ namespace neuopc
             UAPasswordTextBox = new System.Windows.Forms.TextBox();
             label5 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
-            UAPortTextBox = new System.Windows.Forms.TextBox();
+            UAUrlTextBox = new System.Windows.Forms.TextBox();
             UAUserTextBox = new System.Windows.Forms.TextBox();
             label4 = new System.Windows.Forms.Label();
             DAHostComboBox = new System.Windows.Forms.ComboBox();
@@ -220,7 +220,7 @@ namespace neuopc
             groupBox1.Controls.Add(UAPasswordTextBox);
             groupBox1.Controls.Add(label5);
             groupBox1.Controls.Add(label3);
-            groupBox1.Controls.Add(UAPortTextBox);
+            groupBox1.Controls.Add(UAUrlTextBox);
             groupBox1.Controls.Add(UAUserTextBox);
             groupBox1.Controls.Add(label4);
             groupBox1.Controls.Add(DAHostComboBox);
@@ -323,20 +323,20 @@ namespace neuopc
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(100, 248);
+            label3.Location = new System.Drawing.Point(56, 248);
             label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(120, 24);
+            label3.Size = new System.Drawing.Size(163, 24);
             label3.TabIndex = 27;
-            label3.Text = "OPC UA Port";
+            label3.Text = "OPC UA Endpoint";
             // 
-            // UAPortTextBox
+            // UAUrlTextBox
             // 
-            UAPortTextBox.Location = new System.Drawing.Point(226, 245);
-            UAPortTextBox.Margin = new System.Windows.Forms.Padding(2);
-            UAPortTextBox.Name = "UAPortTextBox";
-            UAPortTextBox.Size = new System.Drawing.Size(498, 30);
-            UAPortTextBox.TabIndex = 25;
+            UAUrlTextBox.Location = new System.Drawing.Point(226, 245);
+            UAUrlTextBox.Margin = new System.Windows.Forms.Padding(2);
+            UAUrlTextBox.Name = "UAUrlTextBox";
+            UAUrlTextBox.Size = new System.Drawing.Size(498, 30);
+            UAUrlTextBox.TabIndex = 25;
             // 
             // UAUserTextBox
             // 
@@ -476,7 +476,7 @@ namespace neuopc
         private System.Windows.Forms.TextBox UAPasswordTextBox;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox UAPortTextBox;
+        private System.Windows.Forms.TextBox UAUrlTextBox;
         private System.Windows.Forms.TextBox UAUserTextBox;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox DAHostComboBox;

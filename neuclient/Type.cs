@@ -1,8 +1,6 @@
-﻿using Opc.Da;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
-using System.Text;
+using neulib;
 
 namespace neuclient
 {
@@ -10,26 +8,6 @@ namespace neuclient
     {
         Disconnected = 0,
         Connected = 1
-    }
-
-    public enum Quality
-    {
-        GoodLocalOverrideValueForced = 216,
-        Good = 192,
-        UncertainValueFromMultipleSources = 88,
-        UncertainEngineeringUnitsExceeded = 84,
-        UncertainSensorNotAccurate = 80,
-        UncertainLastUsableValue = 68,
-        Uncertain = 64,
-        BadWaitingForInitialData = 32,
-        BadOutOfService = 28, // Also happens when item or group is inactive
-        BadCommFailure = 24,
-        BadLastKnowValuePassed = 20,
-        BadSensorFailure = 16,
-        BadDeviceFailure = 12,
-        BadNotConnected = 8,
-        BadConfigurationErrorInServer = 4,
-        Bad = 0,
     }
 
     public class ReadItem

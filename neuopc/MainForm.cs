@@ -82,14 +82,14 @@ namespace neuopc
             DAHostComboBox.Text = config.DAHost;
             DAServerComboBox.Text = config.DAServer;
 
-            UAPortTextBox.Text = config.UAUrl;
+            UAUrlTextBox.Text = config.UAUrl;
             UAUserTextBox.Text = config.UAUser;
             UAPasswordTextBox.Text = config.UAPassword;
             CheckBox.Checked = config.AutoConnect;
 
-            if (string.IsNullOrEmpty(UAPortTextBox.Text))
+            if (string.IsNullOrEmpty(UAUrlTextBox.Text))
             {
-                UAPortTextBox.Text = "opc.tcp://localhost:48401";
+                UAUrlTextBox.Text = "opc.tcp://localhost:48401";
             }
 
             if (string.IsNullOrEmpty(UAUserTextBox.Text))
@@ -110,7 +110,7 @@ namespace neuopc
                 DAServerComboBox.Enabled = false;
                 TestButton.Enabled = false;
 
-                UAPortTextBox.Enabled = false;
+                UAUrlTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
             }
@@ -245,29 +245,41 @@ namespace neuopc
 
         private void SwitchButton_Click(object sender, EventArgs e)
         {
+            SwitchButton.Enabled = false;
+
             if (SwitchButton.Text.Equals("Start"))
             {
+                var url = UAUrlTextBox.Text;
+                var user = UAUserTextBox.Text;
+                var password = UAPasswordTextBox.Text;
+                Server.Start(url, user, password, null);
+
                 var uri = DAServerComboBox.Text;
-                Client.Start(uri);
+                Client.Start(uri, Server.DataChannel);
+
                 SwitchButton.Text = "Stop";
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
                 TestButton.Enabled = false;
-                UAPortTextBox.Enabled = false;
+                UAUrlTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
             }
             else
             {
                 Client.Stop();
+                Server.Stop();
+
                 SwitchButton.Text = "Start";
                 DAHostComboBox.Enabled = true;
                 DAServerComboBox.Enabled = true;
                 TestButton.Enabled = true;
-                UAPortTextBox.Enabled = true;
+                UAUrlTextBox.Enabled = true;
                 UAUserTextBox.Enabled = true;
                 UAPasswordTextBox.Enabled = true;
             }
+
+            SwitchButton.Enabled = true;
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -276,7 +288,7 @@ namespace neuopc
             {
                 DAHost = DAHostComboBox.Text,
                 DAServer = DAServerComboBox.Text,
-                UAUrl = UAPortTextBox.Text,
+                UAUrl = UAUrlTextBox.Text,
                 UAUser = UAUserTextBox.Text,
                 UAPassword = UAPasswordTextBox.Text,
                 AutoConnect = CheckBox.Checked
@@ -292,9 +304,6 @@ namespace neuopc
                 var items = MainListView.Items;
                 foreach (var node in data)
                 {
-                    //ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
-                    ////if (null == li)
-                    //{
                     MainListView.BeginUpdate();
                     ListViewItem lvi = new ListViewItem();
 
@@ -332,14 +341,6 @@ namespace neuopc
                     lvi.SubItems.Add(""); // handle
                     MainListView.Items.Add(lvi);
                     MainListView.EndUpdate();
-                    //}
-                    //else
-                    //{
-                    //    li.SubItems[3].Text = item.Value;
-                    //    li.SubItems[4].Text = item.Quality;
-                    //    li.SubItems[5].Text = item.Error;
-                    //    li.SubItems[6].Text = item.Timestamp;
-                    //}
                 }
             };
 

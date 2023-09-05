@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using neuclient;
 using Opc.Ua.Server;
 using Serilog;
+using neulib;
+using System.Threading.Channels;
 
 namespace neuopc
 {
@@ -16,6 +18,7 @@ namespace neuopc
         private static bool _clientRunning = false;
         private static Thread _clientThread = null;
         private static Dictionary<string, Node> _nodeMap = null;
+        private static Channel<Msg> _dataChannel = null;
 
         private static bool UpdateNodeMap()
         {
@@ -45,11 +48,29 @@ namespace neuopc
                 var tags = nodes.Select(n => n.ItemName).ToList();
                 var items = _client.Read(tags);
 
+                var list = new List<Item>();
                 foreach (var item in items)
                 {
                     var node = _nodeMap[item.Key];
                     node.Item = item.Value;
+
+                    var it = new Item()
+                    {
+                        Name = node.ItemName,
+                        Type = node.Type,
+                        Value = node.Item.Value,
+                        Quality = node.Item.Quality,
+                        Timestamp = node.Item.SourceTimestamp,
+                    };
+                    list.Add(it);
                 }
+
+                
+
+                _dataChannel.Writer.TryWrite(new Msg()
+                {
+                    Items = list,
+                });
             }
         }
 
@@ -97,22 +118,12 @@ namespace neuopc
             }
         }
 
-        public static bool IsRunning
+        public static bool Running
         {
             get
             {
                 return _clientRunning;
             }
-        }
-
-        public static Node GetNode(string name)
-        {
-            if (_nodeMap.ContainsKey(name))
-            {
-                return _nodeMap[name];
-            }
-
-            return null;
         }
 
         public static IEnumerable<Node> GetNodes()
@@ -126,7 +137,7 @@ namespace neuopc
         }
 
 
-        public static void Start(string serverUrl)
+        public static void Start(string serverUrl, Channel<Msg> dataChannel)
         {
             if (_clientRunning)
             {
@@ -136,6 +147,7 @@ namespace neuopc
             _client = new DaClient(serverUrl, string.Empty, string.Empty, string.Empty);
             _clientRunning = true;
             _nodeMap = new Dictionary<string, Node>();
+            _dataChannel = dataChannel;
             _clientThread = new Thread(new ThreadStart(ClientThread));
             _clientThread.Start();
         }
@@ -147,6 +159,7 @@ namespace neuopc
                 _clientRunning = false;
                 _clientThread.Join();
                 _nodeMap = null;
+                _dataChannel = null;
                 _clientThread = null;
             }
         }

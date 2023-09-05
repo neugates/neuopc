@@ -7,6 +7,7 @@ using System.Linq;
 using System.Globalization;
 using System.Net;
 using Opc;
+using neulib;
 
 namespace neuclient
 {
