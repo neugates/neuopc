@@ -13,134 +13,105 @@ using System.Threading.Channels;
 using System.IO;
 using System.Diagnostics;
 using Serilog;
-using neulib;
+using neuclient;
+using Accessibility;
 
 namespace neuopc
 {
     public partial class MainForm : Form
     {
-        private Task task;
-        private SubProcess subProcess;
-        private bool running;
+        private bool _running;
+        private const int _MaxLogLines = 5000;
+
 
         public MainForm()
         {
             InitializeComponent();
-            subProcess = new SubProcess();
-            running = true;
+
+            _running = true;
+            LogTaskRun();
         }
 
-        //private void UpdateDAStatusLabel(DaMsg msg)
-        //{
-        //    try
-        //    {
-        //        Action<DaMsg> action = (data) =>
-        //        {
-        //            string label = $"UA:{data.Host}/{data.Server}-{data.Status}";
-        //            DAStatusLabel.Text = label;
-        //            if ("connected" == data.Status)
-        //            {
-        //                DAStatusLabel.ForeColor = Color.Green;
-        //            }
-        //            else
-        //            {
-        //                DAStatusLabel.ForeColor = Color.Red;
-        //            }
-        //        };
-
-        //        Invoke(action, msg);
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        Log.Error($"update status lable error: {exception.Message}");
-        //    }
-        //}
-
-        private void ResetListView(List<DataItem> list)
+        private void LogTaskRun()
         {
-            try
-            {
-                Action<List<DataItem>> action = (data) =>
-                {
-                    var items = MainListView.Items;
-                    foreach (var item in data)
-                    {
-                        ListViewItem li = MainListView.Items.Cast<ListViewItem>().FirstOrDefault(x => x.Text == item.Name);
-                        if (null == li)
-                        {
-                            MainListView.BeginUpdate();
-                            ListViewItem lvi = new ListViewItem();
-                            lvi.Text = item.Name;
-                            lvi.SubItems.Add(item.Type); // type
-                            lvi.SubItems.Add(item.Right); // rights
-                            lvi.SubItems.Add(item.Value); // value
-                            lvi.SubItems.Add(item.Quality); // quality
-                            lvi.SubItems.Add(item.Error); // error
-                            lvi.SubItems.Add(item.Timestamp); // timestamp
-                            lvi.SubItems.Add(item.ClientHandle); // handle
-                            MainListView.Items.Add(lvi);
-                            MainListView.EndUpdate();
-                        }
-                        else
-                        {
-                            li.SubItems[3].Text = item.Value;
-                            li.SubItems[4].Text = item.Quality;
-                            li.SubItems[5].Text = item.Error;
-                            li.SubItems[6].Text = item.Timestamp;
-                        }
-                    }
-                };
+            var _ = Task.Run(async () =>
+             {
+                 var channel = NeuSinkChannel.GetChannel();
+                 Action<string> action = (data) =>
+                 {
+                     if (LogRichTextBox.Lines.Length > _MaxLogLines)
+                     {
+                         LogRichTextBox.Clear();
+                     }
 
-                Invoke(action, list);
-            }
-            catch (Exception exception)
-            {
-                Log.Error($"reset list view error: {exception.Message}");
-            }
+                     LogRichTextBox.AppendText(data);
+                     LogRichTextBox.ScrollToCaret();
+                 };
+
+                 while (await channel.Reader.WaitToReadAsync())
+                 {
+                     if (!_running)
+                     {
+                         break;
+                     }
+
+                     if (!channel.Reader.TryRead(out var msg))
+                     {
+                         continue;
+                     }
+
+                     try
+                     {
+                         Invoke(action, msg);
+                     }
+                     catch (Exception)
+                     {
+                         continue;
+                     }
+                 }
+             });
         }
 
-        private void TestGetDatas()
+        private void LoadMetaInfo()
         {
-            while (running)
-            {
-                Thread.Sleep(3000);
-
-                var req = new DataReqMsg();
-                req.Type = neulib.MsgType.DADataReq;
-                var buff = Serializer.Serialize<DataReqMsg>(req);
-                subProcess.Request(in buff, out byte[] result);
-
-                if (null != result)
-                {
-                    try
-                    {
-                        var requestMsg = Serializer.Deserialize<DataResMsg>(result);
-                        ResetListView(requestMsg.Items);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"get datas error:{ex.Message}");
-                    }
-                }
-            }
+            AboutRichTextBox.Clear();
+            AboutRichTextBox.AppendText($"{MetaInfo.Name} v{MetaInfo.Version}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText(MetaInfo.Description);
+            AboutRichTextBox.AppendText($"Document {MetaInfo.Documenation}\r\n");
+            AboutRichTextBox.AppendText($"License {MetaInfo.License}\r\n");
+            AboutRichTextBox.AppendText($"NeuOPC project {MetaInfo.NeuopcProject}\r\n");
+            AboutRichTextBox.AppendText($"Neuron project {MetaInfo.NeuronProject}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText($"OPC foundation {MetaInfo.OpcdaProject}\r\n");
+            AboutRichTextBox.AppendText($"OPC UA project {MetaInfo.OpcuaProject}\r\n");
+            AboutRichTextBox.AppendText($"Serilog project {MetaInfo.SerilogProject}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText(MetaInfo.Disclaimer);
         }
 
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            Log.Information("neuopc start");
+
+            LoadMetaInfo();
+
             NotifyIcon.Visible = true;
             var config = ConfigUtil.LoadConfig("neuopc.json");
             DAHostComboBox.Text = config.DAHost;
             DAServerComboBox.Text = config.DAServer;
 
-            UAPortTextBox.Text = config.UAUrl;
+            UAUrlTextBox.Text = config.UAUrl;
             UAUserTextBox.Text = config.UAUser;
             UAPasswordTextBox.Text = config.UAPassword;
             CheckBox.Checked = config.AutoConnect;
 
-            if (string.IsNullOrEmpty(UAPortTextBox.Text))
+            if (string.IsNullOrEmpty(UAUrlTextBox.Text))
             {
-                UAPortTextBox.Text = "opc.tcp://localhost:48401";
+                UAUrlTextBox.Text = "opc.tcp://localhost:48401";
             }
 
             if (string.IsNullOrEmpty(UAUserTextBox.Text))
@@ -155,54 +126,41 @@ namespace neuopc
 
             if (CheckBox.Checked)
             {
-                subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
-                subProcess.SetUAArguments(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
-
                 SwitchButton.Text = "Stop";
 
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
                 TestButton.Enabled = false;
 
-                UAPortTextBox.Enabled = false;
+                UAUrlTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
             }
             else
             {
-                subProcess.SetDAArguments("", "");
-                subProcess.SetUAArguments("", "", "");
-
                 SwitchButton.Text = "Start";
             }
-
-            subProcess.Daemon();
-            var ts = new ThreadStart(TestGetDatas);
-            var thread = new Thread(ts);
-            thread.Start();
         }
 
         private void DAServerComboBox_DropDown(object sender, EventArgs e)
         {
             DAServerComboBox.Text = string.Empty;
             DAServerComboBox.Items.Clear();
+            var host = DAHostComboBox.Text;
 
-            var req = new DAServerReqMsg
+            try
             {
-                Type = neulib.MsgType.DAServersReq,
-                Host = DAHostComboBox.Text
-            };
-            var buff = Serializer.Serialize<DAServerReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
+                DAServerComboBox.Items.AddRange(DaDiscovery.GetServers(host, 2).ToArray());
+            }
+            catch (Exception ex)
             {
-                var res = Serializer.Deserialize<DAServerResMsg>(result);
-                var list = res.Servers;
-                DAServerComboBox.Items.AddRange(list.ToArray());
-                if (0 < DAServerComboBox.Items.Count)
-                {
-                    DAServerComboBox.SelectedIndex = 0;
-                }
+                Log.Error(ex, $"get da servers error, host:{host}");
+                return;
+            }
+
+            if (0 < DAServerComboBox.Items.Count)
+            {
+                DAServerComboBox.SelectedIndex = 0;
             }
         }
 
@@ -211,21 +169,19 @@ namespace neuopc
             DAHostComboBox.Text = string.Empty;
             DAHostComboBox.Items.Clear();
 
-            var req = new DAHostsReqMsg
+            try
             {
-                Type = neulib.MsgType.DAHostsReq
-            };
-            var buff = Serializer.Serialize<DAHostsReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
+                DAHostComboBox.Items.AddRange(DaDiscovery.GetHosts().ToArray());
+            }
+            catch (Exception ex)
             {
-                var res = Serializer.Deserialize<DAHostsResMsg>(result);
-                var list = res.Hosts;
-                DAHostComboBox.Items.AddRange(list.ToArray());
-                if (0 < DAHostComboBox.Items.Count)
-                {
-                    DAHostComboBox.SelectedIndex = 0;
-                }
+                Log.Error(ex, "get da hosts error");
+                return;
+            }
+
+            if (0 < DAHostComboBox.Items.Count)
+            {
+                DAHostComboBox.SelectedIndex = 0;
             }
         }
 
@@ -238,20 +194,8 @@ namespace neuopc
                 return;
             }
 
-            //this.Hide();
-            //e.Cancel = true;
-
-            //client.Close();
-            //channel.Writer.Complete();
-            //task.Wait();
-            //server.Stop();
-            //NotifyIcon.Dispose();
-
             Log.Information("exit neuopc");
-
-            running = false;
-            subProcess.Stop();
-
+            _running = false;
             NotifyIcon.Dispose();
             Environment.Exit(0);
         }
@@ -281,7 +225,7 @@ namespace neuopc
 
         private void ExitButton_Click(object sender, EventArgs e)
         {
-            Log.Information("exit neuopc");
+            Log.Information("neuopc exit");
 
             var result = MessageBox.Show("Do you want to exit the program?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (DialogResult.Cancel == result)
@@ -290,121 +234,74 @@ namespace neuopc
             }
 
 
-            running = false;
-            subProcess.Stop();
             Environment.Exit(0);
         }
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            var req = new ConnectTestReqMsg
+            DALabel.Text = string.Empty;
+            var uri = DAServerComboBox.Text;
+            var user = string.Empty;
+            var password = string.Empty;
+            var domain = string.Empty;
+
+            DaClient client;
+            try
             {
-                Type = neulib.MsgType.DAConnectTestReq,
-                Host = DAHostComboBox.Text,
-                Server = DAServerComboBox.Text
-            };
-            var buff = Serializer.Serialize<ConnectTestReqMsg>(req);
-            subProcess.Request(in buff, out byte[] result);
-            if (null != result)
-            {
-                var res = Serializer.Deserialize<ConnectTestResMsg>(result);
-                if (res.Result)
-                {
-                    UALabel.Text = "Connection tested successfully";
-                    UALabel.ForeColor = Color.Green;
-                }
-                else
-                {
-                    UALabel.Text = "Connection tested failed";
-                    UALabel.ForeColor = Color.Red;
-                }
+                client = new DaClient(uri, user, password, domain);
+                client.Connect();
+                client.Disconnect();
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "connect to server failed");
+
+                DALabel.Text = "Connection tested failed";
+                DALabel.ForeColor = Color.Red;
+                return;
+            }
+
+            DALabel.Text = "Connection tested successfully";
+            DALabel.ForeColor = Color.Green;
         }
 
         private void SwitchButton_Click(object sender, EventArgs e)
         {
+            SwitchButton.Enabled = false;
+
             if (SwitchButton.Text.Equals("Start"))
             {
-                // DA start
-                var req1 = new ConnectReqMsg
-                {
-                    Type = neulib.MsgType.DAConnectReq,
-                    Host = DAHostComboBox.Text,
-                    Server = DAServerComboBox.Text
-                };
-                var buff1 = Serializer.Serialize<ConnectReqMsg>(req1);
-                subProcess.Request(in buff1, out byte[] result1);
-                if (null != result1)
-                {
-                    var res1 = Serializer.Deserialize<ConnectResMsg>(result1);
-                    Log.Information($"connect to da, code:{res1.Code}, msg:{res1.Msg}");
-                }
+                var url = UAUrlTextBox.Text;
+                var user = UAUserTextBox.Text;
+                var password = UAPasswordTextBox.Text;
+                Server.Start(url, user, password, null);
 
-                // UA start
-                var req2 = new UAStartReqMsg
-                {
-                    Type = neulib.MsgType.UAStartReq,
-                    Url = UAPortTextBox.Text,
-                    User = UAUserTextBox.Text,
-                    Password = UAPasswordTextBox.Text
-                };
-                var buff2 = Serializer.Serialize<UAStartReqMsg>(req2);
-                subProcess.Request(in buff2, out byte[] result2);
-                if (null != result2)
-                {
-                    var res2 = Serializer.Deserialize<UAStartResMsg>(result2);
-                }
+                var uri = DAServerComboBox.Text;
+                Client.Start(uri, Server.DataChannel);
 
                 SwitchButton.Text = "Stop";
-
                 DAHostComboBox.Enabled = false;
                 DAServerComboBox.Enabled = false;
                 TestButton.Enabled = false;
-
-                UAPortTextBox.Enabled = false;
+                UAUrlTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
             }
             else
             {
-                // DA start
-                var req1 = new DisconnectReqMsg
-                {
-                    Type = neulib.MsgType.DADisconnectReq,
-                };
-                var buff1 = Serializer.Serialize<DisconnectReqMsg>(req1);
-                subProcess.Request(in buff1, out byte[] result1);
-                if (null != result1)
-                {
-                    var res1 = Serializer.Deserialize<DisconnectResMsg>(result1);
-                }
-
-
-                // UA start
-                var req2 = new UAStopReqMsg
-                {
-                    Type = neulib.MsgType.UAStopReq
-                };
-                var buff2 = Serializer.Serialize<UAStopReqMsg>(req2);
-                subProcess.Request(in buff2, out byte[] result2);
-                if (null != result2)
-                {
-                    var res2 = Serializer.Deserialize<UAStopResMsg>(result2);
-                }
-
-                subProcess.SetDAArguments(DAHostComboBox.Text, DAServerComboBox.Text);
-                subProcess.SetUAArguments(UAPortTextBox.Text, UAUserTextBox.Text, UAPasswordTextBox.Text);
+                Client.Stop();
+                Server.Stop();
 
                 SwitchButton.Text = "Start";
-
                 DAHostComboBox.Enabled = true;
                 DAServerComboBox.Enabled = true;
                 TestButton.Enabled = true;
-
-                UAPortTextBox.Enabled = true;
+                UAUrlTextBox.Enabled = true;
                 UAUserTextBox.Enabled = true;
                 UAPasswordTextBox.Enabled = true;
             }
+
+            SwitchButton.Enabled = true;
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -413,7 +310,7 @@ namespace neuopc
             {
                 DAHost = DAHostComboBox.Text,
                 DAServer = DAServerComboBox.Text,
-                UAUrl = UAPortTextBox.Text,
+                UAUrl = UAUrlTextBox.Text,
                 UAUser = UAUserTextBox.Text,
                 UAPassword = UAPasswordTextBox.Text,
                 AutoConnect = CheckBox.Checked
@@ -422,58 +319,92 @@ namespace neuopc
             ConfigUtil.SaveConfig("neuopc.json", config);
         }
 
+        private void ResetListView(IEnumerable<Node> nodes)
+        {
+            Action<IEnumerable<Node>> action = (data) =>
+            {
+                var items = MainListView.Items;
+                foreach (var node in data)
+                {
+                    MainListView.BeginUpdate();
+                    ListViewItem lvi = new ListViewItem();
+
+                    var itemType = "unknow";
+                    if (null != node.Type)
+                    {
+                        itemType = node.Type.ToString();
+                    }
+
+                    var itemValue = "null";
+                    if (null != node.Item && null != node.Item.Value)
+                    {
+                        itemValue = node.Item.Value.ToString();
+                    }
+
+                    var itemQuality = "unknow";
+                    if (null != node.Item)
+                    {
+                        itemQuality = node.Item.Quality.ToString();
+                    }
+
+                    var itemSourceTimestamp = "unknow";
+                    if (null != node.Item)
+                    {
+                        itemSourceTimestamp = node.Item.SourceTimestamp.ToString();
+                    }
+
+                    lvi.Text = node.ItemName;
+                    lvi.SubItems.Add(itemType); // type
+                    lvi.SubItems.Add(""); // rights
+                    lvi.SubItems.Add(itemValue); // value
+                    lvi.SubItems.Add(itemQuality); // quality
+                    lvi.SubItems.Add(""); // error
+                    lvi.SubItems.Add(itemSourceTimestamp); // timestamp
+                    lvi.SubItems.Add(""); // handle
+                    MainListView.Items.Add(lvi);
+                    MainListView.EndUpdate();
+                }
+            };
+
+            try
+            {
+                Invoke(action, nodes);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, $"reset list view error");
+            }
+        }
+
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (1 == TabControl.SelectedIndex)
             {
+                Action action = () =>
+                {
+                    MainListView.BeginUpdate();
+                    MainListView.Items.Clear();
+                    MainListView.EndUpdate();
+                };
+
                 try
                 {
-                    Action action = () =>
-                    {
-                        MainListView.BeginUpdate();
-                        MainListView.Items.Clear();
-                        MainListView.EndUpdate();
-                    };
-
                     Invoke(action);
                 }
                 catch (Exception exception)
                 {
                     Log.Error($"clear list view error: {exception.Message}");
                 }
+
+                var nodes = Client.GetNodes();
+                if (nodes != null)
+                {
+                    ResetListView(nodes);
+                }
             }
 
             if (2 == TabControl.SelectedIndex)
             {
-                try
-                {
-                    Action action = () =>
-                    {
-                        DirectoryInfo di = new DirectoryInfo("./log");
-                        LogListView.BeginUpdate();
-                        LogListView.Items.Clear();
-
-                        foreach (var fi in di.GetFiles())
-                        {
-                            ListViewItem lvi = new ListViewItem
-                            {
-                                Text = fi.Name,
-                            };
-
-                            lvi.SubItems.Add(fi.LastWriteTime.ToString());
-                            lvi.SubItems.Add(fi.Length.ToString());
-                            LogListView.Items.Add(lvi);
-                        }
-
-                        LogListView.EndUpdate();
-                    };
-
-                    Invoke(action);
-                }
-                catch (Exception exception)
-                {
-                    Log.Error($"get logs error: {exception.Message}");
-                }
             }
         }
 

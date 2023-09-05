@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Serilog;
 
@@ -16,16 +13,14 @@ namespace neuopc
         static void Main()
         {
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            //Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            var _ = NeuSinkChannel.GetChannel();
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.Console()
-                .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
-            Log.Information("neuopc start...");
+                    .MinimumLevel.Information()
+                    .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
+                    .WriteTo.NeuSink()
+                    .CreateLogger();
 
             try
             {
@@ -33,10 +28,11 @@ namespace neuopc
             }
             catch (Exception ex)
             {
-                Log.Error($"Exceptions not handled properly, error:{ex.Message}");
+                Log.Error(ex, "");
             }
 
             Log.CloseAndFlush();
+            NeuSinkChannel.CloseChannel();
         }
     }
 }
