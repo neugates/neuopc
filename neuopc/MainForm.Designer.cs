@@ -35,6 +35,7 @@ namespace neuopc
             UAStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             NotifyIcon = new System.Windows.Forms.NotifyIcon(components);
             TabPageAbout = new System.Windows.Forms.TabPage();
+            AboutRichTextBox = new System.Windows.Forms.RichTextBox();
             TabPageLog = new System.Windows.Forms.TabPage();
             LogRichTextBox = new System.Windows.Forms.RichTextBox();
             TabPageData = new System.Windows.Forms.TabPage();
@@ -69,6 +70,7 @@ namespace neuopc
             TestButton = new System.Windows.Forms.Button();
             TabControl = new System.Windows.Forms.TabControl();
             statusStrip1.SuspendLayout();
+            TabPageAbout.SuspendLayout();
             TabPageLog.SuspendLayout();
             TabPageData.SuspendLayout();
             TabPageSetting.SuspendLayout();
@@ -105,6 +107,7 @@ namespace neuopc
             // 
             // TabPageAbout
             // 
+            TabPageAbout.Controls.Add(AboutRichTextBox);
             TabPageAbout.Location = new System.Drawing.Point(4, 36);
             TabPageAbout.Name = "TabPageAbout";
             TabPageAbout.Padding = new System.Windows.Forms.Padding(3);
@@ -112,6 +115,16 @@ namespace neuopc
             TabPageAbout.TabIndex = 2;
             TabPageAbout.Text = "About";
             TabPageAbout.UseVisualStyleBackColor = true;
+            // 
+            // AboutRichTextBox
+            // 
+            AboutRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            AboutRichTextBox.Location = new System.Drawing.Point(3, 3);
+            AboutRichTextBox.Name = "AboutRichTextBox";
+            AboutRichTextBox.ReadOnly = true;
+            AboutRichTextBox.Size = new System.Drawing.Size(1114, 626);
+            AboutRichTextBox.TabIndex = 0;
+            AboutRichTextBox.Text = "";
             // 
             // TabPageLog
             // 
@@ -435,6 +448,7 @@ namespace neuopc
             Load += MainForm_Load;
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            TabPageAbout.ResumeLayout(false);
             TabPageLog.ResumeLayout(false);
             TabPageData.ResumeLayout(false);
             TabPageSetting.ResumeLayout(false);
@@ -485,6 +499,7 @@ namespace neuopc
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button TestButton;
         private System.Windows.Forms.TabControl TabControl;
+        private System.Windows.Forms.RichTextBox AboutRichTextBox;
     }
 }
 

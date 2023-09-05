@@ -72,10 +72,32 @@ namespace neuopc
              });
         }
 
+        private void LoadMetaInfo()
+        {
+            AboutRichTextBox.Clear();
+            AboutRichTextBox.AppendText($"{MetaInfo.Name} v{MetaInfo.Version}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText(MetaInfo.Description);
+            AboutRichTextBox.AppendText($"Document {MetaInfo.Documenation}\r\n");
+            AboutRichTextBox.AppendText($"License {MetaInfo.License}\r\n");
+            AboutRichTextBox.AppendText($"NeuOPC project {MetaInfo.NeuopcProject}\r\n");
+            AboutRichTextBox.AppendText($"Neuron project {MetaInfo.NeuronProject}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText($"OPC foundation {MetaInfo.OpcdaProject}\r\n");
+            AboutRichTextBox.AppendText($"OPC UA project {MetaInfo.OpcuaProject}\r\n");
+            AboutRichTextBox.AppendText($"Serilog project {MetaInfo.SerilogProject}\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText("\r\n");
+            AboutRichTextBox.AppendText(MetaInfo.Disclaimer);
+        }
+
 
         private void MainForm_Load(object sender, EventArgs e)
         {
             Log.Information("neuopc start");
+
+            LoadMetaInfo();
 
             NotifyIcon.Visible = true;
             var config = ConfigUtil.LoadConfig("neuopc.json");
