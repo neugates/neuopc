@@ -464,7 +464,6 @@ namespace neuopc
         private System.Windows.Forms.ToolStripStatusLabel DAStatusLabel;
         private System.Windows.Forms.NotifyIcon NotifyIcon;
         private System.Windows.Forms.ToolStripStatusLabel UAStatusLabel;
-        private System.Windows.Forms.TabPage TabPageWriteLog;
         private System.Windows.Forms.TabPage TabPageAbout;
         private System.Windows.Forms.TabPage TabPageLog;
         private System.Windows.Forms.RichTextBox LogRichTextBox;

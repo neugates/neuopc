@@ -67,7 +67,7 @@ namespace neuclient
             }
             catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"GetProperties Exception {tag}");
+                //System.Diagnostics.Debug.WriteLine($"GetProperties Exception {tag}");
                 return null;
             }
 

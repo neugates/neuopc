@@ -9,63 +9,77 @@ using Opc.Ua.Server;
 using Serilog;
 using neulib;
 using System.Threading.Channels;
+using System.Windows.Forms;
+using System.Linq.Expressions;
 
 namespace neuopc
 {
+    internal class NodeInfo
+    {
+        public Node Node { get; set; }
+
+        /// <summary>
+        /// True if you have been added to the subscription list.
+        /// </summary>
+        public bool Subscribed { get; set; }
+    }
+
     internal class Client
     {
+        private static readonly int MaxReadCount = 100;
         private static DaClient _client = null;
         private static bool _clientRunning = false;
         private static Thread _clientThread = null;
-        private static Dictionary<string, Node> _nodeMap = null;
+        private static Dictionary<string, NodeInfo> _infoMap = null;
         private static Channel<Msg> _dataChannel = null;
 
-        private static bool UpdateNodeMap()
+        private static void UpdateNodeMap()
         {
-            bool upgrade = false;
             var nodes = DaBrowse.AllItemNode(_client.Server);
             foreach (var node in nodes)
             {
-                if (!_nodeMap.ContainsKey(node.ItemName))
+                if (!_infoMap.ContainsKey(node.ItemName))
                 {
-                    upgrade = true;
-                    _nodeMap.Add(node.ItemName, node);
+                    _infoMap.Add(node.ItemName, new NodeInfo
+                    {
+                        Node = node,
+                        Subscribed = false,
+                    });
                 }
             }
-
-            return upgrade;
         }
 
         private static void ReadTags()
         {
-            int MaxReadCount = 100;
-            int count = _nodeMap.Count;
+            int count = _infoMap.Count;
             int times = count / MaxReadCount + ((count % MaxReadCount) == 0 ? 0 : 1);
 
             for (int i = 0; i < times; i++)
             {
-                var nodes = _nodeMap.Values.Skip(i * MaxReadCount).Take(MaxReadCount);
-                var tags = nodes.Select(n => n.ItemName).ToList();
-                var items = _client.Read(tags);
+                var nodes = _infoMap.Values.Where(x => !x.Subscribed).Skip(i * MaxReadCount).Take(MaxReadCount);
+                var tags = nodes?.Select(n => n.Node.ItemName).ToList();
+                if (null == tags || 0 >= tags.Count)
+                {
+                    continue;
+                }
 
+                var items = _client.Read(tags);
                 var list = new List<Item>();
                 foreach (var item in items)
                 {
-                    var node = _nodeMap[item.Key];
-                    node.Item = item.Value;
+                    var node = _infoMap[item.Key];
+                    node.Node.Item = item.Value;
 
                     var it = new Item()
                     {
-                        Name = node.ItemName,
-                        Type = node.Type,
-                        Value = node.Item.Value,
-                        Quality = node.Item.Quality,
-                        Timestamp = node.Item.SourceTimestamp,
+                        Name = node.Node.ItemName,
+                        Type = node.Node.Type,
+                        Value = node.Node.Item.Value,
+                        Quality = node.Node.Item.Quality,
+                        Timestamp = node.Node.Item.SourceTimestamp,
                     };
                     list.Add(it);
                 }
-
-                
 
                 _dataChannel.Writer.TryWrite(new Msg()
                 {
@@ -74,9 +88,56 @@ namespace neuopc
             }
         }
 
+        private static void MonitorTags()
+        {
+            int count = _infoMap.Count;
+            int times = count / MaxReadCount + ((count % MaxReadCount) == 0 ? 0 : 1);
+
+            for (int i = 0; i < times; i++)
+            {
+                var nodes = _infoMap.Values.Where(x => !x.Subscribed).Skip(i * MaxReadCount).Take(MaxReadCount);
+                var tags = nodes?.Select(n => n.Node.ItemName).ToList();
+                if (null == tags || 0 >= tags.Count)
+                {
+                    continue;
+                }
+
+                _client.Monitor(tags, (dic, stop) =>
+                {
+                    if (false == _clientRunning)
+                    {
+                        stop();
+                        return;
+                    }
+
+                    var list = new List<Item>();
+                    foreach (var kv in dic)
+                    {
+                        var info = _infoMap[kv.Key];
+                        info.Node.Item = kv.Value;
+                        info.Subscribed = true;
+
+                        var it = new Item()
+                        {
+                            Name = kv.Key,
+                            Type = info.Node.Type,
+                            Value = kv.Value.Value,
+                            Quality = kv.Value.Quality,
+                            Timestamp = kv.Value.SourceTimestamp,
+                        };
+                        list.Add(it);
+                    }
+
+                    _dataChannel.Writer.TryWrite(new Msg()
+                    {
+                        Items = list,
+                    });
+                });
+            }
+        }
+
         private static void ClientThread()
         {
-            int count = 100;
             while (_clientRunning)
             {
                 try
@@ -90,23 +151,11 @@ namespace neuopc
                     continue;
                 }
 
-                if (_nodeMap.Count == 0)
-                {
-                    Thread.Sleep(100);
-                }
 
-                count++;
-                if (count >= 100)
-                {
-                    if (true == UpdateNodeMap())
-                    {
-                        // TODO: monitor all tags
-                    }
-
-                    count = 0;
-                }
-
+                UpdateNodeMap();
                 ReadTags();
+                MonitorTags();
+                Thread.Sleep(1000);
             }
         }
 
@@ -126,16 +175,51 @@ namespace neuopc
             }
         }
 
-        public static IEnumerable<Node> GetNodes()
+        /// <summary>
+        /// Get nodes info, use by GUI 
+        /// </summary>
+        /// <returns>Return null if client not running</returns>
+        public static IEnumerable<NodeInfo> GetNodes()
         {
-            if (null != _nodeMap)
+            if (null != _infoMap)
             {
-                return _nodeMap.Values;
+                return _infoMap.Values;
             }
 
             return null;
         }
 
+        public static bool WriteTag(Item item)
+        {
+            if (!_clientRunning)
+            {
+                Log.Error($"Write {item.Name} failed, client not running");
+                return false;
+            }
+
+            var node = _infoMap[item.Name];
+            if (null == node)
+            {
+                Log.Error($"Tag {item.Name} not found");
+                return false;
+            }
+
+            Log.Information($"Write {item.Name} = {item.Value}");
+            if (null != _client)
+            {
+                try
+                {
+                    _client.Write(item.Name, item.Value);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"Write {item.Name} failed");
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         public static void Start(string serverUrl, Channel<Msg> dataChannel)
         {
@@ -146,7 +230,7 @@ namespace neuopc
 
             _client = new DaClient(serverUrl, string.Empty, string.Empty, string.Empty);
             _clientRunning = true;
-            _nodeMap = new Dictionary<string, Node>();
+            _infoMap = new Dictionary<string, NodeInfo>();
             _dataChannel = dataChannel;
             _clientThread = new Thread(new ThreadStart(ClientThread));
             _clientThread.Start();
@@ -158,7 +242,7 @@ namespace neuopc
             {
                 _clientRunning = false;
                 _clientThread.Join();
-                _nodeMap = null;
+                _infoMap = null;
                 _dataChannel = null;
                 _clientThread = null;
             }

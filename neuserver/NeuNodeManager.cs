@@ -259,88 +259,86 @@ namespace neuserver
         private ServiceResult OnWriteDataValue(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding,
             ref object value, ref StatusCode statusCode, ref DateTime timestamp)
         {
-            return ServiceResult.Good;
+            if (node is not BaseDataVariableState variable)
+            {
+                return StatusCodes.BadNodeIdInvalid;
+            }
 
-            //    if (node is not BaseDataVariableState variable)
-            //    {
-            //        return StatusCodes.BadNodeIdInvalid;
-            //    }
+            var item = new Item();
+            try
+            {
+                TypeInfo typeInfo = TypeInfo.IsInstanceOfDataType(
+                    value,
+                    variable.DataType,
+                    variable.ValueRank,
+                    context.NamespaceUris,
+                    context.TypeTable);
 
-            //    var item = new Item();
-            //    try
-            //    {
-            //        TypeInfo typeInfo = TypeInfo.IsInstanceOfDataType(
-            //            value,
-            //            variable.DataType,
-            //            variable.ValueRank,
-            //            context.NamespaceUris,
-            //            context.TypeTable);
+                if (typeInfo == null || typeInfo == TypeInfo.Unknown)
+                {
+                    return StatusCodes.BadTypeMismatch;
+                }
 
-            //        if (typeInfo == null || typeInfo == TypeInfo.Unknown)
-            //        {
-            //            return StatusCodes.BadTypeMismatch;
-            //        }
+                item.Name = variable.SymbolicName;
+                item.Value = value;
 
-            //        item.Name = variable.SymbolicName;
-            //        item.Value = value;
+                switch (typeInfo.BuiltInType)
+                {
+                    case BuiltInType.SByte:
+                        item.Type = typeof(sbyte);
+                        break;
+                    case BuiltInType.Int16:
+                        item.Type = typeof(short);
+                        break;
+                    case BuiltInType.Int32:
+                        item.Type = typeof(int);
+                        break;
+                    case BuiltInType.Int64:
+                        item.Type = typeof(long);
+                        break;
+                    case BuiltInType.Float:
+                        item.Type = typeof(float);
+                        break;
+                    case BuiltInType.Double:
+                        item.Type = typeof(double);
+                        break;
+                    case BuiltInType.Byte:
+                        item.Type = typeof(byte);
+                        break;
+                    case BuiltInType.UInt16:
+                        item.Type = typeof(ushort);
+                        break;
+                    case BuiltInType.UInt32:
+                        item.Type = typeof(uint);
+                        break;
+                    case BuiltInType.UInt64:
+                        item.Type = typeof(ulong);
+                        break;
+                    case BuiltInType.DateTime:
+                        item.Type = typeof(DateTime);
+                        break;
+                    case BuiltInType.String:
+                        item.Type = typeof(string);
+                        break;
+                    case BuiltInType.Boolean:
+                        item.Type = typeof(bool);
+                        break;
+                    default:
+                        return StatusCodes.BadTypeMismatch;
+                }
 
-            //        switch (typeInfo.BuiltInType)
-            //        {
-            //            case BuiltInType.SByte:
-            //                item.Type = DaType.Int8;
-            //                break;
-            //            case BuiltInType.Int16:
-            //                item.Type = DaType.Int16;
-            //                break;
-            //            case BuiltInType.Int32:
-            //                item.Type = DaType.Int32;
-            //                break;
-            //            case BuiltInType.Int64:
-            //                item.Type = DaType.Int64;
-            //                break;
-            //            case BuiltInType.Float:
-            //                item.Type = DaType.Float;
-            //                break;
-            //            case BuiltInType.Double:
-            //                item.Type = DaType.Double;
-            //                break;
-            //            case BuiltInType.Byte:
-            //                item.Type = DaType.UInt8;
-            //                break;
-            //            case BuiltInType.UInt16:
-            //                item.Type = DaType.UInt16;
-            //                break;
-            //            case BuiltInType.UInt32:
-            //                item.Type = DaType.UInt32;
-            //                break;
-            //            case BuiltInType.UInt64:
-            //                item.Type = DaType.UInt64;
-            //                break;
-            //            case BuiltInType.DateTime:
-            //                item.Type = DaType.Date;
-            //                break;
-            //            case BuiltInType.String:
-            //                item.Type = DaType.String;
-            //                break;
-            //            case BuiltInType.Boolean:
-            //                item.Type = DaType.Bool;
-            //                break;
-            //            default:
-            //                break;
-            //        }
+                var result = _write?.Invoke(item);
+                if (result is true)
+                {
+                    return ServiceResult.Good;
+                }
 
-            //        var result = _write?.Invoke(item);
-            //        if (result is true)
-            //        {
-            //            return ServiceResult.Good;
-            //        }
-
-            //        return StatusCodes.BadNotWritable;
-            //    }
-            //    catch (Exception)
-            //    {
-            //        return StatusCodes.BadTypeMismatch;
-            //    }
+                return StatusCodes.BadNotWritable;
+            }
+            catch (Exception)
+            {
+                return StatusCodes.BadTypeMismatch;
+            }
         }
     }
 }

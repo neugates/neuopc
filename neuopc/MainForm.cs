@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Windows.Forms;
-using System.Text.Json;
-using System.Threading.Channels;
-using System.IO;
 using System.Diagnostics;
 using Serilog;
 using neuclient;
-using Accessibility;
 
 namespace neuopc
 {
@@ -274,7 +266,7 @@ namespace neuopc
                 var url = UAUrlTextBox.Text;
                 var user = UAUserTextBox.Text;
                 var password = UAPasswordTextBox.Text;
-                Server.Start(url, user, password, null);
+                Server.Start(url, user, password, Client.WriteTag);
 
                 var uri = DAServerComboBox.Text;
                 Client.Start(uri, Server.DataChannel);
@@ -319,41 +311,41 @@ namespace neuopc
             ConfigUtil.SaveConfig("neuopc.json", config);
         }
 
-        private void ResetListView(IEnumerable<Node> nodes)
+        private void ResetListView(IEnumerable<NodeInfo> nodes)
         {
-            Action<IEnumerable<Node>> action = (data) =>
+            Action<IEnumerable<NodeInfo>> action = (data) =>
             {
                 var items = MainListView.Items;
-                foreach (var node in data)
+                foreach (var info in data)
                 {
                     MainListView.BeginUpdate();
-                    ListViewItem lvi = new ListViewItem();
+                    ListViewItem lvi = new();
 
                     var itemType = "unknow";
-                    if (null != node.Type)
+                    if (null != info.Node.Type)
                     {
-                        itemType = node.Type.ToString();
+                        itemType = info.Node.Type.ToString();
                     }
 
                     var itemValue = "null";
-                    if (null != node.Item && null != node.Item.Value)
+                    if (null != info.Node.Item && null != info.Node.Item.Value)
                     {
-                        itemValue = node.Item.Value.ToString();
+                        itemValue = info.Node.Item.Value.ToString();
                     }
 
                     var itemQuality = "unknow";
-                    if (null != node.Item)
+                    if (null != info.Node.Item)
                     {
-                        itemQuality = node.Item.Quality.ToString();
+                        itemQuality = info.Node.Item.Quality.ToString();
                     }
 
                     var itemSourceTimestamp = "unknow";
-                    if (null != node.Item)
+                    if (null != info.Node.Item)
                     {
-                        itemSourceTimestamp = node.Item.SourceTimestamp.ToString();
+                        itemSourceTimestamp = info.Node.Item.SourceTimestamp.ToString();
                     }
 
-                    lvi.Text = node.ItemName;
+                    lvi.Text = info.Node.ItemName;
                     lvi.SubItems.Add(itemType); // type
                     lvi.SubItems.Add(""); // rights
                     lvi.SubItems.Add(itemValue); // value
