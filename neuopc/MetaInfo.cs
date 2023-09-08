@@ -37,14 +37,7 @@ namespace neuopc
         public static string OpcuaProject = "https://github.com/OPCFoundation/UA-.NETStandard";
         public static string SerilogProject = "https://github.com/serilog/serilog";
 
-        public static string Disclaimer = "The following binaries belong to the OPC Foundation. You must become a registered user in order to use them:\r\n"
-            + "Opc.Ua.Configuration.dll\r\n"
-            + "Opc.Ua.Core.dll\r\n"
-            + "Opc.Ua.Security.Certificates.dll\r\n"
-            + "Opc.Ua.Server.dll\r\n"
-            + "OpcComRcw.dll\r\n"
-            + "OpcNetApi.Com.dll\r\n"
-            + "OpcNetApi.dll\r\n"
-            + "You must agree to the terms and condition exposed on the OPC Foundation website. NeuOPC is not responsible of their usage and cannot be held responsible.";
+        public static string Disclaimer =
+            "You must agree to the terms and condition exposed on the OPC Foundation website. NeuOPC is not responsible of their usage and cannot be held responsible.";
     }
 }
