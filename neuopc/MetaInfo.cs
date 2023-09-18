@@ -16,17 +16,16 @@ namespace neuopc
 
         public static string Version
         {
-            get
-            {
-                return $"{Major}.{Minor}.{Patch}";
-            }
+            get { return $"{Major}.{Minor}.{Patch}"; }
         }
 
-        public static string Description = "NeuOPC is an application that converts OPC DA to OPC UA. \r\n"
+        public static string Description =
+            "NeuOPC is an application that converts OPC DA to OPC UA. \r\n"
             + "It is intended to provide support for bridging OPC DA for Neuron projects and can also be used for other OPC UA clients. \r\n"
             + "NeuOPC is open sourced under the GPLv2, please ensure that the source code is available to users when distributing this application. \r\n";
 
-        public static string Documenation = "https://neugates.io/docs/en/latest/configuration/south-devices/opc-da/overview.html";
+        public static string Documenation =
+            "https://neugates.io/docs/en/latest/configuration/south-devices/opc-da/overview.html";
 
         public static string License = "https://github.com/neugates/neuopc/blob/main/LICENSE";
 

@@ -15,7 +15,6 @@ namespace neuopc
         private bool _running;
         private const int _MaxLogLines = 5000;
 
-
         public MainForm()
         {
             InitializeComponent();
@@ -27,41 +26,41 @@ namespace neuopc
         private void LogTaskRun()
         {
             var _ = Task.Run(async () =>
-             {
-                 var channel = NeuSinkChannel.GetChannel();
-                 Action<string> action = (data) =>
-                 {
-                     if (LogRichTextBox.Lines.Length > _MaxLogLines)
-                     {
-                         LogRichTextBox.Clear();
-                     }
+            {
+                var channel = NeuSinkChannel.GetChannel();
+                Action<string> action = (data) =>
+                {
+                    if (LogRichTextBox.Lines.Length > _MaxLogLines)
+                    {
+                        LogRichTextBox.Clear();
+                    }
 
-                     LogRichTextBox.AppendText(data);
-                     LogRichTextBox.ScrollToCaret();
-                 };
+                    LogRichTextBox.AppendText(data);
+                    LogRichTextBox.ScrollToCaret();
+                };
 
-                 while (await channel.Reader.WaitToReadAsync())
-                 {
-                     if (!_running)
-                     {
-                         break;
-                     }
+                while (await channel.Reader.WaitToReadAsync())
+                {
+                    if (!_running)
+                    {
+                        break;
+                    }
 
-                     if (!channel.Reader.TryRead(out var msg))
-                     {
-                         continue;
-                     }
+                    if (!channel.Reader.TryRead(out var msg))
+                    {
+                        continue;
+                    }
 
-                     try
-                     {
-                         Invoke(action, msg);
-                     }
-                     catch (Exception)
-                     {
-                         continue;
-                     }
-                 }
-             });
+                    try
+                    {
+                        Invoke(action, msg);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                }
+            });
         }
 
         private void LoadMetaInfo()
@@ -83,7 +82,6 @@ namespace neuopc
             AboutRichTextBox.AppendText("\r\n");
             AboutRichTextBox.AppendText(MetaInfo.Disclaimer);
         }
-
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -179,7 +177,12 @@ namespace neuopc
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            var result = MessageBox.Show("Do you want to exit the program?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            var result = MessageBox.Show(
+                "Do you want to exit the program?",
+                "Warning",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Warning
+            );
             if (DialogResult.Cancel == result)
             {
                 e.Cancel = true;
@@ -219,12 +222,16 @@ namespace neuopc
         {
             Log.Information("neuopc exit");
 
-            var result = MessageBox.Show("Do you want to exit the program?", "Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            var result = MessageBox.Show(
+                "Do you want to exit the program?",
+                "Warning",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Warning
+            );
             if (DialogResult.Cancel == result)
             {
                 return;
             }
-
 
             Environment.Exit(0);
         }
@@ -278,6 +285,8 @@ namespace neuopc
                 UAUrlTextBox.Enabled = false;
                 UAUserTextBox.Enabled = false;
                 UAPasswordTextBox.Enabled = false;
+
+                Log.Information($"da server {uri} started");
             }
             else
             {
@@ -291,6 +300,9 @@ namespace neuopc
                 UAUrlTextBox.Enabled = true;
                 UAUserTextBox.Enabled = true;
                 UAPasswordTextBox.Enabled = true;
+
+                var uri = DAServerComboBox.Text;
+                Log.Information($"da server {uri} server stopped");
             }
 
             SwitchButton.Enabled = true;
@@ -395,9 +407,7 @@ namespace neuopc
                 }
             }
 
-            if (2 == TabControl.SelectedIndex)
-            {
-            }
+            if (2 == TabControl.SelectedIndex) { }
         }
 
         private void LogListView_MouseDoubleClick(object sender, MouseEventArgs e)

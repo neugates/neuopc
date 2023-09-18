@@ -16,11 +16,11 @@ namespace neuopc
             Application.SetCompatibleTextRenderingDefault(false);
 
             var _ = NeuSinkChannel.GetChannel();
-            Log.Logger = new LoggerConfiguration()
-                    .MinimumLevel.Information()
-                    .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
-                    .WriteTo.NeuSink()
-                    .CreateLogger();
+            Log.Logger = new LoggerConfiguration().MinimumLevel
+                .Information()
+                .WriteTo.File("log/neuopc.log", rollingInterval: RollingInterval.Day)
+                .WriteTo.NeuSink()
+                .CreateLogger();
 
             try
             {

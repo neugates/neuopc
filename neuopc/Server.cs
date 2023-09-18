@@ -10,10 +10,7 @@ namespace neuopc
 
         public static UaServer ServerInstance
         {
-            get
-            {
-                return _server;
-            }
+            get { return _server; }
         }
 
         public static bool Running
@@ -44,7 +41,7 @@ namespace neuopc
                     return _server.DataChannel;
                 }
             }
-        }   
+        }
 
         public static void Start(string uri, string user, string password, ValueWrite write)
         {

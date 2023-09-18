@@ -9,7 +9,11 @@ namespace neuclient
 {
     public class DaBrowse
     {
-        private static IEnumerable<Node> AllNode(Server server, Opc.ItemIdentifier id = null, List<Node> nodes = null)
+        public static IEnumerable<Node> AllNode(
+            Server server,
+            Opc.ItemIdentifier id = null,
+            List<Node> nodes = null
+        )
         {
             if (null == nodes)
             {
@@ -17,10 +21,7 @@ namespace neuclient
             }
 
             BrowseElement[] elements;
-            var filters = new BrowseFilters
-            {
-                BrowseFilter = browseFilter.all
-            };
+            var filters = new BrowseFilters { BrowseFilter = browseFilter.all };
 
             try
             {
@@ -33,13 +34,18 @@ namespace neuclient
 
             if (null != elements)
             {
-                var list = elements.Select(x => new Node
-                {
-                    Name = x.Name,
-                    ItemName = x.ItemName,
-                    ItemPath = x.ItemPath,
-                    IsItem = x.IsItem
-                }).ToList();
+                var list = elements
+                    .Select(
+                        x =>
+                            new Node
+                            {
+                                Name = x.Name,
+                                ItemName = x.ItemName,
+                                ItemPath = x.ItemPath,
+                                IsItem = x.IsItem
+                            }
+                    )
+                    .ToList();
                 nodes.AddRange(list);
 
                 foreach (var element in elements)
@@ -47,7 +53,7 @@ namespace neuclient
                     if (element.HasChildren)
                     {
                         id = new Opc.ItemIdentifier(element.ItemPath, element.ItemName);
-                        AllNode(server, id, nodes);
+                        _ = DaBrowse.AllNode(server, id, nodes);
                     }
                 }
             }
@@ -62,30 +68,19 @@ namespace neuclient
 
             try
             {
-                var propertyCollection = server.GetProperties(new Opc.ItemIdentifier[] { item }, new[] { new PropertyID(1) }, true)[0];
+                var propertyCollection = server.GetProperties(
+                    new Opc.ItemIdentifier[] { item },
+                    new[] { new PropertyID(1) },
+                    true
+                )[0];
                 result = propertyCollection[0];
             }
             catch (Exception)
             {
-                //System.Diagnostics.Debug.WriteLine($"GetProperties Exception {tag}");
-                return null;
+                throw;
             }
 
             return (Type)result.Value;
-        }
-
-
-
-        public static IEnumerable<Node> AllItemNode(Server server)
-        {
-            var nodes = AllNode(server);
-            var items = nodes.Where(x => x.IsItem);
-            foreach (var item in items)
-            {
-                item.Type = GetDataType(server, item.ItemName, item.ItemPath);
-            }
-
-            return items;
         }
     }
 }

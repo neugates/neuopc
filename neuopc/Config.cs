@@ -19,25 +19,26 @@ namespace neuopc
     {
         public static Config LoadConfig(string filename)
         {
-            string jsonString = string.Empty;
+            string jsonString;
             try
             {
                 jsonString = File.ReadAllText(filename);
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "read config file failed");
+                Log.Information(ex, "read config file failed, not exist");
+                return new Config();
             }
 
-            var config = new Config();
-
+            Config config;
             try
             {
                 config = JsonSerializer.Deserialize<Config>(jsonString);
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "deserialize config failed");
+                Log.Error(ex, "deserialize config failed");
+                return new Config();
             }
 
             return config;
@@ -47,12 +48,15 @@ namespace neuopc
         {
             try
             {
-                string jsonString = JsonSerializer.Serialize<Config>(config, new JsonSerializerOptions { WriteIndented = true });
+                string jsonString = JsonSerializer.Serialize<Config>(
+                    config,
+                    new JsonSerializerOptions { WriteIndented = true }
+                );
                 File.WriteAllText(filename, jsonString);
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, "write config file error");
+                Log.Error(ex, "write config file error");
             }
         }
     }

@@ -18,12 +18,14 @@ namespace neuopc
         {
             if (null == _channel)
             {
-                _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(1000)
-                {
-                    FullMode = BoundedChannelFullMode.Wait,
-                    SingleReader = true,
-                    SingleWriter = false
-                });
+                _channel = Channel.CreateBounded<string>(
+                    new BoundedChannelOptions(1000)
+                    {
+                        FullMode = BoundedChannelFullMode.Wait,
+                        SingleReader = true,
+                        SingleWriter = false
+                    }
+                );
             }
 
             return _channel;
@@ -42,7 +44,6 @@ namespace neuopc
         {
             _channel?.Writer.TryWrite(message);
         }
-
 
         public static bool Read(out string message)
         {
@@ -65,12 +66,14 @@ namespace neuopc
 
         public NeuSink(IFormatProvider formatProvider)
         {
-            _textFormatter = new MessageTemplateTextFormatter("--->{Timestamp} [{Level}] {Message:lj}{NewLine}{Exception}", formatProvider);
+            _textFormatter = new MessageTemplateTextFormatter(
+                "--->{Timestamp} [{Level}] {Message:lj}{NewLine}{Exception}",
+                formatProvider
+            );
         }
 
         public void Emit(LogEvent logEvent)
         {
-
             var stringWriter = new StringWriter();
             _textFormatter.Format(logEvent, stringWriter);
             var message = stringWriter.ToString();
@@ -81,10 +84,11 @@ namespace neuopc
     internal static class NeuSinkExtensions
     {
         public static LoggerConfiguration NeuSink(
-                             this LoggerSinkConfiguration loggerConfiguration,
-                                              IFormatProvider formatProvider = null)
+            this LoggerSinkConfiguration loggerConfiguration,
+            IFormatProvider formatProvider = null
+        )
         {
-            return loggerConfiguration.Sink(new NeuSink(formatProvider), LogEventLevel.Verbose);
+            return loggerConfiguration.Sink(new NeuSink(formatProvider), LogEventLevel.Warning);
         }
     }
 }

@@ -49,7 +49,10 @@ namespace neuclient
 
         public int? MonitorInterval { get; set; }
 
-        public Opc.Da.Server Server { get { return _server; } }
+        public Opc.Da.Server Server
+        {
+            get { return _server; }
+        }
 
         public void Connect()
         {
@@ -57,7 +60,6 @@ namespace neuclient
             {
                 return;
             }
-
 
             _server = new Opc.Da.Server(new OpcCom.Factory(), _url);
 
@@ -89,7 +91,11 @@ namespace neuclient
 
             try
             {
-                var propertyCollection = _server.GetProperties(new ItemIdentifier[] { item }, new[] { new Opc.Da.PropertyID(1) }, false)[0];
+                var propertyCollection = _server.GetProperties(
+                    new ItemIdentifier[] { item },
+                    new[] { new Opc.Da.PropertyID(1) },
+                    false
+                )[0];
                 result = propertyCollection[0];
             }
             catch (NullReferenceException)
@@ -135,7 +141,9 @@ namespace neuclient
             }
             catch (InvalidCastException)
             {
-                throw new InvalidCastException($"Could not monitor tag. Cast failed for type \"{typeof(T)}\" on the new value \"{value}\" with type \"{value.GetType()}\". Make sure tag data type matches.");
+                throw new InvalidCastException(
+                    $"Could not monitor tag. Cast failed for type \"{typeof(T)}\" on the new value \"{value}\" with type \"{value.GetType()}\". Make sure tag data type matches."
+                );
             }
         }
 
@@ -175,7 +183,15 @@ namespace neuclient
                 let item = new Opc.Da.Item { ItemName = tag }
                 select item;
 
-            Opc.Da.ItemValueResult[] results = _server.Read(items.ToArray());
+            Opc.Da.ItemValueResult[] results = null;
+            try
+            {
+                results = _server.Read(items.ToArray());
+            }
+            catch (NotConnectedException)
+            {
+                throw;
+            }
 
             IDictionary<string, ReadItem> readItems = new ConcurrentDictionary<string, ReadItem>();
             foreach (Opc.Da.ItemValueResult result in results)
@@ -205,11 +221,7 @@ namespace neuclient
 
         public void Write<T>(string tag, T item)
         {
-            var itmVal = new Opc.Da.ItemValue
-            {
-                ItemName = tag,
-                Value = item
-            };
+            var itmVal = new Opc.Da.ItemValue { ItemName = tag, Value = item };
 
             IdentifiedResult result = _server.Write(new[] { itmVal })[0];
             if (result == null)
@@ -218,7 +230,9 @@ namespace neuclient
             }
             if (result.ResultID.ToString() != "S_OK")
             {
-                throw new Exception($"Invalid response from the server. (Response Status: {result.ResultID}, Opc Tag: {tag})");
+                throw new Exception(
+                    $"Invalid response from the server. (Response Status: {result.ResultID}, Opc Tag: {tag})"
+                );
             }
         }
 
@@ -296,7 +310,10 @@ namespace neuclient
             sub.SetEnabled(true);
         }
 
-        public void Monitor(IEnumerable<string> tags, Action<IDictionary<string, ReadItem>, Action> callback)
+        public void Monitor(
+            IEnumerable<string> tags,
+            Action<IDictionary<string, ReadItem>, Action> callback
+        )
         {
             tags = tags?.Distinct().ToArray() ?? new string[0];
             if (!tags.Any())
@@ -312,17 +329,18 @@ namespace neuclient
             };
 
             var sub = _server.CreateSubscription(subItem);
-            void unsubscribe() => new Thread(o =>
-            {
-                try
+            void unsubscribe() =>
+                new Thread(o =>
                 {
-                    _server.CancelSubscription(sub);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.Write(ex);
-                }
-            }).Start();
+                    try
+                    {
+                        _server.CancelSubscription(sub);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.Write(ex);
+                    }
+                }).Start();
 
             IDictionary<string, ReadItem> readEvents = new ConcurrentDictionary<string, ReadItem>();
             sub.DataChanged += (handle, requestHandle, values) =>
@@ -358,14 +376,14 @@ namespace neuclient
                 callback(readEvents, (Action)unsubscribe);
             };
 
-            sub.AddItems(tags.Select(tag => new Opc.Da.Item
-            {
-                ItemName = tag
-            }).ToArray());
+            sub.AddItems(tags.Select(tag => new Opc.Da.Item { ItemName = tag }).ToArray());
             sub.SetEnabled(true);
         }
 
-        public void MonitorChanges(IEnumerable<string> tags, Action<IDictionary<string, ReadItem>, Action> callback)
+        public void MonitorChanges(
+            IEnumerable<string> tags,
+            Action<IDictionary<string, ReadItem>, Action> callback
+        )
         {
             tags = tags?.Distinct().ToArray() ?? new string[0];
             if (!tags.Any())
@@ -384,7 +402,8 @@ namespace neuclient
             void unsubscribe() => new Thread(o => _server.CancelSubscription(sub)).Start();
             sub.DataChanged += (handle, requestHandle, values) =>
             {
-                IDictionary<string, ReadItem> readEvents = new ConcurrentDictionary<string, ReadItem>();
+                IDictionary<string, ReadItem> readEvents =
+                    new ConcurrentDictionary<string, ReadItem>();
 
                 foreach (Opc.Da.ItemValueResult itemValueResult in values)
                 {
@@ -427,4 +446,3 @@ namespace neuclient
         }
     }
 }
-
