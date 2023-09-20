@@ -63,7 +63,8 @@ namespace neuclient
 
         public static Type GetDataType(Server server, string tag, string path)
         {
-            var item = new Item { ItemName = tag, ItemPath = path };
+            //var item = new Item { ItemName = tag, ItemPath = path };
+            var item = new Item { ItemName = tag };
             ItemProperty result;
 
             try

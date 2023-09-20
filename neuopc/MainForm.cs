@@ -425,5 +425,15 @@ namespace neuopc
                 Log.Error($"clipboard error:{ex.Message}");
             }
         }
+
+        private void addTagToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            TagForm tagForm = new();
+            tagForm.StartPosition = FormStartPosition.CenterParent;
+            tagForm.Text = "Add Tag";
+            tagForm.ShowDialog();
+        }
+
+        private void MainListView_SelectedIndexChanged(object sender, EventArgs e) { }
     }
 }

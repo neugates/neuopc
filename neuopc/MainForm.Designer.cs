@@ -48,6 +48,10 @@ namespace neuopc
             error = new System.Windows.Forms.ColumnHeader();
             timestamp = new System.Windows.Forms.ColumnHeader();
             handle = new System.Windows.Forms.ColumnHeader();
+            TagContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(components);
+            addTagToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            deleteTagToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             TabPageSetting = new System.Windows.Forms.TabPage();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label14 = new System.Windows.Forms.Label();
@@ -73,6 +77,7 @@ namespace neuopc
             TabPageAbout.SuspendLayout();
             TabPageLog.SuspendLayout();
             TabPageData.SuspendLayout();
+            TagContextMenuStrip.SuspendLayout();
             TabPageSetting.SuspendLayout();
             groupBox1.SuspendLayout();
             TabControl.SuspendLayout();
@@ -167,6 +172,7 @@ namespace neuopc
             MainListView.TabIndex = 7;
             MainListView.UseCompatibleStateImageBehavior = false;
             MainListView.View = System.Windows.Forms.View.Details;
+            MainListView.SelectedIndexChanged += MainListView_SelectedIndexChanged;
             MainListView.MouseDoubleClick += MainListView_MouseDoubleClick;
             // 
             // name
@@ -208,6 +214,31 @@ namespace neuopc
             // 
             handle.Text = "Index";
             handle.Width = 0;
+            // 
+            // TagContextMenuStrip
+            // 
+            TagContextMenuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
+            TagContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addTagToolStripMenuItem, toolStripSeparator2, deleteTagToolStripMenuItem });
+            TagContextMenuStrip.Name = "contextMenuStrip1";
+            TagContextMenuStrip.Size = new System.Drawing.Size(174, 70);
+            // 
+            // addTagToolStripMenuItem
+            // 
+            addTagToolStripMenuItem.Name = "addTagToolStripMenuItem";
+            addTagToolStripMenuItem.Size = new System.Drawing.Size(173, 30);
+            addTagToolStripMenuItem.Text = "Add Tag";
+            addTagToolStripMenuItem.Click += addTagToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(170, 6);
+            // 
+            // deleteTagToolStripMenuItem
+            // 
+            deleteTagToolStripMenuItem.Name = "deleteTagToolStripMenuItem";
+            deleteTagToolStripMenuItem.Size = new System.Drawing.Size(173, 30);
+            deleteTagToolStripMenuItem.Text = "Delete Tag";
             // 
             // TabPageSetting
             // 
@@ -451,6 +482,7 @@ namespace neuopc
             TabPageAbout.ResumeLayout(false);
             TabPageLog.ResumeLayout(false);
             TabPageData.ResumeLayout(false);
+            TagContextMenuStrip.ResumeLayout(false);
             TabPageSetting.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
@@ -499,6 +531,12 @@ namespace neuopc
         private System.Windows.Forms.Button TestButton;
         private System.Windows.Forms.TabControl TabControl;
         private System.Windows.Forms.RichTextBox AboutRichTextBox;
+        private System.Windows.Forms.ContextMenuStrip TagContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem addTagToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editTagToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteTagToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 

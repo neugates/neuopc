@@ -8,6 +8,7 @@ using neulib;
 using System.Threading.Channels;
 using System.Windows.Forms;
 using Opc.Ua.Server;
+using System.Text.RegularExpressions;
 
 namespace neuopc
 {
@@ -44,15 +45,6 @@ namespace neuopc
                 Log.Error(ex, "browse all node failed");
             }
 
-            //Log.Information("get all node count:{Count}", nodes.Count());
-
-            //foreach (Node node in nodes)
-            //{
-            //    Log.Information(
-            //        $"get all node name:{node.Name}, item path:{node.ItemPath}, item name:{node.ItemName}, is item:{node.IsItem}"
-            //    );
-            //}
-
             var items = nodes.Where(x => x.IsItem);
             foreach (var item in items)
             {
@@ -70,13 +62,7 @@ namespace neuopc
                 {
                     Log.Error(ex, "get data type failed");
                 }
-
-                //Log.Information(
-                //    $"get all item node name:{item.ItemName}, item path:{item.ItemPath}, type:{item.Type}"
-                //);
             }
-
-            //Log.Information("leave get all item node");
 
             return items;
         }
@@ -119,14 +105,19 @@ namespace neuopc
                     continue;
                 }
 
-                //Log.Information($"read tags count:{items.Count}");
-
-                //foreach (var kv in items)
-                //{
-                //    Log.Information(
-                //        $"read tag name:{kv.Key}, value:{kv.Value.Value}, quality:{kv.Value.Quality}, timestamp:{kv.Value.SourceTimestamp}"
-                //    );
-                //}
+                foreach (var kv in items)
+                {
+                    Type type;
+                    try
+                    {
+                        type = DaBrowse.GetDataType(_client.Server, kv.Key, string.Empty);
+                        Log.Information($"tag name:{kv.Key}, tag type:{type}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "ta");
+                    }
+                }
 
                 var list = new List<Item>();
                 foreach (var item in items)
@@ -142,6 +133,29 @@ namespace neuopc
                         Quality = node.Node.Item.Quality,
                         Timestamp = node.Node.Item.SourceTimestamp,
                     };
+
+                    try
+                    {
+                        if (it.Type == typeof(byte[]))
+                        {
+                            it.Type = typeof(byte);
+                            it.Value = ((byte[])it.Value)[0];
+
+                            if (it.Value is byte[] ary && 0 < ary.Length)
+                            {
+                                it.Value = ary[0];
+                            }
+                            else
+                            {
+                                it.Value = 0;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "read byte[] error");
+                    }
+
                     list.Add(it);
                 }
 
@@ -191,6 +205,28 @@ namespace neuopc
                                 Quality = kv.Value.Quality,
                                 Timestamp = kv.Value.SourceTimestamp,
                             };
+
+                            try
+                            {
+                                if (it.Type == typeof(byte[]))
+                                {
+                                    it.Type = typeof(byte);
+
+                                    if (kv.Value.Value is byte[] ary && 0 < ary.Length)
+                                    {
+                                        it.Value = ary[0];
+                                    }
+                                    else
+                                    {
+                                        it.Value = 0;
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "monitor byte[] error");
+                            }
+
                             list.Add(it);
                         }
 
@@ -215,7 +251,7 @@ namespace neuopc
                     continue;
                 }
 
-                UpdateNodeMap();
+                //UpdateNodeMap();
                 ReadTags();
                 MonitorTags();
                 Thread.Sleep(1000);
@@ -278,6 +314,50 @@ namespace neuopc
             return true;
         }
 
+        private static Type MatchType(string type)
+        {
+            return type switch
+            {
+                "System.SByte" => typeof(sbyte),
+                "System.Int16" => typeof(short),
+                "System.Int32" => typeof(int),
+                "System.Int64" => typeof(long),
+                "System.Single" => typeof(float),
+                "System.Double" => typeof(double),
+                "System.Byte" => typeof(byte),
+                "System.UInt16" => typeof(ushort),
+                "System.UInt32" => typeof(uint),
+                "System.UInt64" => typeof(ulong),
+                "System.DateTime" => typeof(DateTime),
+                "System.String" => typeof(string),
+                "System.Boolean" => typeof(bool),
+                "System.Byte[]" => typeof(byte[]),
+                _ => typeof(object),
+            };
+        }
+
+        private static void LoadTags()
+        {
+            try
+            {
+                var tags = TagJson.GetTags("tags.json");
+                foreach (var tag in tags)
+                {
+                    var node = new Node
+                    {
+                        Name = tag.ItemName,
+                        ItemName = tag.ItemName,
+                        Type = MatchType(tag.DataType),
+                    };
+                    _infoMap.Add(node.ItemName, new NodeInfo { Node = node, Subscribed = false, });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "read tags.json error");
+            }
+        }
+
         public static void Start(string serverUrl, Channel<Msg> dataChannel)
         {
             if (_clientRunning)
@@ -289,30 +369,7 @@ namespace neuopc
             _clientRunning = true;
             _infoMap = new Dictionary<string, NodeInfo>();
 
-            //var n1 = new Node
-            //{
-            //    Name = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__SV_VALUE",
-            //    ItemName = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__SV_VALUE",
-            //    Type = typeof(float)
-            //};
-
-            //var n2 = new Node
-            //{
-            //    Name = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__PV_VALUE",
-            //    ItemName = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__PV_VALUE",
-            //    Type = typeof(float)
-            //};
-
-            //var n3 = new Node
-            //{
-            //    Name = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__PV_UNIT",
-            //    ItemName = "HART!BANQIAO1-0102-10211-04!ID_375C473CD5_.__PV_UNIT",
-            //    Type = typeof(byte)
-            //};
-
-            //_infoMap.Add(n1.ItemName, new NodeInfo { Node = n1, Subscribed = false, });
-            //_infoMap.Add(n2.ItemName, new NodeInfo { Node = n2, Subscribed = false, });
-            //_infoMap.Add(n3.ItemName, new NodeInfo { Node = n3, Subscribed = false, });
+            LoadTags();
 
             _dataChannel = dataChannel;
             _clientThread = new Thread(new ThreadStart(ClientThread));
