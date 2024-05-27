@@ -7,9 +7,9 @@ using System.Linq;
 using System.Globalization;
 using System.Net;
 using Opc;
-using neulib;
+using neulib_nf;
 
-namespace neuclient
+namespace neuclient_nf
 {
     public class DaClient
     {

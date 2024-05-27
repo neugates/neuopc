@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using Opc;
 
-namespace neuclient
+namespace neuclient_nf
 {
     public class DaServer
     {

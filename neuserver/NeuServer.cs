@@ -5,7 +5,7 @@ using neulib;
 
 namespace neuserver
 {
-    internal class NeuServer: StandardServer
+    internal class NeuServer : StandardServer
     {
         private NeuNodeManager? _nodeManager;
         private readonly ValueWrite _write;
@@ -29,7 +29,10 @@ namespace neuserver
             _password = password;
         }
 
-        protected override MasterNodeManager CreateMasterNodeManager(IServerInternal server, ApplicationConfiguration configuration)
+        protected override MasterNodeManager CreateMasterNodeManager(
+            IServerInternal server,
+            ApplicationConfiguration configuration
+        )
         {
             Utils.Trace("Creating the Node Managers.");
             var nodeManagers = new List<INodeManager>();
@@ -53,14 +56,18 @@ namespace neuserver
                 UserTokenPolicy policy = configuration.ServerConfiguration.UserTokenPolicies[ii];
                 if (policy.TokenType == UserTokenType.Certificate)
                 {
-                    if (configuration.SecurityConfiguration.TrustedUserCertificates != null &&
-                        configuration.SecurityConfiguration.UserIssuerCertificates != null)
+                    if (
+                        configuration.SecurityConfiguration.TrustedUserCertificates != null
+                        && configuration.SecurityConfiguration.UserIssuerCertificates != null
+                    )
                     {
                         CertificateValidator certificateValidator = new CertificateValidator();
                         certificateValidator.Update(configuration.SecurityConfiguration).Wait();
-                        certificateValidator.Update(configuration.SecurityConfiguration.UserIssuerCertificates,
+                        certificateValidator.Update(
+                            configuration.SecurityConfiguration.UserIssuerCertificates,
                             configuration.SecurityConfiguration.TrustedUserCertificates,
-                            configuration.SecurityConfiguration.RejectedCertificateStore);
+                            configuration.SecurityConfiguration.RejectedCertificateStore
+                        );
                         _certificateValidator = certificateValidator.GetChannelValidator();
                     }
                 }
@@ -96,16 +103,19 @@ namespace neuserver
         {
             if (string.IsNullOrEmpty(userName))
             {
-                throw ServiceResultException.Create(StatusCodes.BadIdentityTokenInvalid,
-                    "Security token is not a valid username token. An empty username is not accepted.");
+                throw ServiceResultException.Create(
+                    StatusCodes.BadIdentityTokenInvalid,
+                    "Security token is not a valid username token. An empty username is not accepted."
+                );
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                throw ServiceResultException.Create(StatusCodes.BadIdentityTokenRejected,
-                    "Security token is not a valid username token. An empty password is not accepted.");
+                throw ServiceResultException.Create(
+                    StatusCodes.BadIdentityTokenRejected,
+                    "Security token is not a valid username token. An empty password is not accepted."
+                );
             }
-
 
             if (!(userName == _user && password == _password))
             {
@@ -113,13 +123,17 @@ namespace neuserver
                     "InvalidPassword",
                     "en-US",
                     "Specified password is not valid for user '{0}'.",
-                    userName);
+                    userName
+                );
 
-                throw new ServiceResultException(new ServiceResult(
-                    StatusCodes.BadIdentityTokenRejected,
-                    "InvalidPassword",
-                    LoadServerProperties().ProductUri,
-                    new LocalizedText(info)));
+                throw new ServiceResultException(
+                    new ServiceResult(
+                        StatusCodes.BadIdentityTokenRejected,
+                        "InvalidPassword",
+                        LoadServerProperties().ProductUri,
+                        new LocalizedText(info)
+                    )
+                );
             }
         }
 
@@ -140,13 +154,17 @@ namespace neuserver
             {
                 TranslationInfo info;
                 StatusCode result = StatusCodes.BadIdentityTokenRejected;
-                if (e is ServiceResultException se && se.StatusCode == StatusCodes.BadCertificateUseNotAllowed)
+                if (
+                    e is ServiceResultException se
+                    && se.StatusCode == StatusCodes.BadCertificateUseNotAllowed
+                )
                 {
                     info = new TranslationInfo(
                         "InvalidCertificate",
                         "en-US",
                         "'{0}' is an invalid user certificate.",
-                        certificate.Subject);
+                        certificate.Subject
+                    );
 
                     result = StatusCodes.BadIdentityTokenInvalid;
                 }
@@ -156,14 +174,18 @@ namespace neuserver
                         "UntrustedCertificate",
                         "en-US",
                         "'{0}' is not a trusted user certificate.",
-                        certificate.Subject);
+                        certificate.Subject
+                    );
                 }
 
-                throw new ServiceResultException(new ServiceResult(
-                    result,
-                    info.Key,
-                    "http://opcfoundation.org/UA/Sample/",
-                    new LocalizedText(info)));
+                throw new ServiceResultException(
+                    new ServiceResult(
+                        result,
+                        info.Key,
+                        "http://opcfoundation.org/UA/Sample/",
+                        new LocalizedText(info)
+                    )
+                );
             }
         }
     }

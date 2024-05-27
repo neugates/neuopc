@@ -11,8 +11,16 @@ namespace neuserver
         private readonly List<BaseDataVariableState> _variables;
         private readonly ValueWrite? _write;
 
-        public NeuNodeManager(IServerInternal server, ApplicationConfiguration configuration, ValueWrite write)
-            : base(server, configuration, "http://opcfoundation.org/Quickstarts/ReferenceApplications")
+        public NeuNodeManager(
+            IServerInternal server,
+            ApplicationConfiguration configuration,
+            ValueWrite write
+        )
+            : base(
+                server,
+                configuration,
+                "http://opcfoundation.org/Quickstarts/ReferenceApplications"
+            )
         {
             _write = write;
             _variables = new List<BaseDataVariableState>();
@@ -69,7 +77,9 @@ namespace neuserver
                 }
                 catch (Exception exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"add variable exception, error:{exception.Message}");
+                    System.Diagnostics.Debug.WriteLine(
+                        $"add variable exception, error:{exception.Message}"
+                    );
                 }
             }
             else
@@ -81,32 +91,37 @@ namespace neuserver
                 }
                 catch (Exception exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"update variable exception, error:{exception.Message}");
+                    System.Diagnostics.Debug.WriteLine(
+                        $"update variable exception, error:{exception.Message}"
+                    );
                 }
             }
         }
 
-
         public void UpdateNodes(List<Item> list)
         {
-
             lock (Lock)
             {
                 foreach (var item in list)
                 {
-                    var variable = _variables.Where(v => v.SymbolicName.Equals(item.Name)).FirstOrDefault();
+                    var variable = _variables
+                        .Where(v => v.SymbolicName.Equals(item.Name))
+                        .FirstOrDefault();
                     SaveNode(item, variable);
                 }
             }
         }
 
-        public override void CreateAddressSpace(IDictionary<NodeId, IList<IReference>> externalReferences)
+        public override void CreateAddressSpace(
+            IDictionary<NodeId, IList<IReference>> externalReferences
+        )
         {
             lock (Lock)
             {
                 if (!externalReferences.TryGetValue(ObjectIds.ObjectsFolder, out _references))
                 {
-                    externalReferences[ObjectIds.ObjectsFolder] = _references = new List<IReference>();
+                    externalReferences[ObjectIds.ObjectsFolder] = _references =
+                        new List<IReference>();
                 }
 
                 string folderName = "NeuOPC";
@@ -124,7 +139,9 @@ namespace neuserver
                 };
 
                 _folder.AddReference(ReferenceTypes.Organizes, true, ObjectIds.ObjectsFolder);
-                _references.Add(new NodeStateReference(ReferenceTypes.Organizes, false, _folder.NodeId));
+                _references.Add(
+                    new NodeStateReference(ReferenceTypes.Organizes, false, _folder.NodeId)
+                );
                 _folder.EventNotifier = EventNotifiers.SubscribeToEvents;
                 AddRootNotifier(_folder);
                 AddPredefinedNode(SystemContext, _folder);
@@ -137,8 +154,10 @@ namespace neuserver
             {
                 Quality.GoodLocalOverrideValueForced => StatusCodes.GoodLocalOverride,
                 Quality.Good => StatusCodes.Good,
-                Quality.UncertainValueFromMultipleSources => StatusCodes.UncertainConfigurationError,
-                Quality.UncertainEngineeringUnitsExceeded => StatusCodes.UncertainEngineeringUnitsExceeded,
+                Quality.UncertainValueFromMultipleSources
+                    => StatusCodes.UncertainConfigurationError,
+                Quality.UncertainEngineeringUnitsExceeded
+                    => StatusCodes.UncertainEngineeringUnitsExceeded,
                 Quality.UncertainSensorNotAccurate => StatusCodes.UncertainSensorNotAccurate,
                 Quality.UncertainLastUsableValue => StatusCodes.UncertainLastUsableValue,
                 Quality.Uncertain => StatusCodes.Uncertain,
@@ -160,7 +179,6 @@ namespace neuserver
             {
                 type = item.Type.ToString();
             }
-
 
             switch (type)
             {
@@ -205,59 +223,73 @@ namespace neuserver
                     variable.Value = (ulong)(item.Value ?? 0);
                     break;
                 case "System.DateTime":
+                {
+                    variable.DataType = DataTypeIds.DateTime;
+                    try
                     {
-                        variable.DataType = DataTypeIds.DateTime;
-                        try
-                        {
-                            variable.Value = (DateTime)(item.Value ?? DateTime.Now);
-                        }
-                        catch
-                        {
-                            variable.StatusCode = StatusCodes.BadNotReadable;
-                        }
-
-                        break;
+                        variable.Value = (DateTime)(item.Value ?? DateTime.Now);
                     }
+                    catch
+                    {
+                        variable.StatusCode = StatusCodes.BadNotReadable;
+                    }
+
+                    break;
+                }
                 case "System.String":
                     variable.DataType = DataTypeIds.String;
                     variable.Value = item.Value as string;
                     break;
                 case "System.Boolean":
+                {
+                    variable.DataType = DataTypeIds.Boolean;
+                    try
                     {
-                        variable.DataType = DataTypeIds.Boolean;
-                        try
-                        {
-                            variable.Value = (bool)(item.Value ?? false);
-                        }
-                        catch
-                        {
-                            variable.StatusCode = StatusCodes.BadNotReadable;
-                        }
-
-                        break;
+                        variable.Value = (bool)(item.Value ?? false);
                     }
+                    catch
+                    {
+                        variable.StatusCode = StatusCodes.BadNotReadable;
+                    }
+
+                    break;
+                }
                 case "":
                     variable.DataType = DataTypeIds.Union;
                     variable.Value = item.Value as Union;
                     break;
 
                 default:
-                    {
-                        variable.DataType = DataTypeIds.BaseDataType;
-                        variable.StatusCode = StatusCodes.BadNotSupported;
-                        break;
-                    }
+                {
+                    variable.DataType = DataTypeIds.BaseDataType;
+                    variable.StatusCode = StatusCodes.BadNotSupported;
+                    break;
+                }
             }
         }
 
-        private ServiceResult OnReadDataValue(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding,
-            ref object value, ref StatusCode statusCode, ref DateTime timestamp)
+        private ServiceResult OnReadDataValue(
+            ISystemContext context,
+            NodeState node,
+            NumericRange indexRange,
+            QualifiedName dataEncoding,
+            ref object value,
+            ref StatusCode statusCode,
+            ref DateTime timestamp
+        )
         {
             return ServiceResult.Good;
         }
 
-        private ServiceResult OnWriteDataValue(ISystemContext context, NodeState node, NumericRange indexRange, QualifiedName dataEncoding,
-            ref object value, ref StatusCode statusCode, ref DateTime timestamp)
+        private ServiceResult OnWriteDataValue(
+            ISystemContext context,
+            NodeState node,
+            NumericRange indexRange,
+            QualifiedName dataEncoding,
+            ref object value,
+            ref StatusCode statusCode,
+            ref DateTime timestamp
+        )
         {
             if (node is not BaseDataVariableState variable)
             {
@@ -272,7 +304,8 @@ namespace neuserver
                     variable.DataType,
                     variable.ValueRank,
                     context.NamespaceUris,
-                    context.TypeTable);
+                    context.TypeTable
+                );
 
                 if (typeInfo == null || typeInfo == TypeInfo.Unknown)
                 {

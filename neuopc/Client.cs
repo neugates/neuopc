@@ -82,8 +82,7 @@ namespace neuopc
         private static void ReadTags()
         {
             int count = _infoMap.Count;
-            //int times = count / MaxReadCount + ((count % MaxReadCount) == 0 ? 0 : 1);
-            int times = count / 1 + ((count % 1) == 0 ? 0 : 1);
+            int times = count / MaxReadCount + ((count % MaxReadCount) == 0 ? 0 : 1);
 
             for (int i = 0; i < times; i++)
             {
@@ -115,7 +114,7 @@ namespace neuopc
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "ta");
+                        Log.Error(ex, $"tag name:{kv.Key}, get data type failed");
                     }
                 }
 
@@ -133,28 +132,6 @@ namespace neuopc
                         Quality = node.Node.Item.Quality,
                         Timestamp = node.Node.Item.SourceTimestamp,
                     };
-
-                    try
-                    {
-                        if (it.Type == typeof(byte[]))
-                        {
-                            it.Type = typeof(byte);
-                            it.Value = ((byte[])it.Value)[0];
-
-                            if (it.Value is byte[] ary && 0 < ary.Length)
-                            {
-                                it.Value = ary[0];
-                            }
-                            else
-                            {
-                                it.Value = 0;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "read byte[] error");
-                    }
 
                     list.Add(it);
                 }
@@ -206,27 +183,6 @@ namespace neuopc
                                 Timestamp = kv.Value.SourceTimestamp,
                             };
 
-                            try
-                            {
-                                if (it.Type == typeof(byte[]))
-                                {
-                                    it.Type = typeof(byte);
-
-                                    if (kv.Value.Value is byte[] ary && 0 < ary.Length)
-                                    {
-                                        it.Value = ary[0];
-                                    }
-                                    else
-                                    {
-                                        it.Value = 0;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex, "monitor byte[] error");
-                            }
-
                             list.Add(it);
                         }
 
@@ -251,7 +207,7 @@ namespace neuopc
                     continue;
                 }
 
-                //UpdateNodeMap();
+                UpdateNodeMap();
                 ReadTags();
                 MonitorTags();
                 Thread.Sleep(1000);

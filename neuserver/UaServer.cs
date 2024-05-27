@@ -28,10 +28,10 @@ namespace neuserver
             DataChannel = Channel.CreateUnbounded<Msg>();
 
             var tokenPolicies = new List<UserTokenPolicy>
-                {
-                    new UserTokenPolicy(UserTokenType.UserName),
-                    new UserTokenPolicy(UserTokenType.Certificate)
-                };
+            {
+                new UserTokenPolicy(UserTokenType.UserName),
+                new UserTokenPolicy(UserTokenType.Certificate)
+            };
 
             var serverConfiguration = new ServerConfiguration()
             {
@@ -44,10 +44,35 @@ namespace neuserver
 
             var securityConfiguration = new SecurityConfiguration
             {
-                ApplicationCertificate = new CertificateIdentifier { StoreType = @"Directory", StorePath = @"%CommonApplicationData%\OPC Foundation\CertificateStores\MachineDefault", SubjectName = Utils.Format(@"CN={0}, DC={1}", "AxiuOpcua", System.Net.Dns.GetHostName()) },
-                TrustedIssuerCertificates = new CertificateTrustList { StoreType = @"Directory", StorePath = @"%CommonApplicationData%\OPC Foundation\CertificateStores\UA Certificate Authorities" },
-                TrustedPeerCertificates = new CertificateTrustList { StoreType = @"Directory", StorePath = @"%CommonApplicationData%\OPC Foundation\CertificateStores\UA Applications" },
-                RejectedCertificateStore = new CertificateTrustList { StoreType = @"Directory", StorePath = @"%CommonApplicationData%\OPC Foundation\CertificateStores\RejectedCertificates" },
+                ApplicationCertificate = new CertificateIdentifier
+                {
+                    StoreType = @"Directory",
+                    StorePath =
+                        @"%CommonApplicationData%\OPC Foundation\CertificateStores\MachineDefault",
+                    SubjectName = Utils.Format(
+                        @"CN={0}, DC={1}",
+                        "neuopc",
+                        System.Net.Dns.GetHostName()
+                    )
+                },
+                TrustedIssuerCertificates = new CertificateTrustList
+                {
+                    StoreType = @"Directory",
+                    StorePath =
+                        @"%CommonApplicationData%\OPC Foundation\CertificateStores\UA Certificate Authorities"
+                },
+                TrustedPeerCertificates = new CertificateTrustList
+                {
+                    StoreType = @"Directory",
+                    StorePath =
+                        @"%CommonApplicationData%\OPC Foundation\CertificateStores\UA Applications"
+                },
+                RejectedCertificateStore = new CertificateTrustList
+                {
+                    StoreType = @"Directory",
+                    StorePath =
+                        @"%CommonApplicationData%\OPC Foundation\CertificateStores\RejectedCertificates"
+                },
                 AutoAcceptUntrustedCertificates = true,
                 AddAppCertToTrustedStore = true
             };
@@ -68,7 +93,10 @@ namespace neuserver
             config.Validate(ApplicationType.Server).GetAwaiter().GetResult();
             if (config.SecurityConfiguration.AutoAcceptUntrustedCertificates)
             {
-                config.CertificateValidator.CertificateValidation += (s, e) => { e.Accept = (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted); };
+                config.CertificateValidator.CertificateValidation += (s, e) =>
+                {
+                    e.Accept = (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted);
+                };
             }
 
             _application = new ApplicationInstance
@@ -95,7 +123,6 @@ namespace neuserver
             });
             _task.Start();
         }
-
 
         public void Start()
         {
