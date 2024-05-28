@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace neulib_nf
+namespace Common
 {
     public enum DaType
     {

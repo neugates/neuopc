@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using Opc.Da;
 
-namespace neuclient_nf
+namespace DaClient
 {
     public class DaBrowse
     {

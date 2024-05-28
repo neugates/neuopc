@@ -7,7 +7,7 @@ using Opc;
 using Opc.Da;
 using OpcCom;
 
-namespace neuclient_nf
+namespace DaClient
 {
     public class DaDiscovery
     {

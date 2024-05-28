@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6445EAC9-39EE-4AA0-827B-87C14508FA18}</ProjectGuid>
+    <ProjectGuid>{DA45C0F2-61A9-4648-8CDC-2A61A4355FB9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>neuclient_nf</RootNamespace>
-    <AssemblyName>neuclient-nf</AssemblyName>
+    <RootNamespace>Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,18 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpcComRcw, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9a40e993cbface53, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpcComRcw.2.1.109\lib\net46\OpcComRcw.dll</HintPath>
-    </Reference>
-    <Reference Include="OpcNetApi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=9a40e993cbface53, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpcNetApi.2.1.109\lib\net46\OpcNetApi.dll</HintPath>
-    </Reference>
-    <Reference Include="OpcNetApi.Com, Version=2.1.0.0, Culture=neutral, PublicKeyToken=9a40e993cbface53, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpcNetApi.Com.2.1.109\lib\net46\OpcNetApi.Com.dll</HintPath>
-    </Reference>
-    <Reference Include="OpcNetApi.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9a40e993cbface53, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpcNetApi.Xml.2.1.109\lib\net40\OpcNetApi.Xml.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -54,21 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DaBrowse.cs" />
-    <Compile Include="DaClient.cs" />
-    <Compile Include="DaDiscovery.cs" />
-    <Compile Include="DaServer.cs" />
+    <Compile Include="CommonType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Type.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\neulib-nf472\neulib-nf.csproj">
-      <Project>{980883a4-efd9-4de1-91fd-fee53ab5899b}</Project>
-      <Name>neulib-nf</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

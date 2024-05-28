@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using neulib_nf;
+using Common;
 
-namespace neuclient_nf
+namespace DaClient
 {
     public enum ServerStatus
     {
