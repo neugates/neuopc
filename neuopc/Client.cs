@@ -45,7 +45,7 @@ namespace neuopc
                 Log.Error(ex, "browse all node failed");
             }
 
-            var items = nodes.Where(x => x.IsItem);
+            var items = (nodes ?? Enumerable.Empty<Node>()).Where(x => x.IsItem);
             foreach (var item in items)
             {
                 try
@@ -207,9 +207,33 @@ namespace neuopc
                     continue;
                 }
 
-                UpdateNodeMap();
-                ReadTags();
-                MonitorTags();
+                try
+                {
+                    UpdateNodeMap();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "update node map failed");
+                }
+
+                try
+                {
+                    ReadTags();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "read tags failed");
+                }
+
+                try
+                {
+                    MonitorTags();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "monitor tags failed");
+                }
+
                 Thread.Sleep(1000);
             }
         }
