@@ -149,21 +149,11 @@ namespace neuopc
                 UAPasswordTextBox.Text = "123456";
             }
 
+            SwitchButton.Text = "Start";
+
             if (CheckBox.Checked)
             {
-                SwitchButton.Text = "Stop";
-
-                DAHostComboBox.Enabled = false;
-                DAServerComboBox.Enabled = false;
-                TestButton.Enabled = false;
-
-                UAUrlTextBox.Enabled = false;
-                UAUserTextBox.Enabled = false;
-                UAPasswordTextBox.Enabled = false;
-            }
-            else
-            {
-                SwitchButton.Text = "Start";
+                SwitchButton.PerformClick();
             }
         }
 
